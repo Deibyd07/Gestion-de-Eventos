@@ -1,0 +1,6 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Importar estilos para solucionar problema de scrollbar */
+@import './styles/scrollbar-simple.css';

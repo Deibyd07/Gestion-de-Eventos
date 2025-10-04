@@ -250,22 +250,6 @@ npm run typecheck    # Verificación de tipos TypeScript
 
 ---
 
-## 🎨 Capturas de Pantalla
-
-### 🏠 Página de Inicio
-![Home Page]()
-
-### 🎫 Lista de Eventos
-![Events Page]()
-
-### 📊 Dashboard de Organizador
-![Organizer Dashboard]()
-
-### 🛡️ Panel de Administración
-![Admin Panel]()
-
----
-
 ## 🔐 Usuarios de Prueba (Desarrollo)
 
 Solo disponibles si ejecutaste `database/datos_zarzal.sql`:

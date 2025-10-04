@@ -341,14 +341,6 @@ Este proyecto está bajo la Licencia MIT. Ver `LICENSE` para más información.
 
 ---
 
-## 👨‍💻 Autor
-
-**Tu Nombre**
-- GitHub: [@tu-usuario](https://github.com/tu-usuario)
-- LinkedIn: [tu-perfil](https://linkedin.com/in/tu-perfil)
-
----
-
 ## 🙏 Agradecimientos
 
 - [React](https://react.dev/)

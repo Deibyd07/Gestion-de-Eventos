@@ -1,11 +1,11 @@
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Calendar, Users, Shield, Star, ArrowRight, Play, MapPin } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useEventStore } from '../../../core/stores/eventStore';
 import { useAuthStore } from '../../../core/stores/authStore';
 import { AuthRedirect } from '../../auth/components/AuthRedirect';
 import { LoginRequiredModal } from '../../auth/components/LoginRequiredModal';
-import { formatEventDate } from '../../../shared/utils/date';
+import LiquidEther from '../../../shared/components/LiquidEther';
 
 export function HomePage() {
   const { featuredEvents, loadFeaturedEvents, loading, error } = useEventStore();
@@ -120,48 +120,64 @@ export function HomePage() {
     <AuthRedirect>
       <div className="min-h-screen bg-gradient-to-br from-gray-50/80 to-blue-50/80 backdrop-blur-sm">
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-blue-900 via-blue-800 to-indigo-900">
-        <div className="absolute inset-0 bg-black/20"></div>
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-24">
-          <div className="text-center space-y-8">
-            <div className="bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-lg shadow-xl border border-white/20 rounded-2xl p-8">
-              <h1 className="text-5xl md:text-7xl font-bold text-white leading-tight">
-                Eventos en
-                <span className="block bg-gradient-to-r from-yellow-400 to-orange-500 bg-clip-text text-transparent">
-                  Zarzal
-                </span>
-              </h1>
-              
-              <p className="text-xl md:text-2xl text-blue-100 max-w-3xl mx-auto leading-relaxed">
+      <section className="relative overflow-hidden bg-gradient-to-br from-blue-950 via-indigo-950 to-slate-900" style={{ isolation: 'isolate' }}>
+        {/* Liquid Ether Background Effect */}
+        <div className="absolute inset-0" style={{ zIndex: 0 }}>
+          <LiquidEther
+            colors={['#5227FF', '#FF9FFE', '#B19EEF']}
+            mouseForce={19}
+            cursorSize={100}
+            isViscous={true}
+            viscous={30}
+            iterationsViscous={32}
+            iterationsPoisson={32}
+            resolution={0.5}
+            dt={0.014}
+            BFECC={true}
+            isBounce={false}
+            autoDemo={false}
+            autoSpeed={0.5}
+            autoIntensity={2.2}
+            takeoverDuration={0.25}
+            autoResumeDelay={1000}
+            autoRampDuration={0.6}
+          />
+        </div>
+        
+        <div className="absolute inset-0 bg-black/30 pointer-events-none" style={{ zIndex: 1 }}></div>
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-24 pointer-events-none" style={{ zIndex: 2 }}>
+          <div className="text-center space-y-8 pointer-events-none">
+            <h1 className="text-5xl md:text-7xl font-bold text-white leading-tight">
+              Eventos en
+              <span className="block bg-gradient-to-r from-indigo-400 via-purple-400 to-blue-500 bg-clip-text text-transparent">
+                Zarzal
+              </span>
+            </h1>
+            
+            <p className="text-xl md:text-2xl text-blue-100 max-w-3xl mx-auto leading-relaxed">
               La plataforma para eventos locales en Zarzal, Valle del Cauca. 
               Conecta con tu comunidad y descubre eventos únicos en tu región.
             </p>
-            
-              <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-8">
-                <button 
-                  onClick={handleExploreEvents}
-                  className="group inline-flex items-center px-8 py-4 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold rounded-xl hover:from-blue-600 hover:to-purple-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
-                >
-                  Explorar Eventos
-                  <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform duration-200" />
-                </button>
-                
-                <button 
-                  onClick={handleCreateAccount}
-                  className="group inline-flex items-center px-8 py-4 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-semibold rounded-xl hover:from-green-600 hover:to-emerald-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
-                >
-                  Crear Cuenta Gratis
-                  <Play className="ml-2 w-5 h-5 group-hover:scale-110 transition-transform duration-200" />
-                </button>
-              </div>
+          
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-8 pointer-events-auto">
+              <button 
+                onClick={handleExploreEvents}
+                className="group inline-flex items-center px-8 py-4 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold rounded-xl hover:from-blue-600 hover:to-purple-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+              >
+                Explorar Eventos
+                <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform duration-200" />
+              </button>
+              
+              <button 
+                onClick={handleCreateAccount}
+                className="group inline-flex items-center px-8 py-4 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-semibold rounded-xl hover:from-green-600 hover:to-emerald-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+              >
+                Crear Cuenta Gratis
+                <Play className="ml-2 w-5 h-5 group-hover:scale-110 transition-transform duration-200" />
+              </button>
             </div>
           </div>
         </div>
-        
-        {/* Animated background elements */}
-        <div className="absolute top-20 left-10 w-20 h-20 bg-white/10 rounded-full blur-xl animate-pulse"></div>
-        <div className="absolute bottom-20 right-20 w-32 h-32 bg-yellow-400/20 rounded-full blur-xl animate-pulse delay-1000"></div>
-        <div className="absolute top-1/2 right-10 w-16 h-16 bg-blue-400/20 rounded-full blur-xl animate-pulse delay-500"></div>
       </section>
 
       {/* Stats Section */}
@@ -394,9 +410,32 @@ export function HomePage() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-24 bg-gradient-to-br from-blue-600 via-purple-600 to-indigo-600 relative overflow-hidden">
-        <div className="absolute inset-0 bg-black/10"></div>
-        <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      <section className="py-24 bg-gradient-to-br from-blue-950 via-indigo-950 to-slate-900 relative overflow-hidden" style={{ isolation: 'isolate' }}>
+        {/* Liquid Ether Background Effect */}
+        <div className="absolute inset-0" style={{ zIndex: 0 }}>
+          <LiquidEther
+            colors={['#5227FF', '#FF9FFE', '#B19EEF']}
+            mouseForce={19}
+            cursorSize={100}
+            isViscous={true}
+            viscous={30}
+            iterationsViscous={32}
+            iterationsPoisson={32}
+            resolution={0.5}
+            dt={0.014}
+            BFECC={true}
+            isBounce={false}
+            autoDemo={false}
+            autoSpeed={0.5}
+            autoIntensity={2.2}
+            takeoverDuration={0.25}
+            autoResumeDelay={1000}
+            autoRampDuration={0.6}
+          />
+        </div>
+        
+        <div className="absolute inset-0 bg-black/30 pointer-events-none" style={{ zIndex: 1 }}></div>
+        <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center pointer-events-none" style={{ zIndex: 2 }}>
           <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
             Conectando Zarzal a través de eventos
           </h2>
@@ -406,8 +445,8 @@ export function HomePage() {
             aquí encuentras todos los eventos que hacen vibrar nuestro municipio.
           </p>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-12">
-            <div className="text-center bg-white/10 backdrop-blur-lg border border-white/20 rounded-2xl p-6 hover:bg-white/20 transition-all duration-300 transform hover:-translate-y-1">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-12 pointer-events-auto">
+            <div className="text-center bg-white/10 backdrop-blur-lg border border-white/20 rounded-2xl p-6 hover:bg-white/20 transition-all duration-300 transform hover:-translate-y-1 pointer-events-auto">
               <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
                 <Calendar className="w-8 h-8 text-white" />
               </div>
@@ -417,7 +456,7 @@ export function HomePage() {
               </p>
             </div>
             
-            <div className="text-center bg-white/10 backdrop-blur-lg border border-white/20 rounded-2xl p-6 hover:bg-white/20 transition-all duration-300 transform hover:-translate-y-1">
+            <div className="text-center bg-white/10 backdrop-blur-lg border border-white/20 rounded-2xl p-6 hover:bg-white/20 transition-all duration-300 transform hover:-translate-y-1 pointer-events-auto">
               <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
                 <Users className="w-8 h-8 text-white" />
               </div>
@@ -427,7 +466,7 @@ export function HomePage() {
               </p>
             </div>
             
-            <div className="text-center bg-white/10 backdrop-blur-lg border border-white/20 rounded-2xl p-6 hover:bg-white/20 transition-all duration-300 transform hover:-translate-y-1">
+            <div className="text-center bg-white/10 backdrop-blur-lg border border-white/20 rounded-2xl p-6 hover:bg-white/20 transition-all duration-300 transform hover:-translate-y-1 pointer-events-auto">
               <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
                 <Shield className="w-8 h-8 text-white" />
               </div>

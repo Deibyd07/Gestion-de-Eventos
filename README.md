@@ -8,7 +8,7 @@
 ![Tailwind](https://img.shields.io/badge/Tailwind-3.4-38bdf8?style=for-the-badge&logo=tailwindcss)
 ![Supabase](https://img.shields.io/badge/Supabase-Latest-3ecf8e?style=for-the-badge&logo=supabase)
 
-**Plataforma moderna para gestión completa de eventos con autenticación, pagos y analíticas en tiempo real**
+**Plataforma nacional para gestión completa de eventos en Colombia con autenticación, pagos y analíticas en tiempo real**
 
 [Demo](#) · [Documentación](#-documentación) · [Reportar Bug](#) · [Solicitar Feature](#)
 
@@ -132,7 +132,7 @@ Ejecuta los scripts SQL en orden en el SQL Editor de Supabase:
 ```bash
 1. database/schema.sql
 2. database/solucion_completa_contraseñas.sql
-3. database/datos_zarzal.sql (opcional - solo para desarrollo)
+3. database/datos_ejemplo.sql (opcional - solo para desarrollo)
 ```
 
 ### 5. Iniciar el servidor de desarrollo
@@ -252,20 +252,20 @@ npm run typecheck    # Verificación de tipos TypeScript
 
 ## 🔐 Usuarios de Prueba (Desarrollo)
 
-Solo disponibles si ejecutaste `database/datos_zarzal.sql`:
+Solo disponibles si ejecutaste `database/datos_ejemplo.sql`:
 
 ```
 Administrador:
-Email: admin@eventoszarzal.com
+Email: admin@eventhub.co
 Password: admin123
 
 Organizador:
-Email: maria.gonzalez@eventoszarzal.com
-Password: maria123
+Email: organizador@eventhub.co
+Password: organizador123
 
 Asistente:
-Email: juan.perez@email.com
-Password: juan123
+Email: usuario@email.com
+Password: usuario123
 ```
 
 ⚠️ **IMPORTANTE**: Estos usuarios son solo para desarrollo. NO usar en producción.

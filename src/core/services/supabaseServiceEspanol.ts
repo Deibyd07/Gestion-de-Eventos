@@ -99,7 +99,7 @@ export class ServicioUsuarios {
         correo_electronico: data.correo_electronico,
         nombre: data.nombre_completo, // Mapear nombre_completo a nombre
         tipo_usuario: data.rol, // Mapear rol a tipo_usuario
-        ubicacion: data.ubicacion || 'Zarzal, Valle del Cauca',
+        ubicacion: data.ubicacion || 'Colombia',
         url_avatar: data.url_avatar,
         preferencias: data.preferencias,
         fecha_creacion: data.fecha_creacion,

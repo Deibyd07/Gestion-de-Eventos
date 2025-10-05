@@ -163,12 +163,12 @@ cat .gitignore | grep .env
 5. Haz clic en ▶️ **"Run"**
 6. Verifica que diga "Success"
 
-#### Paso 4: Ejecutar `datos_zarzal.sql` 🎭 **TERCERO (Opcional)**
+#### Paso 4: Ejecutar `datos_ejemplo.sql` 🎭 **TERCERO (Opcional)**
 
 **⚠️ Solo para desarrollo**
 
 1. Crea una **nueva query**
-2. Abre `database/datos_zarzal.sql`
+2. Abre `database/datos_ejemplo.sql`
 3. Copia todo el contenido
 4. Pégalo en el SQL Editor
 5. Haz clic en ▶️ **"Run"**
@@ -197,7 +197,7 @@ psql "postgresql://postgres:[TU-PASSWORD]@[TU-HOST]:5432/postgres"
 # 3. Ejecutar scripts en orden
 \i database/schema.sql
 \i database/solucion_completa_contraseñas.sql
-\i database/datos_zarzal.sql
+\i database/datos_ejemplo.sql
 ```
 
 ---
@@ -282,26 +282,22 @@ Las políticas RLS ya están incluidas en `schema.sql`, pero verifica que estén
 
 ## 8. Datos de Prueba (Opcional)
 
-Si ejecutaste `datos_zarzal.sql`, tienes estos usuarios de prueba:
+Si ejecutaste `datos_ejemplo.sql`, tienes estos usuarios de prueba:
 
 ### 🛡️ Administrador
 ```
-Email: admin@eventoszarzal.com
+Email: admin@eventhub.co
 Password: admin123
 ```
 
 ### 🎭 Organizadores
 ```
-maria.gonzalez@eventoszarzal.com / maria123
-carlos.ruiz@eventoszarzal.com / carlos123
-ana.lopez@eventoszarzal.com / ana123
+organizador@eventhub.co / organizador123
 ```
 
 ### 🎫 Asistentes
 ```
-juan.perez@email.com / juan123
-lucia.martinez@email.com / lucia123
-pedro.rodriguez@email.com / pedro123
+usuario@email.com / usuario123
 ```
 
 **⚠️ IMPORTANTE**: 

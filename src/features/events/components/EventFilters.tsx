@@ -18,7 +18,11 @@ export function EventFilters() {
     'Cali, Colombia',
     'Barranquilla, Colombia',
     'Cartagena, Colombia',
-    'Zarzal, Valle del Cauca'
+    'Bucaramanga, Colombia',
+    'Pereira, Colombia',
+    'Santa Marta, Colombia',
+    'Manizales, Colombia',
+    'Armenia, Colombia'
   ];
 
   const clearFilters = () => {

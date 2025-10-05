@@ -15,8 +15,8 @@ export function Footer() {
               <span className="text-2xl font-bold">EventHub</span>
             </div>
             <p className="text-gray-300 text-sm leading-relaxed">
-              La plataforma líder para crear, gestionar y descubrir eventos en Zarzal y el Valle del Cauca. 
-              Conectamos organizadores con asistentes para experiencias únicas.
+              La plataforma líder para crear, gestionar y descubrir eventos en toda Colombia. 
+              Conectamos organizadores con asistentes para experiencias únicas en todo el país.
             </p>
             <div className="flex space-x-4">
               <a href="#" className="text-gray-400 hover:text-white transition-colors duration-200">
@@ -106,7 +106,7 @@ export function Footer() {
               </div>
               <div className="flex items-center space-x-3">
                 <MapPin className="w-4 h-4 text-gray-400" />
-                <span className="text-gray-300 text-sm">Zarzal, Valle del Cauca</span>
+                <span className="text-gray-300 text-sm">Colombia</span>
               </div>
             </div>
           </div>

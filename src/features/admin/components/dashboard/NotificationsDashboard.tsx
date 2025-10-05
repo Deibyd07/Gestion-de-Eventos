@@ -56,7 +56,7 @@ export const NotificationsDashboard: React.FC = () => {
       type: 'event',
       priority: 'low',
       title: 'Evento creado exitosamente',
-      message: 'El evento "Feria Agropecuaria Zarzal 2024" ha sido creado.',
+      message: 'El evento "Feria Agropecuaria Nacional 2024" ha sido creado.',
       timestamp: '2024-11-28T08:45:00Z',
       read: true,
       category: 'event',

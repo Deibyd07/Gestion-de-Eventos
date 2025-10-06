@@ -2,5 +2,37 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Responsive utilities */
+@layer utilities {
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  
+  .break-all {
+    word-break: break-all;
+  }
+  
+  .truncate {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  
+  /* Smooth horizontal scroll for tabs */
+  .tabs-scroll {
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Ensure tabs don't shrink */
+  .tab-button {
+    flex-shrink: 0;
+    min-width: fit-content;
+  }
+}
 
 @import './styles/scrollbar-simple.css';

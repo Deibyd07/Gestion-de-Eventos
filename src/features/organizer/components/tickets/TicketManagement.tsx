@@ -113,11 +113,11 @@ export const TicketManagement: React.FC<TicketManagementProps> = ({
   const totalAvailable = tickets.reduce((sum, ticket) => sum + ticket.available, 0);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 md:space-y-6 w-full">
       {/* Header removed - using parent header */}
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4 md:gap-6 w-full">
         <div className="bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-200 backdrop-blur-lg p-6">
           <div className="flex items-center justify-between">
             <div>
@@ -159,29 +159,29 @@ export const TicketManagement: React.FC<TicketManagementProps> = ({
       </div>
 
       {/* Filters */}
-      <div className="bg-gradient-to-br from-white to-indigo-100/98 backdrop-blur-lg shadow-xl border border-white/20 rounded-2xl p-6">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Buscar Entradas</label>
+      <div className="bg-gradient-to-br from-white to-indigo-100/98 backdrop-blur-lg shadow-xl border border-white/20 rounded-2xl p-4 md:p-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
+          <div className="sm:col-span-2 lg:col-span-1">
+            <label className="block text-xs md:text-sm font-medium text-gray-700 mb-2">Buscar Entradas</label>
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
               <input
                 type="text"
-                placeholder="Buscar por nombre o descripción..."
+                placeholder="Buscar..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full pl-10 pr-4 py-2 text-sm border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
             </div>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Filtrar por Tipo</label>
+            <label className="block text-xs md:text-sm font-medium text-gray-700 mb-2">Tipo</label>
             <select
               value={filterType}
               onChange={(e) => setFilterType(e.target.value as any)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-3 py-2 text-sm border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
-              <option value="all">Todos los Tipos</option>
+              <option value="all">Todos</option>
               <option value="general">General</option>
               <option value="vip">VIP</option>
               <option value="early_bird">Early Bird</option>
@@ -190,13 +190,13 @@ export const TicketManagement: React.FC<TicketManagementProps> = ({
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Filtrar por Estado</label>
+            <label className="block text-xs md:text-sm font-medium text-gray-700 mb-2">Estado</label>
             <select
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value as any)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-3 py-2 text-sm border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
-              <option value="all">Todos los Estados</option>
+              <option value="all">Todos</option>
               <option value="active">Activos</option>
               <option value="inactive">Inactivos</option>
             </select>
@@ -205,13 +205,13 @@ export const TicketManagement: React.FC<TicketManagementProps> = ({
       </div>
 
       {/* Tickets Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
         {filteredTickets.map((ticket) => {
           const TypeIcon = getTypeIcon(ticket.type);
           const salesPercentage = ticket.available > 0 ? (ticket.sold / (ticket.available + ticket.sold)) * 100 : 0;
           
           return (
-            <div key={ticket.id} className="bg-gradient-to-br from-white to-indigo-100/98 backdrop-blur-lg shadow-xl border border-white/20 rounded-2xl overflow-hidden hover:shadow-2xl transition-all duration-200">
+            <div key={ticket.id} className="bg-gradient-to-br from-white to-indigo-100/98 backdrop-blur-lg shadow-xl border border-white/20 rounded-2xl hover:shadow-2xl transition-all duration-200">
               {/* Ticket Header */}
               <div className="p-6 border-b border-gray-200">
                 <div className="flex items-center justify-between mb-4">
@@ -323,34 +323,36 @@ export const TicketManagement: React.FC<TicketManagementProps> = ({
                   </div>
                 </div>
 
-                <div className="flex flex-wrap gap-2">
+                <div className="grid grid-cols-2 gap-2">
                   <button
                     onClick={() => onViewAnalytics(ticket.id)}
-                    className="flex-1 inline-flex items-center justify-center px-3 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white text-sm rounded-xl hover:from-blue-600 hover:to-purple-700 transition-all duration-200"
+                    className="inline-flex items-center justify-center px-3 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white text-xs md:text-sm rounded-xl hover:from-blue-600 hover:to-purple-700 transition-all duration-200"
                   >
-                    <Eye className="w-4 h-4 mr-1" />
+                    <Eye className="w-3 h-3 md:w-4 md:h-4 mr-1" />
                     Ver
                   </button>
                   <button
                     onClick={() => onEditTicket(ticket.id)}
-                    className="flex-1 inline-flex items-center justify-center px-3 py-2 bg-gradient-to-r from-orange-500 to-red-600 text-white text-sm rounded-xl hover:from-orange-600 hover:to-red-700 transition-all duration-200"
+                    className="inline-flex items-center justify-center px-3 py-2 bg-gradient-to-r from-orange-500 to-red-600 text-white text-xs md:text-sm rounded-xl hover:from-orange-600 hover:to-red-700 transition-all duration-200"
                   >
-                    <Edit className="w-4 h-4 mr-1" />
+                    <Edit className="w-3 h-3 md:w-4 md:h-4 mr-1" />
                     Editar
                   </button>
                   <button
                     onClick={() => onDuplicateTicket(ticket.id)}
-                    className="inline-flex items-center justify-center px-3 py-2 bg-gradient-to-r from-gray-500 to-gray-600 text-white text-sm rounded-xl hover:from-gray-600 hover:to-gray-700 transition-all duration-200"
+                    className="inline-flex items-center justify-center px-3 py-2 bg-gradient-to-r from-gray-500 to-gray-600 text-white text-xs md:text-sm rounded-xl hover:from-gray-600 hover:to-gray-700 transition-all duration-200"
                     title="Duplicar entrada"
                   >
-                    <CopyIcon className="w-4 h-4" />
+                    <CopyIcon className="w-3 h-3 md:w-4 md:h-4 mr-1" />
+                    <span className="hidden sm:inline">Duplicar</span>
                   </button>
                   <button
                     onClick={() => onDeleteTicket(ticket.id)}
-                    className="inline-flex items-center justify-center px-3 py-2 bg-gradient-to-r from-red-500 to-red-600 text-white text-sm rounded-xl hover:from-red-600 hover:to-red-700 transition-all duration-200"
+                    className="inline-flex items-center justify-center px-3 py-2 bg-gradient-to-r from-red-500 to-red-600 text-white text-xs md:text-sm rounded-xl hover:from-red-600 hover:to-red-700 transition-all duration-200"
                     title="Eliminar entrada"
                   >
-                    <Trash2 className="w-4 h-4" />
+                    <Trash2 className="w-3 h-3 md:w-4 md:h-4 mr-1" />
+                    <span className="hidden sm:inline">Eliminar</span>
                   </button>
                 </div>
               </div>

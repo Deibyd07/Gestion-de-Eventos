@@ -199,40 +199,40 @@ export function CheckoutPage() {
 
               {/* Payment Methods */}
               <div className="mb-6">
-                <h4 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
-                  <Lock className="w-5 h-5 mr-2 text-blue-600" />
+                <h4 className="text-base md:text-lg font-medium text-gray-900 mb-3 md:mb-4 flex items-center">
+                  <Lock className="w-4 h-4 md:w-5 md:h-5 mr-2 text-blue-600" />
                   Método de Pago
                 </h4>
-                <div className="space-y-3">
-                  <label className="flex items-center p-4 bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-xl cursor-pointer hover:from-blue-100 hover:to-blue-200 transition-all duration-200">
+                <div className="space-y-2 md:space-y-3">
+                  <label className="flex items-center p-3 md:p-4 bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-lg md:rounded-xl cursor-pointer hover:from-blue-100 hover:to-blue-200 transition-all duration-200">
                     <input
                       type="radio"
                       name="payment"
                       value="card"
                       checked={paymentMethod === 'card'}
                       onChange={(e) => setPaymentMethod(e.target.value)}
-                      className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                      className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500 flex-shrink-0"
                     />
-                    <div className="ml-3 flex items-center">
-                      <CreditCard className="w-5 h-5 text-blue-600 mr-2" />
-                      <span className="text-sm font-medium text-gray-900">Tarjeta de Crédito/Débito</span>
+                    <div className="ml-3 flex items-center min-w-0 flex-1">
+                      <CreditCard className="w-4 h-4 md:w-5 md:h-5 text-blue-600 mr-2 flex-shrink-0" />
+                      <span className="text-xs md:text-sm font-medium text-gray-900 truncate">Tarjeta de Crédito/Débito</span>
                     </div>
                   </label>
                   
-                  <label className="flex items-center p-4 bg-gradient-to-br from-orange-50 to-orange-100 border border-orange-200 rounded-xl cursor-pointer hover:from-orange-100 hover:to-orange-200 transition-all duration-200">
+                  <label className="flex items-center p-3 md:p-4 bg-gradient-to-br from-orange-50 to-orange-100 border border-orange-200 rounded-lg md:rounded-xl cursor-pointer hover:from-orange-100 hover:to-orange-200 transition-all duration-200">
                     <input
                       type="radio"
                       name="payment"
                       value="paypal"
                       checked={paymentMethod === 'paypal'}
                       onChange={(e) => setPaymentMethod(e.target.value)}
-                      className="w-4 h-4 text-orange-600 border-gray-300 focus:ring-orange-500"
+                      className="w-4 h-4 text-orange-600 border-gray-300 focus:ring-orange-500 flex-shrink-0"
                     />
-                    <div className="ml-3 flex items-center">
-                      <div className="w-5 h-5 bg-orange-600 rounded mr-2 flex items-center justify-center">
+                    <div className="ml-3 flex items-center min-w-0 flex-1">
+                      <div className="w-4 h-4 md:w-5 md:h-5 bg-orange-600 rounded mr-2 flex items-center justify-center flex-shrink-0">
                         <span className="text-xs text-white font-bold">P</span>
                       </div>
-                      <span className="text-sm font-medium text-gray-900">PayPal</span>
+                      <span className="text-xs md:text-sm font-medium text-gray-900 truncate">PayPal</span>
                     </div>
                   </label>
                 </div>

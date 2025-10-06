@@ -124,33 +124,33 @@ export const EventManagementAdvanced: React.FC<EventManagementAdvancedProps> = (
   });
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 md:space-y-6 w-full">
       {/* Header removed - using parent header */}
 
       {/* Filters and Search */}
-      <div className="bg-gradient-to-br from-white to-indigo-100/98 backdrop-blur-lg shadow-xl border border-white/20 rounded-2xl p-6">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Buscar Eventos</label>
+      <div className="bg-gradient-to-br from-white to-indigo-100/98 backdrop-blur-lg shadow-xl border border-white/20 rounded-2xl p-3 sm:p-4 md:p-6 w-full">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6 w-full">
+          <div className="sm:col-span-2 lg:col-span-1">
+            <label className="block text-xs md:text-sm font-medium text-gray-700 mb-2">Buscar Eventos</label>
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
               <input
                 type="text"
-                placeholder="Buscar por título o descripción..."
+                placeholder="Buscar..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full pl-10 pr-4 py-2 text-sm border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
             </div>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Filtrar por Estado</label>
+            <label className="block text-xs md:text-sm font-medium text-gray-700 mb-2">Estado</label>
             <select
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value as any)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-3 py-2 text-sm border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
-              <option value="all">Todos los Estados</option>
+              <option value="all">Todos</option>
               <option value="draft">Borradores</option>
               <option value="published">Publicados</option>
               <option value="cancelled">Cancelados</option>
@@ -158,11 +158,11 @@ export const EventManagementAdvanced: React.FC<EventManagementAdvancedProps> = (
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Ordenar por</label>
+            <label className="block text-xs md:text-sm font-medium text-gray-700 mb-2">Ordenar</label>
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as any)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-3 py-2 text-sm border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
               <option value="date">Fecha</option>
               <option value="title">Título</option>
@@ -174,15 +174,15 @@ export const EventManagementAdvanced: React.FC<EventManagementAdvancedProps> = (
       </div>
 
       {/* Events Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4 md:gap-6 w-full">
         {sortedEvents.map((event) => {
           const StatusIcon = getStatusIcon(event.status);
           return (
-            <div key={event.id} className="bg-gradient-to-br from-white to-indigo-100/98 backdrop-blur-lg shadow-xl border border-white/20 rounded-2xl overflow-hidden hover:shadow-2xl transition-all duration-200">
+            <div key={event.id} className="bg-gradient-to-br from-white to-indigo-100/98 backdrop-blur-lg shadow-xl border border-white/20 rounded-2xl hover:shadow-2xl transition-all duration-200">
               {/* Event Image */}
-              <div className="relative h-48 bg-gradient-to-br from-blue-500 to-purple-600">
+              <div className="relative h-48 bg-gradient-to-br from-blue-500 to-purple-600 rounded-t-2xl">
                 {event.image ? (
-                  <img src={event.image} alt={event.title} className="w-full h-full object-cover" />
+                  <img src={event.image} alt={event.title} className="w-full h-full object-cover rounded-t-2xl" />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center">
                     <Image className="w-12 h-12 text-white/50" />
@@ -244,48 +244,52 @@ export const EventManagementAdvanced: React.FC<EventManagementAdvancedProps> = (
                 )}
 
                 {/* Action Buttons */}
-                <div className="flex flex-wrap gap-2">
+                <div className="grid grid-cols-2 gap-2">
                   <button
                     onClick={() => onViewEvent(event.id)}
-                    className="flex-1 inline-flex items-center justify-center px-3 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white text-sm rounded-xl hover:from-blue-600 hover:to-purple-700 transition-all duration-200"
+                    className="inline-flex items-center justify-center px-3 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white text-xs md:text-sm rounded-xl hover:from-blue-600 hover:to-purple-700 transition-all duration-200"
                   >
-                    <Eye className="w-4 h-4 mr-1" />
+                    <Eye className="w-3 h-3 md:w-4 md:h-4 mr-1" />
                     Ver
                   </button>
                   <button
                     onClick={() => onEditEvent(event.id)}
-                    className="flex-1 inline-flex items-center justify-center px-3 py-2 bg-gradient-to-r from-orange-500 to-red-600 text-white text-sm rounded-xl hover:from-orange-600 hover:to-red-700 transition-all duration-200"
+                    className="inline-flex items-center justify-center px-3 py-2 bg-gradient-to-r from-orange-500 to-red-600 text-white text-xs md:text-sm rounded-xl hover:from-orange-600 hover:to-red-700 transition-all duration-200"
                   >
-                    <Edit className="w-4 h-4 mr-1" />
+                    <Edit className="w-3 h-3 md:w-4 md:h-4 mr-1" />
                     Editar
                   </button>
                   <button
                     onClick={() => onDuplicateEvent(event.id)}
-                    className="inline-flex items-center justify-center px-3 py-2 bg-gradient-to-r from-gray-500 to-gray-600 text-white text-sm rounded-xl hover:from-gray-600 hover:to-gray-700 transition-all duration-200"
+                    className="inline-flex items-center justify-center px-3 py-2 bg-gradient-to-r from-gray-500 to-gray-600 text-white text-xs md:text-sm rounded-xl hover:from-gray-600 hover:to-gray-700 transition-all duration-200"
                     title="Duplicar evento"
                   >
-                    <CopyIcon className="w-4 h-4" />
+                    <CopyIcon className="w-3 h-3 md:w-4 md:h-4 mr-1" />
+                    <span className="hidden sm:inline">Duplicar</span>
                   </button>
                   <button
                     onClick={() => onUploadImage(event.id)}
-                    className="inline-flex items-center justify-center px-3 py-2 bg-gradient-to-r from-purple-500 to-pink-600 text-white text-sm rounded-xl hover:from-purple-600 hover:to-pink-700 transition-all duration-200"
+                    className="inline-flex items-center justify-center px-3 py-2 bg-gradient-to-r from-purple-500 to-pink-600 text-white text-xs md:text-sm rounded-xl hover:from-purple-600 hover:to-pink-700 transition-all duration-200"
                     title="Subir imagen"
                   >
-                    <Upload className="w-4 h-4" />
+                    <Upload className="w-3 h-3 md:w-4 md:h-4 mr-1" />
+                    <span className="hidden sm:inline">Imagen</span>
                   </button>
                   <button
                     onClick={() => onCustomizeEvent(event.id)}
-                    className="inline-flex items-center justify-center px-3 py-2 bg-gradient-to-r from-emerald-500 to-green-600 text-white text-sm rounded-xl hover:from-emerald-600 hover:to-green-700 transition-all duration-200"
+                    className="inline-flex items-center justify-center px-3 py-2 bg-gradient-to-r from-emerald-500 to-green-600 text-white text-xs md:text-sm rounded-xl hover:from-emerald-600 hover:to-green-700 transition-all duration-200"
                     title="Personalizar"
                   >
-                    <Settings className="w-4 h-4" />
+                    <Settings className="w-3 h-3 md:w-4 md:h-4 mr-1" />
+                    <span className="hidden sm:inline">Config</span>
                   </button>
                   <button
                     onClick={() => onDeleteEvent(event.id)}
-                    className="inline-flex items-center justify-center px-3 py-2 bg-gradient-to-r from-red-500 to-red-600 text-white text-sm rounded-xl hover:from-red-600 hover:to-red-700 transition-all duration-200"
+                    className="inline-flex items-center justify-center px-3 py-2 bg-gradient-to-r from-red-500 to-red-600 text-white text-xs md:text-sm rounded-xl hover:from-red-600 hover:to-red-700 transition-all duration-200"
                     title="Eliminar evento"
                   >
-                    <Trash2 className="w-4 h-4" />
+                    <Trash2 className="w-3 h-3 md:w-4 md:h-4 mr-1" />
+                    <span className="hidden sm:inline">Eliminar</span>
                   </button>
                 </div>
               </div>

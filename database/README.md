@@ -155,9 +155,6 @@ Esta carpeta contiene todos los scripts SQL necesarios para configurar la base d
 
 ---
 
-
----
-
 ### Paso 3: Verificar la Instalación
 
 Ejecuta esta consulta para verificar que todo está correcto:

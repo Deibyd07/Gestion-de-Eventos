@@ -116,23 +116,21 @@ npm install
 yarn install
 ```
 
-### 3. Configurar variables de entorno
+### 3. Configuración de Supabase
+
+
+1. Crea un nuevo proyecto en [Supabase](https://supabase.com)
+2. Obtén las credenciales del proyecto:
+   - Project URL
+   - Anon/Public Key
+
+### 4. Configurar variables de entorno
 
 Crea un archivo `.env` en la raíz del proyecto:
 
 ```env
 VITE_SUPABASE_URL=tu_supabase_url
 VITE_SUPABASE_ANON_KEY=tu_supabase_anon_key
-```
-
-### 4. Configurar base de datos
-
-Ejecuta los scripts SQL en orden en el SQL Editor de Supabase:
-
-```bash
-1. database/schema.sql
-2. database/solucion_completa_contraseñas.sql
-3. database/datos_ejemplo.sql (opcional - solo para desarrollo)
 ```
 
 ### 5. Iniciar el servidor de desarrollo
@@ -144,21 +142,6 @@ yarn dev
 ```
 
 La aplicación estará disponible en `http://localhost:5173`
-
----
-
-## ⚙️ Configuración
-
-### Configuración de Supabase
-
-1. Crea un nuevo proyecto en [Supabase](https://supabase.com)
-2. Obtén las credenciales del proyecto:
-   - Project URL
-   - Anon/Public Key
-3. Ejecuta los scripts SQL de la carpeta `database/`
-4. Configura las políticas RLS para seguridad
-
-Ver documentación completa en: `database/README.md` (próximamente)
 
 ### Configuración de Pagos
 

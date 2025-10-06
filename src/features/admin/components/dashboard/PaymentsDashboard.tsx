@@ -60,7 +60,7 @@ export const PaymentsDashboard: React.FC = () => {
         status: 'completed',
         method: 'credit_card',
         customer: 'Juan Pérez',
-        event: 'Feria Agropecuaria Zarzal 2024',
+        event: 'Feria Agropecuaria Nacional 2024',
         date: '2024-11-28T10:30:00Z',
         fee: 4500,
         netAmount: 145500,

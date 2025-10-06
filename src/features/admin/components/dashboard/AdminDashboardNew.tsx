@@ -122,7 +122,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       {
         id: '2',
         type: 'event_created' as const,
-        description: 'Evento creado: "Feria Agropecuaria Zarzal 2024"',
+        description: 'Evento creado: "Feria Agropecuaria Nacional 2024"',
         timestamp: 'Hace 4 horas',
         severity: 'medium' as const
       },
@@ -170,11 +170,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       tablet: 5
     },
     locationStats: {
-      'Zarzal': 45,
-      'Cali': 25,
-      'Palmira': 15,
-      'Tulua': 10,
-      'Otros': 5
+      'Bogotá': 35,
+      'Medellín': 25,
+      'Cali': 20,
+      'Barranquilla': 12,
+      'Otras ciudades': 8
     }
   };
 

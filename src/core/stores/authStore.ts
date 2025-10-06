@@ -78,7 +78,7 @@ export const useAuthStore = create<AuthState>()(
             avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${email}`,
             preferences: {
               categories: [],
-              location: userData.ubicacion || userData.location || 'Zarzal, Valle del Cauca'
+              location: userData.ubicacion || userData.location || 'Colombia'
             }
           };
 
@@ -100,7 +100,7 @@ export const useAuthStore = create<AuthState>()(
             nombre: userData.name,
             contraseña: userData.password,
             tipo_usuario: 'attendee' as any,
-            ubicacion: 'Zarzal, Valle del Cauca'
+            ubicacion: 'Colombia'
           });
 
           const user: User = {
@@ -111,7 +111,7 @@ export const useAuthStore = create<AuthState>()(
             avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${userData.email}`,
             preferences: {
               categories: [],
-              location: newUserData.ubicacion || 'Zarzal, Valle del Cauca'
+              location: newUserData.ubicacion || 'Colombia'
             }
           };
 

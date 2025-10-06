@@ -33,7 +33,12 @@ export function EventFilters() {
           'Medellín, Colombia',
           'Cali, Colombia',
           'Barranquilla, Colombia',
-          'Cartagena, Colombia'
+          'Cartagena, Colombia',
+          'Bucaramanga, Colombia',
+          'Pereira, Colombia',
+          'Santa Marta, Colombia',
+          'Manizales, Colombia',
+          'Armenia, Colombia'
         ]);
       }
     };

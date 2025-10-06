@@ -36,7 +36,7 @@ Esta carpeta contiene todos los scripts SQL necesarios para configurar la base d
 
 ---
 
-### 3. `datos_zarzal.sql` 🎭 **OPCIONAL**
+### 3. `datos_ejemplo.sql` 🎭 **OPCIONAL**
 
 **Descripción**: Datos de ejemplo para desarrollo y testing.
 
@@ -140,7 +140,7 @@ Esta carpeta contiene todos los scripts SQL necesarios para configurar la base d
    - Ejecuta el script
    - Verifica que no haya errores
 
-4. **Ejecutar `datos_zarzal.sql`** (opcional):
+4. **Ejecutar `datos_ejemplo.sql`** (opcional):
    - Solo si estás en desarrollo
    - Nueva query con el contenido
    - Ejecuta el script
@@ -155,19 +155,6 @@ Esta carpeta contiene todos los scripts SQL necesarios para configurar la base d
 
 ---
 
-#### Opción B: Desde la Terminal (psql)
-
-```bash
-# Conectar a la base de datos de Supabase
-psql "postgresql://postgres:[TU-PASSWORD]@[TU-HOST]:5432/postgres"
-
-# Ejecutar scripts en orden
-\i schema.sql
-\i solucion_completa_contraseñas.sql
-\i datos_zarzal.sql
-\i add_nombre_evento_to_tipos_entrada.sql
-\i update_tipos_entrada_with_nombre_evento.sql
-```
 
 ---
 
@@ -282,27 +269,19 @@ El esquema incluye políticas de Row Level Security (RLS):
 
 ## 👥 Usuarios de Prueba
 
-Si ejecutaste `datos_zarzal.sql`, estos usuarios están disponibles:
+Si ejecutaste `datos_ejemplo.sql`, estos usuarios están disponibles:
 
 ### 🛡️ Administrador
 ```
-Email: admin@eventoszarzal.com
+Email: admin@eventhub.co
 Password: admin123
 Rol: administrador
 ```
 
 ### 🎭 Organizadores
 ```
-Email: maria.gonzalez@eventoszarzal.com
-Password: maria123
-Rol: organizador
-
-Email: carlos.ruiz@eventoszarzal.com
-Password: carlos123
-Rol: organizador
-
-Email: ana.lopez@eventoszarzal.com
-Password: ana123
+Email: organizador@eventhub.co
+Password: organizador123
 Rol: organizador
 ```
 

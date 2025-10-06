@@ -428,7 +428,7 @@ export function LoginRequiredModal({
                       value={location}
                       onChange={(e) => setLocation(e.target.value)}
                       className="w-full pl-9 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200 text-sm"
-                      placeholder="Zarzal, Valle del Cauca"
+                      placeholder="Ej: Bogotá, Medellín, Cali..."
                     />
                   </div>
                 </div>

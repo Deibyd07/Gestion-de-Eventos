@@ -346,8 +346,10 @@ export function AdminPage() {
                     { type: 'VIP', sales: 50, revenue: 1500000 }
                   ],
                   geographicData: [
-                    { location: 'Zarzal', events: 15, revenue: 3000000 },
-                    { location: 'Cartago', events: 8, revenue: 1500000 }
+                    { location: 'Bogotá', events: 45, revenue: 15000000 },
+                    { location: 'Medellín', events: 32, revenue: 12000000 },
+                    { location: 'Cali', events: 28, revenue: 10000000 },
+                    { location: 'Barranquilla', events: 20, revenue: 8000000 }
                   ]
                 }}
                 onExportReport={(format) => console.log('Exportando reporte:', format)}

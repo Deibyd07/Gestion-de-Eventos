@@ -76,12 +76,12 @@ export function HomePage() {
     {
       icon: Calendar,
       title: 'Gestión Completa',
-      description: 'Crea, edita y gestiona todos tus eventos en Zarzal y el Valle del Cauca desde una sola plataforma intuitiva.'
+      description: 'Crea, edita y gestiona todos tus eventos en Colombia desde una sola plataforma intuitiva y profesional.'
     },
     {
       icon: Users,
-      title: 'Conexión Local',
-      description: 'Conecta con la comunidad zarzaleña y descubre eventos increíbles en tu región.'
+      title: 'Conexión Nacional',
+      description: 'Conecta con comunidades de todo el país y descubre eventos increíbles en cada rincón de Colombia.'
     },
     {
       icon: Shield,
@@ -91,28 +91,28 @@ export function HomePage() {
     {
       icon: Star,
       title: 'Experiencias Únicas',
-      description: 'Desde ferias agropecuarias hasta festivales de música vallenata, encuentra tu próxima aventura en Zarzal.'
+      description: 'Desde conciertos en Bogotá hasta ferias en Medellín, encuentra tu próxima aventura en Colombia.'
     }
   ];
 
   const testimonials = [
     {
       name: 'María González',
-      role: 'Organizadora de eventos en Zarzal',
+      role: 'Organizadora de eventos en Bogotá',
       image: 'https://api.dicebear.com/7.x/avataaars/svg?seed=maria',
-      quote: 'EventHub transformó completamente la forma en que gestiono mis eventos en Zarzal. ¡Increíble!'
+      quote: 'EventHub transformó completamente la forma en que gestiono mis eventos a nivel nacional. ¡Increíble!'
     },
     {
       name: 'Carlos Ruiz',
-      role: 'Agricultor del Valle del Cauca',
+      role: 'Productor de eventos en Medellín',
       image: 'https://api.dicebear.com/7.x/avataaars/svg?seed=carlos',
-      quote: 'La mejor plataforma para encontrar ferias agropecuarias en la región. La interfaz es perfecta.'
+      quote: 'La mejor plataforma para gestionar eventos en todo el país. La interfaz es perfecta y muy intuitiva.'
     },
     {
       name: 'Ana López',
       role: 'Productora de eventos culturales',
       image: 'https://api.dicebear.com/7.x/avataaars/svg?seed=ana',
-      quote: 'Organicé el Festival de Música Vallenata de Zarzal usando EventHub. Los resultados superaron todas mis expectativas.'
+      quote: 'Organicé festivales en Cali, Cartagena y Barranquilla usando EventHub. Los resultados superaron todas mis expectativas.'
     }
   ];
 
@@ -150,13 +150,13 @@ export function HomePage() {
             <h1 className="text-5xl md:text-7xl font-bold text-white leading-tight">
               Eventos en
               <span className="block bg-gradient-to-r from-indigo-400 via-purple-400 to-blue-500 bg-clip-text text-transparent">
-                Zarzal
+                Colombia
               </span>
             </h1>
             
             <p className="text-xl md:text-2xl text-blue-100 max-w-3xl mx-auto leading-relaxed">
-              La plataforma para eventos locales en Zarzal, Valle del Cauca. 
-              Conecta con tu comunidad y descubre eventos únicos en tu región.
+              La plataforma nacional para eventos en todo Colombia. 
+              Conecta con comunidades de todo el país y descubre eventos únicos.
             </p>
           
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-8 pointer-events-auto">
@@ -185,19 +185,19 @@ export function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
             <div className="text-center bg-gradient-to-br from-white to-indigo-100/98 backdrop-blur-lg shadow-xl border border-white/20 rounded-2xl p-6 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
-              <div className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">50+</div>
-              <div className="text-gray-700 font-semibold">Eventos Locales</div>
+              <div className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">1000+</div>
+              <div className="text-gray-700 font-semibold">Eventos Nacionales</div>
             </div>
             <div className="text-center bg-gradient-to-br from-white to-indigo-100/98 backdrop-blur-lg shadow-xl border border-white/20 rounded-2xl p-6 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
-              <div className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent mb-2">500+</div>
-              <div className="text-gray-700 font-semibold">Zarzaleños</div>
+              <div className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent mb-2">50K+</div>
+              <div className="text-gray-700 font-semibold">Colombianos</div>
             </div>
             <div className="text-center bg-gradient-to-br from-white to-indigo-100/98 backdrop-blur-lg shadow-xl border border-white/20 rounded-2xl p-6 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
               <div className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent mb-2">95%</div>
               <div className="text-gray-700 font-semibold">Satisfacción</div>
             </div>
             <div className="text-center bg-gradient-to-br from-white to-indigo-100/98 backdrop-blur-lg shadow-xl border border-white/20 rounded-2xl p-6 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
-              <div className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent mb-2">Local</div>
+              <div className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent mb-2">24/7</div>
               <div className="text-gray-700 font-semibold">Soporte</div>
             </div>
           </div>
@@ -437,12 +437,12 @@ export function HomePage() {
         <div className="absolute inset-0 bg-black/30 pointer-events-none" style={{ zIndex: 1 }}></div>
         <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center pointer-events-none" style={{ zIndex: 2 }}>
           <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
-            Conectando Zarzal a través de eventos
+            Conectando a Colombia a través de eventos
           </h2>
           <p className="text-xl text-blue-100 mb-8 leading-relaxed">
-            EventHub es la plataforma que une a la comunidad zarzaleña. 
-            Desde ferias agropecuarias hasta festivales culturales, 
-            aquí encuentras todos los eventos que hacen vibrar nuestro municipio.
+            EventHub es la plataforma que une a las comunidades de todo el país. 
+            Desde conciertos masivos hasta festivales culturales, 
+            aquí encuentras todos los eventos que hacen vibrar a Colombia.
           </p>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-12 pointer-events-auto">
@@ -452,7 +452,7 @@ export function HomePage() {
               </div>
               <h3 className="text-lg font-semibold text-white mb-2">Descubre Eventos</h3>
               <p className="text-blue-100 text-sm">
-                Encuentra eventos increíbles en Zarzal y el Valle del Cauca
+                Encuentra eventos increíbles en todo Colombia, desde Bogotá hasta la Costa
               </p>
             </div>
             
@@ -494,7 +494,7 @@ export function HomePage() {
         isOpen={showRegisterModal}
         onClose={() => setShowRegisterModal(false)}
         title="Crear Cuenta Gratis"
-        message="Únete a la comunidad de EventHub y descubre eventos increíbles en Zarzal"
+        message="Únete a la comunidad de EventHub y descubre eventos increíbles en toda Colombia"
         action="Crear cuenta"
         defaultToRegister={true}
       />

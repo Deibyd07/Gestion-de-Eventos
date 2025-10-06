@@ -38,6 +38,7 @@ interface EventState {
   selectedCategory: string;
   selectedLocation: string;
   priceRange: [number, number];
+  dateRange: [string, string];
   loading: boolean;
   error: string | null;
   setEvents: (events: Event[]) => void;
@@ -45,6 +46,8 @@ interface EventState {
   setSelectedCategory: (category: string) => void;
   setSelectedLocation: (location: string) => void;
   setPriceRange: (range: [number, number]) => void;
+  setDateRange: (range: [string, string]) => void;
+  clearFilters: () => void;
   filterEvents: () => void;
   getEventById: (id: string) => Event | undefined;
   loadEvents: () => Promise<void>;
@@ -161,6 +164,24 @@ const mockEvents: Event[] = [
 
 // Función para convertir eventos de Supabase al formato de la aplicación
 const convertSupabaseEventToEvent = (supabaseEvent: any): Event => {
+  // Buscar la entrada general para usar como precio por defecto
+  const tiposEntrada = supabaseEvent.tipos_entrada || [];
+  console.log(`Convirtiendo evento ${supabaseEvent.titulo}, tipos_entrada:`, tiposEntrada);
+  
+  // Buscar la entrada general (por defecto)
+  const entradaGeneral = tiposEntrada.find((tipo: any) => 
+    tipo.nombre_tipo.toLowerCase().includes('general') || 
+    tipo.nombre_tipo.toLowerCase().includes('entrada general') ||
+    tipo.nombre_tipo.toLowerCase().includes('acceso general')
+  );
+  
+  // Si no hay entrada general, usar la entrada más barata
+  const entradaPorDefecto = entradaGeneral || tiposEntrada.reduce((min: any, tipo: any) => 
+    (tipo.precio || 0) < (min.precio || 0) ? tipo : min, tiposEntrada[0]
+  );
+  
+  const precioPorDefecto = entradaPorDefecto?.precio || 0;
+
   return {
     id: supabaseEvent.id,
     title: supabaseEvent.titulo,
@@ -170,14 +191,14 @@ const convertSupabaseEventToEvent = (supabaseEvent: any): Event => {
     time: supabaseEvent.hora_evento,
     location: supabaseEvent.ubicacion,
     category: supabaseEvent.categoria,
-    price: supabaseEvent.precio || 0,
+    price: precioPorDefecto, // Usar el precio de la entrada general
     maxAttendees: supabaseEvent.capacidad_maxima || 100,
     currentAttendees: supabaseEvent.asistentes_actuales || 0,
     organizerId: supabaseEvent.organizador_id,
     organizerName: supabaseEvent.nombre_organizador || 'Organizador',
     status: supabaseEvent.estado || 'upcoming',
     tags: supabaseEvent.tags || [],
-    ticketTypes: supabaseEvent.tipos_boletas || []
+    ticketTypes: tiposEntrada
   };
 };
 
@@ -190,6 +211,7 @@ export const useEventStore = create<EventState>((set, get) => ({
   selectedCategory: 'Todos',
   selectedLocation: '',
   priceRange: [0, 500000],
+  dateRange: ['', ''],
   loading: false,
   error: null,
 
@@ -215,24 +237,146 @@ export const useEventStore = create<EventState>((set, get) => ({
     get().filterEvents();
   },
 
-  filterEvents: () => {
-    const { events, searchQuery, selectedCategory, selectedLocation, priceRange } = get();
-    
-    let filtered = events.filter(event => {
-      const matchesSearch = event.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                           event.description.toLowerCase().includes(searchQuery.toLowerCase());
-      
-      const matchesCategory = selectedCategory === 'Todos' || event.category === selectedCategory;
-      
-      const matchesLocation = selectedLocation === '' || 
-                             event.location.toLowerCase().includes(selectedLocation.toLowerCase());
-      
-      const matchesPrice = event.price >= priceRange[0] && event.price <= priceRange[1];
-      
-      return matchesSearch && matchesCategory && matchesLocation && matchesPrice;
+  setDateRange: (range) => {
+    set({ dateRange: range });
+    get().filterEvents();
+  },
+
+  clearFilters: () => {
+    set({ 
+      searchQuery: '',
+      selectedCategory: 'Todos',
+      selectedLocation: '',
+      priceRange: [0, 500000],
+      dateRange: ['', '']
     });
+    get().filterEvents();
+  },
+
+  filterEvents: async () => {
+    const { searchQuery, selectedCategory, selectedLocation, priceRange, dateRange } = get();
     
-    set({ filteredEvents: filtered });
+    try {
+      set({ loading: true, error: null });
+      
+      // Construir filtros para la consulta a Supabase
+      const filtros: any = {};
+      
+      // Solo agregar filtros si tienen valores válidos
+      if (searchQuery && searchQuery.trim()) {
+        filtros.busqueda = searchQuery.trim();
+      }
+      
+      if (selectedCategory && selectedCategory !== 'Todos') {
+        filtros.categoria = selectedCategory;
+      }
+      
+      if (selectedLocation && selectedLocation.trim()) {
+        filtros.ubicacion = selectedLocation.trim();
+      }
+      
+      // Filtros de precio - aplicar siempre
+      // Si el usuario establece un rango, aplicarlo exactamente como lo especifica
+      if (priceRange[0] !== undefined) {
+        filtros.precioMinimo = priceRange[0];
+      }
+      if (priceRange[1] !== undefined) {
+        filtros.precioMaximo = priceRange[1];
+      }
+      
+      if (dateRange[0] && dateRange[0].trim()) {
+        filtros.fechaDesde = dateRange[0];
+        console.log('Filtro fecha desde:', dateRange[0]);
+      }
+      
+      if (dateRange[1] && dateRange[1].trim()) {
+        filtros.fechaHasta = dateRange[1];
+        console.log('Filtro fecha hasta:', dateRange[1]);
+      }
+      
+      // Debug: mostrar filtros aplicados
+      console.log('Filtros aplicados:', filtros);
+      console.log('Rango de precio actual:', priceRange);
+      
+    // Obtener eventos filtrados desde Supabase (sin filtros de precio)
+    const filtrosSinPrecio = { ...filtros };
+    delete filtrosSinPrecio.precioMinimo;
+    delete filtrosSinPrecio.precioMaximo;
+    
+    console.log('Filtros enviados a Supabase:', filtrosSinPrecio);
+    const supabaseEvents = await ServicioEventos.obtenerEventos(filtrosSinPrecio);
+    console.log('Eventos obtenidos de Supabase:', supabaseEvents);
+      
+      if (supabaseEvents && supabaseEvents.length > 0) {
+        console.log('Convirtiendo eventos...');
+        const convertedEvents = supabaseEvents.map(convertSupabaseEventToEvent);
+        console.log('Eventos convertidos:', convertedEvents);
+        
+        // Filtrar por precio en el frontend
+        let eventosFiltrados = convertedEvents;
+        
+        if (filtros.precioMinimo !== undefined || filtros.precioMaximo !== undefined) {
+          eventosFiltrados = convertedEvents.filter(evento => {
+            // Verificar si el evento tiene tipos de entrada
+            if (!evento.ticketTypes || evento.ticketTypes.length === 0) {
+              return false; // Si no tiene tipos de entrada, no mostrar
+            }
+            
+            // Buscar la entrada general (por defecto)
+            const entradaGeneral = evento.ticketTypes.find(tipo => 
+              tipo.nombre_tipo.toLowerCase().includes('general') || 
+              tipo.nombre_tipo.toLowerCase().includes('entrada general') ||
+              tipo.nombre_tipo.toLowerCase().includes('acceso general')
+            );
+            
+            // Si no hay entrada general, usar la entrada más barata
+            const entradaFiltro = entradaGeneral || evento.ticketTypes.reduce((min, tipo) => 
+              (tipo.precio || 0) < (min.precio || 0) ? tipo : min
+            );
+            
+            const precioEntradaFiltro = entradaFiltro?.precio || 0;
+            
+            console.log(`Evento: ${evento.title}, Entrada filtro: ${entradaFiltro?.nombre_tipo}, Precio: ${precioEntradaFiltro}`);
+            console.log(`Filtros aplicados - Min: ${filtros.precioMinimo}, Max: ${filtros.precioMaximo}`);
+            
+            // Caso especial: Solo Gratis (rango [0, 0])
+            if (filtros.precioMinimo === 0 && filtros.precioMaximo === 0) {
+              const esGratis = precioEntradaFiltro === 0;
+              console.log(`Solo Gratis - Es gratis: ${esGratis}`);
+              return esGratis;
+            }
+            
+            let cumpleFiltro = true;
+            
+            // Filtro de precio mínimo: la entrada general debe tener precio >= precioMinimo
+            if (filtros.precioMinimo !== undefined) {
+              cumpleFiltro = cumpleFiltro && precioEntradaFiltro >= filtros.precioMinimo;
+            }
+            
+            // Filtro de precio máximo: la entrada general debe tener precio <= precioMaximo
+            if (filtros.precioMaximo !== undefined) {
+              cumpleFiltro = cumpleFiltro && precioEntradaFiltro <= filtros.precioMaximo;
+            }
+            
+            console.log(`Cumple filtro: ${cumpleFiltro}`);
+            return cumpleFiltro;
+          });
+        }
+        
+        set({ filteredEvents: eventosFiltrados });
+      } else {
+        // Si no hay resultados, mostrar array vacío
+        set({ filteredEvents: [] });
+      }
+    } catch (error) {
+      console.error('Error filtering events:', error);
+      set({ error: 'Error al filtrar eventos' });
+      // En caso de error, mostrar eventos sin filtrar
+      const { events } = get();
+      set({ filteredEvents: events });
+    } finally {
+      set({ loading: false });
+    }
   },
 
   getEventById: (id) => {
@@ -242,11 +386,21 @@ export const useEventStore = create<EventState>((set, get) => ({
   loadEvents: async () => {
     try {
       set({ loading: true, error: null });
-      const supabaseEvents = await ServicioEventos.obtenerEventos();
+      
+      // Cargar eventos, categorías y ubicaciones en paralelo
+      const [supabaseEvents, categoriasDB, ubicacionesDB] = await Promise.all([
+        ServicioEventos.obtenerEventos(),
+        ServicioEventos.obtenerCategorias().catch(() => []),
+        ServicioEventos.obtenerUbicaciones().catch(() => [])
+      ]);
       
       if (supabaseEvents && supabaseEvents.length > 0) {
         const convertedEvents = supabaseEvents.map(convertSupabaseEventToEvent);
-        set({ events: convertedEvents, filteredEvents: convertedEvents });
+        set({ 
+          events: convertedEvents, 
+          filteredEvents: convertedEvents,
+          categories: ['Todos', ...categoriasDB]
+        });
       } else {
         // Fallback a eventos mock si no hay datos en Supabase
         set({ events: mockEvents, filteredEvents: mockEvents });

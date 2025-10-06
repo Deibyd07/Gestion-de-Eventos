@@ -18,13 +18,22 @@ export function EventsPage() {
     selectedCategory,
     categories,
     loading,
-    loadEvents
+    loadEvents,
+    filterEvents,
+    setPriceRange,
+    setDateRange,
+    clearFilters
   } = useEventStore();
   const { items } = useCartStore();
 
   useEffect(() => {
     loadEvents();
   }, [loadEvents]);
+
+  // Aplicar filtros cuando cambien
+  useEffect(() => {
+    filterEvents();
+  }, [filterEvents]);
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
@@ -44,6 +53,28 @@ export function EventsPage() {
 
   const handleViewModeChange = (mode: 'grid' | 'list') => {
     setViewMode(mode);
+  };
+
+  // Funciones para filtros rápidos
+  const handleTodayFilter = () => {
+    const today = new Date().toISOString().split('T')[0];
+    setDateRange([today, today]);
+  };
+
+  const handleNearMeFilter = () => {
+    // Por ahora, mostrar todos los eventos
+    // TODO: Implementar geolocalización
+    clearFilters();
+  };
+
+  const handleFreeFilter = () => {
+    setPriceRange([0, 0]);
+  };
+
+  const handleFeaturedFilter = () => {
+    // Por ahora, mostrar todos los eventos
+    // TODO: Implementar lógica de eventos destacados
+    clearFilters();
   };
 
   const sortedEvents = [...filteredEvents].sort((a, b) => {
@@ -104,19 +135,31 @@ export function EventsPage() {
 
             {/* Quick Filters */}
             <div className="flex flex-wrap gap-2 lg:gap-3">
-              <button className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all duration-200 shadow-sm">
+              <button 
+                onClick={handleTodayFilter}
+                className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all duration-200 shadow-sm"
+              >
                 <Calendar className="w-4 h-4" />
                 <span className="text-sm font-medium">Hoy</span>
               </button>
-              <button className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl hover:from-green-600 hover:to-green-700 transition-all duration-200 shadow-sm">
+              <button 
+                onClick={handleNearMeFilter}
+                className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl hover:from-green-600 hover:to-green-700 transition-all duration-200 shadow-sm"
+              >
                 <MapPin className="w-4 h-4" />
                 <span className="text-sm font-medium">Cerca de mí</span>
               </button>
-              <button className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-xl hover:from-purple-600 hover:to-purple-700 transition-all duration-200 shadow-sm">
+              <button 
+                onClick={handleFreeFilter}
+                className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-xl hover:from-purple-600 hover:to-purple-700 transition-all duration-200 shadow-sm"
+              >
                 <Users className="w-4 h-4" />
                 <span className="text-sm font-medium">Gratuitos</span>
               </button>
-              <button className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-yellow-500 to-yellow-600 text-white rounded-xl hover:from-yellow-600 hover:to-yellow-700 transition-all duration-200 shadow-sm">
+              <button 
+                onClick={handleFeaturedFilter}
+                className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-yellow-500 to-yellow-600 text-white rounded-xl hover:from-yellow-600 hover:to-yellow-700 transition-all duration-200 shadow-sm"
+              >
                 <Star className="w-4 h-4" />
                 <span className="text-sm font-medium">Destacados</span>
               </button>

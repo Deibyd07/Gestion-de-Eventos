@@ -1,5 +1,7 @@
-import { MapPin, DollarSign, Calendar, Filter, X, RefreshCw } from 'lucide-react';
+import { MapPin, DollarSign, Calendar, Filter, X, RefreshCw, Clock } from 'lucide-react';
 import { useEventStore } from '../../../core/stores/eventStore';
+import { useEffect, useState } from 'react';
+import { ServicioEventos } from '../../../core/services/supabaseServiceEspanol';
 
 export function EventFilters() {
   const {
@@ -9,26 +11,46 @@ export function EventFilters() {
     selectedLocation,
     setSelectedLocation,
     priceRange,
-    setPriceRange
+    setPriceRange,
+    dateRange,
+    setDateRange,
+    loadEvents
   } = useEventStore();
 
-  const locations = [
-    'Bogotá, Colombia',
-    'Medellín, Colombia',
-    'Cali, Colombia',
-    'Barranquilla, Colombia',
-    'Cartagena, Colombia',
-    'Bucaramanga, Colombia',
-    'Pereira, Colombia',
-    'Santa Marta, Colombia',
-    'Manizales, Colombia',
-    'Armenia, Colombia'
-  ];
+  const [locations, setLocations] = useState<string[]>([]);
+
+  // Cargar ubicaciones dinámicamente
+  useEffect(() => {
+    const cargarUbicaciones = async () => {
+      try {
+        const ubicacionesDB = await ServicioEventos.obtenerUbicaciones();
+        setLocations(ubicacionesDB);
+      } catch (error) {
+        console.error('Error loading locations:', error);
+        // Fallback a ubicaciones por defecto
+        setLocations([
+          'Bogotá, Colombia',
+          'Medellín, Colombia',
+          'Cali, Colombia',
+          'Barranquilla, Colombia',
+          'Cartagena, Colombia',
+          'Bucaramanga, Colombia',
+          'Pereira, Colombia',
+          'Santa Marta, Colombia',
+          'Manizales, Colombia',
+          'Armenia, Colombia'
+        ]);
+      }
+    };
+    
+    cargarUbicaciones();
+  }, []);
 
   const clearFilters = () => {
     setSelectedCategory('Todos');
     setSelectedLocation('');
     setPriceRange([0, 500000]);
+    setDateRange(['', '']);
   };
 
   return (
@@ -53,7 +75,7 @@ export function EventFilters() {
         </button>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         {/* Categories Filter */}
         <div className="bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-xl p-5 h-full flex flex-col">
           <label className="text-sm font-semibold text-gray-900 mb-4 flex items-center">
@@ -142,7 +164,7 @@ export function EventFilters() {
                   onClick={() => setPriceRange([0, 0])}
                   className="px-3 py-2 bg-green-500 text-white rounded-lg text-xs font-semibold hover:bg-green-600 transition-all duration-200 shadow-sm hover:shadow-md"
                 >
-                  Gratis
+                  Solo Gratis
                 </button>
                 <button
                   onClick={() => setPriceRange([0, 50000])}
@@ -161,6 +183,70 @@ export function EventFilters() {
                   className="px-3 py-2 bg-orange-500 text-white rounded-lg text-xs font-semibold hover:bg-orange-600 transition-all duration-200 shadow-sm hover:shadow-md"
                 >
                   $100k - $200k
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Date Range Filter */}
+        <div className="bg-gradient-to-br from-orange-50 to-orange-100 border border-orange-200 rounded-xl p-5 h-full flex flex-col">
+          <label className="text-sm font-semibold text-gray-900 mb-4 flex items-center">
+            <Clock className="w-4 h-4 mr-2 text-orange-600" />
+            Rango de Fechas
+          </label>
+          <div className="space-y-3 flex-grow">
+            <div>
+              <label className="block text-xs font-medium text-orange-700 mb-1.5">Desde</label>
+              <input
+                type="date"
+                value={dateRange[0]}
+                onChange={(e) => setDateRange([e.target.value, dateRange[1]])}
+                className="w-full px-3 py-2 border-2 border-orange-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-sm bg-white shadow-sm font-semibold text-gray-900 hover:border-orange-400 transition-all duration-200"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-orange-700 mb-1.5">Hasta</label>
+              <input
+                type="date"
+                value={dateRange[1]}
+                onChange={(e) => setDateRange([dateRange[0], e.target.value])}
+                className="w-full px-3 py-2 border-2 border-orange-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-sm bg-white shadow-sm font-semibold text-gray-900 hover:border-orange-400 transition-all duration-200"
+              />
+            </div>
+            <div className="pt-2">
+              <p className="text-xs font-semibold text-gray-700 mb-2">Filtros rápidos:</p>
+              <div className="grid grid-cols-1 gap-2">
+                <button
+                  onClick={() => {
+                    const today = new Date().toISOString().split('T')[0];
+                    setDateRange([today, '']);
+                  }}
+                  className="px-3 py-2 bg-orange-500 text-white rounded-lg text-xs font-semibold hover:bg-orange-600 transition-all duration-200 shadow-sm hover:shadow-md"
+                >
+                  Hoy
+                </button>
+                <button
+                  onClick={() => {
+                    const today = new Date();
+                    const tomorrow = new Date(today);
+                    tomorrow.setDate(tomorrow.getDate() + 1);
+                    setDateRange([today.toISOString().split('T')[0], tomorrow.toISOString().split('T')[0]]);
+                  }}
+                  className="px-3 py-2 bg-blue-500 text-white rounded-lg text-xs font-semibold hover:bg-blue-600 transition-all duration-200 shadow-sm hover:shadow-md"
+                >
+                  Esta semana
+                </button>
+                <button
+                  onClick={() => {
+                    const today = new Date();
+                    const nextWeek = new Date(today);
+                    nextWeek.setDate(nextWeek.getDate() + 7);
+                    setDateRange([today.toISOString().split('T')[0], nextWeek.toISOString().split('T')[0]]);
+                  }}
+                  className="px-3 py-2 bg-green-500 text-white rounded-lg text-xs font-semibold hover:bg-green-600 transition-all duration-200 shadow-sm hover:shadow-md"
+                >
+                  Próximo mes
                 </button>
               </div>
             </div>
@@ -190,7 +276,18 @@ export function EventFilters() {
               ${priceRange[0].toLocaleString()} - ${priceRange[1].toLocaleString()}
             </span>
           )}
-          {(selectedCategory !== 'Todos' || selectedLocation || priceRange[0] !== 0 || priceRange[1] !== 500000) && (
+          {(dateRange[0] || dateRange[1]) && (
+            <span className="inline-flex items-center px-3 py-1 bg-orange-100 text-orange-800 rounded-full text-xs font-medium">
+              <Clock className="w-3 h-3 mr-1" />
+              {dateRange[0] && dateRange[1] 
+                ? `${dateRange[0]} - ${dateRange[1]}`
+                : dateRange[0] 
+                  ? `Desde ${dateRange[0]}`
+                  : `Hasta ${dateRange[1]}`
+              }
+            </span>
+          )}
+          {(selectedCategory !== 'Todos' || selectedLocation || priceRange[0] !== 0 || priceRange[1] !== 500000 || dateRange[0] || dateRange[1]) && (
             <button
               onClick={clearFilters}
               className="inline-flex items-center px-3 py-1 bg-gray-200 text-gray-700 rounded-full text-xs font-medium hover:bg-gray-300 transition-all duration-200"

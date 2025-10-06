@@ -175,6 +175,8 @@ export class ServicioEventos {
     fechaDesde?: string;
     fechaHasta?: string;
     busqueda?: string;
+    precioMinimo?: number;
+    precioMaximo?: number;
   }) {
     let consulta = supabase
       .from('eventos')
@@ -195,10 +197,12 @@ export class ServicioEventos {
     }
 
     if (filtros?.fechaDesde) {
+      console.log('Aplicando filtro fecha desde:', filtros.fechaDesde);
       consulta = consulta.gte('fecha_evento', filtros.fechaDesde);
     }
 
     if (filtros?.fechaHasta) {
+      console.log('Aplicando filtro fecha hasta:', filtros.fechaHasta);
       consulta = consulta.lte('fecha_evento', filtros.fechaHasta);
     }
 
@@ -206,9 +210,51 @@ export class ServicioEventos {
       consulta = consulta.or(`titulo.ilike.%${filtros.busqueda}%,descripcion.ilike.%${filtros.busqueda}%`);
     }
 
+    // Filtros de precio - necesitamos filtrar por los tipos de entrada
+    if (filtros?.precioMinimo !== undefined || filtros?.precioMaximo !== undefined) {
+      // Para filtrar por precio, necesitamos usar una subconsulta o filtrar después
+      // Por ahora, vamos a obtener todos los eventos y filtrar en el frontend
+      // Esto es temporal hasta que implementemos una consulta más eficiente
+    }
+
+    // Debug: mostrar la consulta final
+    console.log('Consulta Supabase con filtros:', filtros);
+
     const { data, error } = await consulta;
-    if (error) throw error;
+    if (error) {
+      console.error('Error en consulta Supabase:', error);
+      throw error;
+    }
+    console.log('Eventos devueltos por Supabase:', data?.length, 'eventos');
     return data;
+  }
+
+  static async obtenerCategorias() {
+    const { data, error } = await supabase
+      .from('eventos')
+      .select('categoria')
+      .not('categoria', 'is', null)
+      .order('categoria');
+    
+    if (error) throw error;
+    
+    // Extraer categorías únicas
+    const categoriasUnicas = [...new Set(data?.map(item => item.categoria) || [])];
+    return categoriasUnicas;
+  }
+
+  static async obtenerUbicaciones() {
+    const { data, error } = await supabase
+      .from('eventos')
+      .select('ubicacion')
+      .not('ubicacion', 'is', null)
+      .order('ubicacion');
+    
+    if (error) throw error;
+    
+    // Extraer ubicaciones únicas
+    const ubicacionesUnicas = [...new Set(data?.map(item => item.ubicacion) || [])];
+    return ubicacionesUnicas;
   }
 
   static async obtenerEventoPorId(id: string) {

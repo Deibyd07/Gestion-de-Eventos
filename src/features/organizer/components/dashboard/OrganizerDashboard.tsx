@@ -159,111 +159,111 @@ export const OrganizerDashboard: React.FC<OrganizerDashboardProps> = ({
   );
 
   return (
-    <div className="space-y-6 admin-panel panel-consistent-width">
+    <div className="space-y-4 md:space-y-6 w-full box-border min-w-0">
       {/* Action Buttons */}
-      <div className="flex justify-end space-x-3">
+      <div className="flex flex-wrap gap-2 justify-end w-full">
         <button
           onClick={handleRefresh}
           disabled={isRefreshing}
-          className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-gray-500 to-gray-600 text-white rounded-xl hover:from-gray-600 hover:to-gray-700 transition-all duration-200 shadow-sm disabled:opacity-50"
+          className="flex-1 sm:flex-none flex items-center justify-center space-x-2 px-3 md:px-4 py-2 bg-gradient-to-r from-gray-500 to-gray-600 text-white text-sm rounded-xl hover:from-gray-600 hover:to-gray-700 transition-all duration-200 shadow-sm disabled:opacity-50"
         >
-          <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-          <span>Actualizar</span>
+          <RefreshCw className={`w-3 h-3 md:w-4 md:h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+          <span className="hidden sm:inline">Actualizar</span>
         </button>
-        <button className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-xl hover:from-blue-600 hover:to-purple-700 transition-all duration-200 shadow-sm">
-          <Download className="w-4 h-4" />
-          <span>Exportar</span>
+        <button className="flex-1 sm:flex-none flex items-center justify-center space-x-2 px-3 md:px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white text-sm rounded-xl hover:from-blue-600 hover:to-purple-700 transition-all duration-200 shadow-sm">
+          <Download className="w-3 h-3 md:w-4 md:h-4" />
+          <span className="hidden sm:inline">Exportar</span>
         </button>
         <button
           onClick={onCreateEvent}
-          className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl hover:from-green-600 hover:to-emerald-700 transition-all duration-200 shadow-sm"
+          className="flex-1 sm:flex-none flex items-center justify-center space-x-2 px-3 md:px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white text-sm rounded-xl hover:from-green-600 hover:to-emerald-700 transition-all duration-200 shadow-sm"
         >
-          <Plus className="w-4 h-4" />
-          <span>Nuevo Evento</span>
+          <Plus className="w-3 h-3 md:w-4 md:h-4" />
+          <span className="hidden sm:inline">Nuevo</span>
         </button>
       </div>
 
       {/* Header */}
-      <div className="bg-gradient-to-br from-white to-indigo-100/98 backdrop-blur-lg shadow-xl border border-white/20 rounded-2xl p-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Panel del Organizador</h1>
-            <p className="text-gray-600">Gestiona tus eventos y analiza el rendimiento</p>
+      <div className="bg-gradient-to-br from-white to-indigo-100/98 backdrop-blur-lg shadow-xl border border-white/20 rounded-2xl p-3 sm:p-4 md:p-6 w-full">
+        <div className="flex items-center justify-between w-full">
+          <div className="flex-1 min-w-0">
+            <h1 className="text-lg md:text-3xl font-bold text-gray-900">Panel del Organizador</h1>
+            <p className="text-xs md:text-base text-gray-600 mt-1">Gestiona tus eventos y analiza el rendimiento</p>
           </div>
         </div>
       </div>
 
       {/* Key Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 metrics-container grid-consistent">
-        <div className="bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-200 backdrop-blur-lg p-6 dashboard-card card-consistent">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6 w-full">
+        <div className="bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-200 backdrop-blur-lg p-3 sm:p-4 md:p-6 w-full">
           <div className="flex items-center">
-            <div className="p-3 bg-blue-100 rounded-lg">
-              <Calendar className="w-6 h-6 text-blue-600" />
+            <div className="p-2 md:p-3 bg-blue-100 rounded-lg flex-shrink-0">
+              <Calendar className="w-4 h-4 md:w-6 md:h-6 text-blue-600" />
             </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-500">Total Eventos</p>
-              <p className="text-2xl font-bold text-gray-900">{formatNumber(stats.totalEvents)}</p>
-              <p className="text-sm text-green-600">{stats.activeEvents} activos</p>
+            <div className="ml-3 md:ml-4 flex-1 min-w-0">
+              <p className="text-xs md:text-sm font-medium text-gray-500">Total Eventos</p>
+              <p className="text-lg md:text-2xl font-bold text-gray-900">{formatNumber(stats.totalEvents)}</p>
+              <p className="text-xs md:text-sm text-green-600">{stats.activeEvents} activos</p>
             </div>
           </div>
         </div>
 
-        <div className="bg-gradient-to-br from-green-50 to-green-100 border border-green-200 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-200 backdrop-blur-lg p-6 dashboard-card card-consistent">
+        <div className="bg-gradient-to-br from-green-50 to-green-100 border border-green-200 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-200 backdrop-blur-lg p-3 sm:p-4 md:p-6 w-full">
           <div className="flex items-center">
-            <div className="p-3 bg-green-100 rounded-lg">
-              <DollarSign className="w-6 h-6 text-green-600" />
+            <div className="p-2 md:p-3 bg-green-100 rounded-lg flex-shrink-0">
+              <DollarSign className="w-4 h-4 md:w-6 md:h-6 text-green-600" />
             </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-500">Ingresos Totales</p>
-              <p className="text-2xl font-bold text-gray-900">{formatCurrency(stats.totalRevenue)}</p>
-              <p className="text-sm text-green-600">+12.5% este mes</p>
+            <div className="ml-3 md:ml-4 flex-1 min-w-0">
+              <p className="text-xs md:text-sm font-medium text-gray-500">Ingresos Totales</p>
+              <p className="text-lg md:text-2xl font-bold text-gray-900 truncate">{formatCurrency(stats.totalRevenue)}</p>
+              <p className="text-xs md:text-sm text-green-600">+12.5% este mes</p>
             </div>
           </div>
         </div>
 
-        <div className="bg-gradient-to-br from-purple-50 to-purple-100 border border-purple-200 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-200 backdrop-blur-lg p-6 dashboard-card card-consistent">
+        <div className="bg-gradient-to-br from-purple-50 to-purple-100 border border-purple-200 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-200 backdrop-blur-lg p-3 sm:p-4 md:p-6 w-full">
           <div className="flex items-center">
-            <div className="p-3 bg-purple-100 rounded-lg">
-              <Users className="w-6 h-6 text-purple-600" />
+            <div className="p-2 md:p-3 bg-purple-100 rounded-lg flex-shrink-0">
+              <Users className="w-4 h-4 md:w-6 md:h-6 text-purple-600" />
             </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-500">Total Asistentes</p>
-              <p className="text-2xl font-bold text-gray-900">{formatNumber(stats.totalAttendees)}</p>
-              <p className="text-sm text-green-600">+8.3% este mes</p>
+            <div className="ml-3 md:ml-4 flex-1 min-w-0">
+              <p className="text-xs md:text-sm font-medium text-gray-500">Total Asistentes</p>
+              <p className="text-lg md:text-2xl font-bold text-gray-900">{formatNumber(stats.totalAttendees)}</p>
+              <p className="text-xs md:text-sm text-green-600">+8.3% este mes</p>
             </div>
           </div>
         </div>
 
-        <div className="bg-gradient-to-br from-yellow-50 to-yellow-100 border border-yellow-200 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-200 backdrop-blur-lg p-6 dashboard-card card-consistent">
+        <div className="bg-gradient-to-br from-yellow-50 to-yellow-100 border border-yellow-200 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-200 backdrop-blur-lg p-3 sm:p-4 md:p-6 w-full">
           <div className="flex items-center">
-            <div className="p-3 bg-yellow-100 rounded-lg">
-              <Star className="w-6 h-6 text-yellow-600" />
+            <div className="p-2 md:p-3 bg-yellow-100 rounded-lg flex-shrink-0">
+              <Star className="w-4 h-4 md:w-6 md:h-6 text-yellow-600" />
             </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-500">Calificación Promedio</p>
-              <p className="text-2xl font-bold text-gray-900">{stats.averageRating.toFixed(1)}</p>
-              <p className="text-sm text-gray-600">basado en {stats.completedEvents} eventos</p>
+            <div className="ml-3 md:ml-4 flex-1 min-w-0">
+              <p className="text-xs md:text-sm font-medium text-gray-500">Calificación Promedio</p>
+              <p className="text-lg md:text-2xl font-bold text-gray-900">{stats.averageRating.toFixed(1)}</p>
+              <p className="text-xs md:text-sm text-gray-600">basado en {stats.completedEvents} eventos</p>
             </div>
           </div>
         </div>
       </div>
 
       {/* Navigation Tabs */}
-      <div className="border-b border-gray-200">
-        <nav className="-mb-px flex space-x-8">
+      <div className="border-b border-gray-200 overflow-x-auto w-full max-w-full">
+        <nav className="-mb-px flex space-x-4 md:space-x-8 min-w-max">
           {tabs.map((tab) => {
             const Icon = tab.icon;
             return (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center space-x-2 py-2 px-1 border-b-2 font-medium text-sm ${
+                className={`flex items-center space-x-2 py-2 px-1 border-b-2 font-medium text-xs md:text-sm whitespace-nowrap ${
                   activeTab === tab.id
                     ? 'border-blue-500 text-blue-600'
                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                 }`}
               >
-                <Icon className="w-4 h-4" />
+                <Icon className="w-3 h-3 md:w-4 md:h-4" />
                 <span>{tab.label}</span>
               </button>
             );
@@ -272,28 +272,28 @@ export const OrganizerDashboard: React.FC<OrganizerDashboardProps> = ({
       </div>
 
       {/* Tab Content */}
-      <div className="space-y-6">
+      <div className="space-y-4 md:space-y-6 w-full">
         {/* Overview Tab */}
         {activeTab === 'overview' && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 md:gap-6 w-full">
             {/* Upcoming Deadlines */}
-            <div className="bg-gradient-to-br from-white to-indigo-100/98 backdrop-blur-lg shadow-xl border border-white/20 rounded-2xl p-6 card-scrollable card-consistent hover:shadow-2xl transition-all duration-200">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Próximas Fechas Límite</h3>
-              <div className="space-y-3">
+            <div className="bg-gradient-to-br from-white to-indigo-100/98 backdrop-blur-lg shadow-xl border border-white/20 rounded-2xl p-3 sm:p-4 md:p-6 hover:shadow-2xl transition-all duration-200 w-full">
+              <h3 className="text-base md:text-lg font-semibold text-gray-900 mb-3 md:mb-4">Próximas Fechas Límite</h3>
+              <div className="space-y-2 md:space-y-3">
                 {stats.upcomingDeadlines.map((deadline) => {
                   const Icon = getDeadlineIcon(deadline.type);
                   return (
-                    <div key={deadline.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                      <div className="flex items-center space-x-3">
-                        <div className={`p-2 rounded-full ${getPriorityColor(deadline.priority)}`}>
-                          <Icon className="w-4 h-4" />
+                    <div key={deadline.id} className="flex items-center justify-between p-2 md:p-3 bg-gray-50 rounded-lg">
+                      <div className="flex items-center space-x-2 md:space-x-3 flex-1 min-w-0">
+                        <div className={`p-1.5 md:p-2 rounded-full flex-shrink-0 ${getPriorityColor(deadline.priority)}`}>
+                          <Icon className="w-3 h-3 md:w-4 md:h-4" />
                         </div>
-                        <div>
-                          <p className="font-medium text-gray-900">{deadline.eventTitle}</p>
-                          <p className="text-sm text-gray-500">{deadline.deadline}</p>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm md:text-base font-medium text-gray-900 truncate">{deadline.eventTitle}</p>
+                          <p className="text-xs md:text-sm text-gray-500">{deadline.deadline}</p>
                         </div>
                       </div>
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${getPriorityColor(deadline.priority)}`}>
+                      <span className={`px-2 py-0.5 md:py-1 rounded-full text-xs font-medium flex-shrink-0 ml-2 ${getPriorityColor(deadline.priority)}`}>
                         {deadline.priority === 'high' ? 'Alta' : deadline.priority === 'medium' ? 'Media' : 'Baja'}
                       </span>
                     </div>
@@ -303,19 +303,19 @@ export const OrganizerDashboard: React.FC<OrganizerDashboardProps> = ({
             </div>
 
             {/* Top Performing Event */}
-            <div className="bg-gradient-to-br from-white to-indigo-100/98 backdrop-blur-lg shadow-xl border border-white/20 rounded-2xl p-6 card-scrollable card-consistent hover:shadow-2xl transition-all duration-200">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Evento Destacado</h3>
-              <div className="p-4 bg-blue-50 rounded-lg">
-                <h4 className="font-semibold text-gray-900 mb-2">{stats.topPerformingEvent.title}</h4>
-                <p className="text-sm text-gray-600 mb-3">{stats.topPerformingEvent.date}</p>
-                <div className="grid grid-cols-2 gap-4">
+            <div className="bg-gradient-to-br from-white to-indigo-100/98 backdrop-blur-lg shadow-xl border border-white/20 rounded-2xl p-3 sm:p-4 md:p-6 hover:shadow-2xl transition-all duration-200 w-full">
+              <h3 className="text-base md:text-lg font-semibold text-gray-900 mb-3 md:mb-4">Evento Destacado</h3>
+              <div className="p-3 md:p-4 bg-blue-50 rounded-lg">
+                <h4 className="text-sm md:text-base font-semibold text-gray-900 mb-2">{stats.topPerformingEvent.title}</h4>
+                <p className="text-xs md:text-sm text-gray-600 mb-3">{stats.topPerformingEvent.date}</p>
+                <div className="grid grid-cols-2 gap-3 md:gap-4">
                   <div>
-                    <p className="text-sm text-gray-500">Ingresos</p>
-                    <p className="font-semibold text-gray-900">{formatCurrency(stats.topPerformingEvent.revenue)}</p>
+                    <p className="text-xs md:text-sm text-gray-500">Ingresos</p>
+                    <p className="text-sm md:text-base font-semibold text-gray-900 truncate">{formatCurrency(stats.topPerformingEvent.revenue)}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-gray-500">Asistentes</p>
-                    <p className="font-semibold text-gray-900">{formatNumber(stats.topPerformingEvent.attendees)}</p>
+                    <p className="text-xs md:text-sm text-gray-500">Asistentes</p>
+                    <p className="text-sm md:text-base font-semibold text-gray-900">{formatNumber(stats.topPerformingEvent.attendees)}</p>
                   </div>
                 </div>
               </div>
@@ -325,14 +325,14 @@ export const OrganizerDashboard: React.FC<OrganizerDashboardProps> = ({
 
         {/* Events Tab */}
         {activeTab === 'events' && (
-          <div className="space-y-6">
-            <div className="flex items-center justify-between">
+          <div className="space-y-4 md:space-y-6 w-full">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <h3 className="text-lg font-semibold text-gray-900">Mis Eventos</h3>
-              <div className="flex items-center space-x-3">
+              <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
                 <select
                   value={filterStatus}
                   onChange={(e) => setFilterStatus(e.target.value as any)}
-                  className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="flex-1 sm:flex-none px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
                   <option value="all">Todos</option>
                   <option value="draft">Borradores</option>
@@ -340,15 +340,17 @@ export const OrganizerDashboard: React.FC<OrganizerDashboardProps> = ({
                   <option value="cancelled">Cancelados</option>
                   <option value="completed">Completados</option>
                 </select>
-                <button className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
-                  <Filter className="w-4 h-4 mr-2" />
-                  Filtros
+                <button className="flex-1 sm:flex-none inline-flex items-center justify-center px-3 md:px-4 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50">
+                  <Filter className="w-4 h-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Filtros</span>
                 </button>
               </div>
             </div>
 
-            <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
-              <div className="overflow-x-auto">
+            <div className="bg-white border border-gray-200 rounded-lg w-full max-w-full">
+              <div className="overflow-x-auto w-full">
+                <div className="inline-block min-w-full align-middle">
+                  <div>
                 <table className="min-w-full divide-y divide-gray-200">
                   <thead className="bg-gray-50">
                     <tr>
@@ -424,6 +426,8 @@ export const OrganizerDashboard: React.FC<OrganizerDashboardProps> = ({
                     ))}
                   </tbody>
                 </table>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -431,22 +435,22 @@ export const OrganizerDashboard: React.FC<OrganizerDashboardProps> = ({
 
         {/* Analytics Tab */}
         {activeTab === 'analytics' && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 md:gap-6 w-full">
             {/* Revenue Chart */}
-            <div className="bg-white border border-gray-200 rounded-lg p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Ingresos por Mes</h3>
-              <div className="space-y-4">
+            <div className="bg-white border border-gray-200 rounded-2xl p-3 sm:p-4 md:p-6 w-full">
+              <h3 className="text-base md:text-lg font-semibold text-gray-900 mb-3 md:mb-4">Ingresos por Mes</h3>
+              <div className="space-y-3 md:space-y-4">
                 {stats.revenueByMonth.map((month, index) => (
-                  <div key={index} className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-gray-700">{month.month}</span>
-                    <div className="flex items-center space-x-4">
-                      <div className="w-32 bg-gray-200 rounded-full h-2">
+                  <div key={index} className="flex items-center justify-between gap-2">
+                    <span className="text-xs md:text-sm font-medium text-gray-700 flex-shrink-0">{month.month}</span>
+                    <div className="flex items-center space-x-2 md:space-x-4 flex-1 min-w-0">
+                      <div className="flex-1 bg-gray-200 rounded-full h-2 min-w-[60px]">
                         <div
                           className="bg-blue-500 h-2 rounded-full"
                           style={{ width: `${(month.revenue / Math.max(...stats.revenueByMonth.map(m => m.revenue))) * 100}%` }}
                         />
                       </div>
-                      <span className="text-sm font-medium text-gray-900 w-20 text-right">
+                      <span className="text-xs md:text-sm font-medium text-gray-900 text-right truncate max-w-[80px] md:max-w-none">
                         {formatCurrency(month.revenue)}
                       </span>
                     </div>
@@ -456,22 +460,22 @@ export const OrganizerDashboard: React.FC<OrganizerDashboardProps> = ({
             </div>
 
             {/* Ticket Sales */}
-            <div className="bg-white border border-gray-200 rounded-lg p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Ventas por Tipo de Entrada</h3>
-              <div className="space-y-4">
+            <div className="bg-white border border-gray-200 rounded-2xl p-3 sm:p-4 md:p-6 w-full">
+              <h3 className="text-base md:text-lg font-semibold text-gray-900 mb-3 md:mb-4">Ventas por Tipo de Entrada</h3>
+              <div className="space-y-3 md:space-y-4">
                 {stats.ticketSalesByType.map((type, index) => (
-                  <div key={index} className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
-                      <div className={`w-3 h-3 rounded-full ${
+                  <div key={index} className="flex items-center justify-between gap-2">
+                    <div className="flex items-center space-x-2 md:space-x-3 flex-1 min-w-0">
+                      <div className={`w-2 h-2 md:w-3 md:h-3 rounded-full flex-shrink-0 ${
                         index === 0 ? 'bg-blue-500' :
                         index === 1 ? 'bg-green-500' :
                         index === 2 ? 'bg-purple-500' : 'bg-yellow-500'
                       }`} />
-                      <span className="text-sm font-medium text-gray-700">{type.type}</span>
+                      <span className="text-xs md:text-sm font-medium text-gray-700 truncate">{type.type}</span>
                     </div>
-                    <div className="text-right">
-                      <p className="text-sm font-medium text-gray-900">{formatNumber(type.sales)} ventas</p>
-                      <p className="text-sm text-gray-500">{formatCurrency(type.revenue)}</p>
+                    <div className="text-right flex-shrink-0">
+                      <p className="text-xs md:text-sm font-medium text-gray-900">{formatNumber(type.sales)} ventas</p>
+                      <p className="text-xs md:text-sm text-gray-500 truncate">{formatCurrency(type.revenue)}</p>
                     </div>
                   </div>
                 ))}
@@ -482,49 +486,49 @@ export const OrganizerDashboard: React.FC<OrganizerDashboardProps> = ({
 
         {/* Settings Tab */}
         {activeTab === 'settings' && (
-          <div className="space-y-6">
-            <h3 className="text-lg font-semibold text-gray-900">Configuración del Organizador</h3>
+          <div className="space-y-4 md:space-y-6">
+            <h3 className="text-base md:text-lg font-semibold text-gray-900">Configuración del Organizador</h3>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="bg-white border border-gray-200 rounded-lg p-6">
-                <h4 className="text-lg font-semibold text-gray-900 mb-4">Perfil del Organizador</h4>
-                <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 md:gap-6 w-full">
+              <div className="bg-white border border-gray-200 rounded-2xl p-3 sm:p-4 md:p-6">
+                <h4 className="text-base md:text-lg font-semibold text-gray-900 mb-3 md:mb-4">Perfil del Organizador</h4>
+                <div className="space-y-3 md:space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-xs md:text-sm font-medium text-gray-700 mb-2">
                       Nombre de la Organización
                     </label>
                     <input
                       type="text"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       placeholder="Mi Organización"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-xs md:text-sm font-medium text-gray-700 mb-2">
                       Descripción
                     </label>
                     <textarea
                       rows={3}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       placeholder="Describe tu organización..."
                     />
                   </div>
                 </div>
               </div>
 
-              <div className="bg-white border border-gray-200 rounded-lg p-6">
-                <h4 className="text-lg font-semibold text-gray-900 mb-4">Preferencias</h4>
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-gray-700">Notificaciones por Email</span>
-                    <label className="relative inline-flex items-center cursor-pointer">
+              <div className="bg-white border border-gray-200 rounded-2xl p-3 sm:p-4 md:p-6">
+                <h4 className="text-base md:text-lg font-semibold text-gray-900 mb-3 md:mb-4">Preferencias</h4>
+                <div className="space-y-3 md:space-y-4">
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="text-xs md:text-sm font-medium text-gray-700">Notificaciones por Email</span>
+                    <label className="relative inline-flex items-center cursor-pointer flex-shrink-0">
                       <input type="checkbox" className="sr-only peer" defaultChecked />
                       <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
                     </label>
                   </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-gray-700">Aprobación Automática</span>
-                    <label className="relative inline-flex items-center cursor-pointer">
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="text-xs md:text-sm font-medium text-gray-700">Aprobación Automática</span>
+                    <label className="relative inline-flex items-center cursor-pointer flex-shrink-0">
                       <input type="checkbox" className="sr-only peer" />
                       <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
                     </label>

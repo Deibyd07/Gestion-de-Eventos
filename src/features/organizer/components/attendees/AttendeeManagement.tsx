@@ -147,11 +147,11 @@ export function AttendeeManagement({ eventId, eventTitle }: AttendeeManagementPr
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 md:space-y-6 w-full">
       {/* Action buttons removed - using parent header buttons */}
 
       {/* Stats Cards - Glassmorphism Design */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
         <div className="bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-200 backdrop-blur-lg p-6">
           <div className="flex items-center justify-between">
             <div>
@@ -218,22 +218,22 @@ export function AttendeeManagement({ eventId, eventTitle }: AttendeeManagementPr
       </div>
 
       {/* Filters and Search */}
-      <div className="bg-gradient-to-br from-white to-indigo-100/98 backdrop-blur-lg shadow-xl border border-gray-300 rounded-2xl p-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="relative">
+      <div className="bg-gradient-to-br from-white to-indigo-100/98 backdrop-blur-lg shadow-xl border border-gray-300 rounded-2xl p-4 md:p-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+          <div className="relative sm:col-span-2 lg:col-span-1">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
             <input
               type="text"
-              placeholder="Buscar asistentes..."
+              placeholder="Buscar..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+              className="w-full pl-10 pr-4 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
             />
           </div>
           <select
             value={filterEvent}
             onChange={(e) => setFilterEvent(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+            className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
           >
             <option value="all">Todos los eventos</option>
             {events.map(event => (
@@ -243,16 +243,16 @@ export function AttendeeManagement({ eventId, eventTitle }: AttendeeManagementPr
           <select
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+            className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
           >
-            <option value="all">Todos los estados</option>
+            <option value="all">Todos</option>
             <option value="checked-in">Registrado</option>
             <option value="pending">Pendiente</option>
             <option value="no-show">No asistió</option>
           </select>
-          <button className="flex items-center justify-center space-x-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-xl hover:from-blue-600 hover:to-purple-700 transition-all duration-200 shadow-sm">
+          <button className="flex items-center justify-center space-x-2 px-3 md:px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white text-sm rounded-xl hover:from-blue-600 hover:to-purple-700 transition-all duration-200 shadow-sm">
             <Filter className="w-4 h-4" />
-            <span>Filtros</span>
+            <span className="hidden sm:inline">Filtros</span>
           </button>
         </div>
       </div>
@@ -331,7 +331,9 @@ export function AttendeeManagement({ eventId, eventTitle }: AttendeeManagementPr
               {isExpanded && (
                 <div className="border-t border-gray-200">
                   {eventAttendees.length > 0 ? (
-                    <div className="overflow-x-auto">
+              <div className="overflow-x-auto">
+                <div className="inline-block min-w-full align-middle">
+              <div>
                       <table className="min-w-full divide-y divide-gray-200">
                         <thead className="bg-gray-50">
                           <tr>
@@ -422,6 +424,8 @@ export function AttendeeManagement({ eventId, eventTitle }: AttendeeManagementPr
                           ))}
                         </tbody>
                       </table>
+                        </div>
+                      </div>
                     </div>
                   ) : (
                     <div className="p-8 text-center">

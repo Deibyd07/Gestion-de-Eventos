@@ -48,164 +48,164 @@ function OrganizerDashboardContent({
   formatRevenue
 }: OrganizerDashboardContentProps) {
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 md:space-y-6">
       {/* Real-time Metrics Dashboard - HU23 */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 metrics-container grid-consistent">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
         {/* Eventos Activos */}
-        <div className="bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-200 backdrop-blur-lg p-6 dashboard-card card-consistent">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600">Eventos Activos</p>
-              <p className="text-2xl font-bold text-gray-900">{stats.activeEvents}</p>
-              <p className="text-sm text-green-600 flex items-center mt-1">
-                <TrendingUp className="w-4 h-4 mr-1" />
-                +2 este mes
+        <div className="bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-200 backdrop-blur-lg p-3 sm:p-4 md:p-6">
+          <div className="flex items-start sm:items-center justify-between gap-2">
+            <div className="flex-1 min-w-0">
+              <p className="text-xs md:text-sm font-medium text-gray-600">Eventos Activos</p>
+              <p className="text-xl md:text-2xl font-bold text-gray-900">{stats.activeEvents}</p>
+              <p className="text-xs md:text-sm text-green-600 flex items-center mt-1">
+                <TrendingUp className="w-3 h-3 md:w-4 md:h-4 mr-1" />
+                <span className="truncate">+2 este mes</span>
               </p>
             </div>
-            <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-              <Calendar className="w-6 h-6 text-blue-600" />
+            <div className="w-10 h-10 md:w-12 md:h-12 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0 ml-2">
+              <Calendar className="w-5 h-5 md:w-6 md:h-6 text-blue-600" />
             </div>
           </div>
         </div>
 
         {/* Ingresos en Tiempo Real */}
-        <div className="bg-gradient-to-br from-green-50 to-green-100 border border-green-200 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-200 backdrop-blur-lg p-6 dashboard-card card-consistent">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600">Ingresos Totales</p>
-              <p className="text-2xl font-bold text-gray-900">{formatRevenue(stats.totalRevenue)}</p>
-              <p className="text-sm text-green-600 flex items-center mt-1">
-                <TrendingUp className="w-4 h-4 mr-1" />
-                +12.5% vs mes anterior
+        <div className="bg-gradient-to-br from-green-50 to-green-100 border border-green-200 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-200 backdrop-blur-lg p-3 sm:p-4 md:p-6">
+          <div className="flex items-start sm:items-center justify-between gap-2">
+            <div className="flex-1 min-w-0">
+              <p className="text-xs md:text-sm font-medium text-gray-600">Ingresos Totales</p>
+              <p className="text-xl md:text-2xl font-bold text-gray-900 truncate">{formatRevenue(stats.totalRevenue)}</p>
+              <p className="text-xs md:text-sm text-green-600 flex items-center mt-1">
+                <TrendingUp className="w-3 h-3 md:w-4 md:h-4 mr-1" />
+                <span className="truncate">+12.5% vs mes anterior</span>
               </p>
             </div>
-            <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-              <DollarSign className="w-6 h-6 text-green-600" />
+            <div className="w-10 h-10 md:w-12 md:h-12 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0 ml-2">
+              <DollarSign className="w-5 h-5 md:w-6 md:h-6 text-green-600" />
             </div>
           </div>
         </div>
 
         {/* Asistencia en Tiempo Real */}
-        <div className="bg-gradient-to-br from-purple-50 to-purple-100 border border-purple-200 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-200 backdrop-blur-lg p-6 dashboard-card card-consistent">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600">Total Asistentes</p>
-              <p className="text-2xl font-bold text-gray-900">{stats.totalAttendees}</p>
-              <p className="text-sm text-blue-600 flex items-center mt-1">
-                <Users className="w-4 h-4 mr-1" />
-                {stats.conversionRate}% conversión
+        <div className="bg-gradient-to-br from-purple-50 to-purple-100 border border-purple-200 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-200 backdrop-blur-lg p-3 sm:p-4 md:p-6">
+          <div className="flex items-start sm:items-center justify-between gap-2">
+            <div className="flex-1 min-w-0">
+              <p className="text-xs md:text-sm font-medium text-gray-600">Total Asistentes</p>
+              <p className="text-xl md:text-2xl font-bold text-gray-900">{stats.totalAttendees}</p>
+              <p className="text-xs md:text-sm text-blue-600 flex items-center mt-1">
+                <Users className="w-3 h-3 md:w-4 md:h-4 mr-1" />
+                <span className="truncate">{stats.conversionRate}% conversión</span>
               </p>
             </div>
-            <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-              <Users className="w-6 h-6 text-purple-600" />
+            <div className="w-10 h-10 md:w-12 md:h-12 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0 ml-2">
+              <Users className="w-5 h-5 md:w-6 md:h-6 text-purple-600" />
             </div>
           </div>
         </div>
 
         {/* Ventas en Tiempo Real */}
-        <div className="bg-gradient-to-br from-orange-50 to-orange-100 border border-orange-200 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-200 backdrop-blur-lg p-6 dashboard-card card-consistent">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600">Ventas Hoy</p>
-              <p className="text-2xl font-bold text-gray-900">47</p>
-              <p className="text-sm text-orange-600 flex items-center mt-1">
-                <Activity className="w-4 h-4 mr-1" />
-                +23% vs ayer
+        <div className="bg-gradient-to-br from-orange-50 to-orange-100 border border-orange-200 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-200 backdrop-blur-lg p-3 sm:p-4 md:p-6">
+          <div className="flex items-start sm:items-center justify-between gap-2">
+            <div className="flex-1 min-w-0">
+              <p className="text-xs md:text-sm font-medium text-gray-600">Ventas Hoy</p>
+              <p className="text-xl md:text-2xl font-bold text-gray-900">47</p>
+              <p className="text-xs md:text-sm text-orange-600 flex items-center mt-1">
+                <Activity className="w-3 h-3 md:w-4 md:h-4 mr-1" />
+                <span className="truncate">+23% vs ayer</span>
               </p>
             </div>
-            <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
-              <TrendingUp className="w-6 h-6 text-orange-600" />
+            <div className="w-10 h-10 md:w-12 md:h-12 bg-orange-100 rounded-lg flex items-center justify-center flex-shrink-0 ml-2">
+              <TrendingUp className="w-5 h-5 md:w-6 md:h-6 text-orange-600" />
             </div>
           </div>
         </div>
       </div>
 
       {/* Additional Real-time Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
         {/* Métricas de Conversión */}
-        <div className="bg-gradient-to-br from-white to-indigo-100/98 backdrop-blur-lg shadow-xl border border-white/20 rounded-2xl p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Métricas de Conversión</h3>
-          <div className="space-y-4">
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">Tasa de Conversión</span>
-              <span className="font-semibold text-green-600">3.2%</span>
+        <div className="bg-gradient-to-br from-white to-indigo-100/98 backdrop-blur-lg shadow-xl border border-white/20 rounded-xl md:rounded-2xl p-4 md:p-6">
+          <h3 className="text-base md:text-lg font-semibold text-gray-900 mb-3 md:mb-4">Métricas de Conversión</h3>
+          <div className="space-y-3 md:space-y-4">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
+              <span className="text-xs md:text-sm text-gray-600">Tasa de Conversión</span>
+              <span className="font-semibold text-green-600 text-sm md:text-base">3.2%</span>
             </div>
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">Vistas Únicas</span>
-              <span className="font-semibold text-blue-600">1,247</span>
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
+              <span className="text-xs md:text-sm text-gray-600">Vistas Únicas</span>
+              <span className="font-semibold text-blue-600 text-sm md:text-base">1,247</span>
             </div>
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">Abandono de Carrito</span>
-              <span className="font-semibold text-red-600">68%</span>
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
+              <span className="text-xs md:text-sm text-gray-600">Abandono de Carrito</span>
+              <span className="font-semibold text-red-600 text-sm md:text-base">68%</span>
             </div>
           </div>
         </div>
 
         {/* Métricas de Asistencia */}
-        <div className="bg-gradient-to-br from-white to-indigo-100/98 backdrop-blur-lg shadow-xl border border-white/20 rounded-2xl p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Asistencia en Tiempo Real</h3>
-          <div className="space-y-4">
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">Eventos en Curso</span>
-              <span className="font-semibold text-green-600">2</span>
+        <div className="bg-gradient-to-br from-white to-indigo-100/98 backdrop-blur-lg shadow-xl border border-white/20 rounded-xl md:rounded-2xl p-4 md:p-6">
+          <h3 className="text-base md:text-lg font-semibold text-gray-900 mb-3 md:mb-4">Asistencia en Tiempo Real</h3>
+          <div className="space-y-3 md:space-y-4">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
+              <span className="text-xs md:text-sm text-gray-600">Eventos en Curso</span>
+              <span className="font-semibold text-green-600 text-sm md:text-base">2</span>
             </div>
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">Asistencia Promedio</span>
-              <span className="font-semibold text-blue-600">87%</span>
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
+              <span className="text-xs md:text-sm text-gray-600">Asistencia Promedio</span>
+              <span className="font-semibold text-blue-600 text-sm md:text-base">87%</span>
             </div>
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">Último Escaneo</span>
-              <span className="font-semibold text-gray-600">Hace 2 min</span>
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
+              <span className="text-xs md:text-sm text-gray-600">Último Escaneo</span>
+              <span className="font-semibold text-gray-600 text-sm md:text-base">Hace 2 min</span>
             </div>
           </div>
         </div>
 
         {/* Métricas Financieras */}
-        <div className="bg-gradient-to-br from-white to-indigo-100/98 backdrop-blur-lg shadow-xl border border-white/20 rounded-2xl p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Métricas Financieras</h3>
-          <div className="space-y-4">
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">Ingresos Hoy</span>
-              <span className="font-semibold text-green-600">$2,350,000</span>
+        <div className="bg-gradient-to-br from-white to-indigo-100/98 backdrop-blur-lg shadow-xl border border-white/20 rounded-xl md:rounded-2xl p-4 md:p-6">
+          <h3 className="text-base md:text-lg font-semibold text-gray-900 mb-3 md:mb-4">Métricas Financieras</h3>
+          <div className="space-y-3 md:space-y-4">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
+              <span className="text-xs md:text-sm text-gray-600">Ingresos Hoy</span>
+              <span className="font-semibold text-green-600 text-sm md:text-base">$2,350,000</span>
             </div>
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">Comisiones</span>
-              <span className="font-semibold text-red-600">$117,500</span>
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
+              <span className="text-xs md:text-sm text-gray-600">Comisiones</span>
+              <span className="font-semibold text-red-600 text-sm md:text-base">$117,500</span>
             </div>
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">Neto</span>
-              <span className="font-semibold text-blue-600">$2,232,500</span>
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
+              <span className="text-xs md:text-sm text-gray-600">Neto</span>
+              <span className="font-semibold text-blue-600 text-sm md:text-base">$2,232,500</span>
             </div>
           </div>
         </div>
       </div>
 
       {/* Recent Activity - Enhanced */}
-      <div className="bg-gradient-to-br from-white to-indigo-100/98 backdrop-blur-lg shadow-xl border border-white/20 rounded-2xl overflow-hidden">
-        <div className="bg-gradient-to-r from-blue-600 to-purple-600 px-6 py-4">
+      <div className="bg-gradient-to-br from-white to-indigo-100/98 backdrop-blur-lg shadow-xl border border-white/20 rounded-xl md:rounded-2xl overflow-hidden">
+        <div className="bg-gradient-to-r from-blue-600 to-purple-600 px-4 md:px-6 py-3 md:py-4">
           <div className="flex items-center justify-between">
-          <h3 className="text-lg font-semibold text-white">Actividad Reciente</h3>
+          <h3 className="text-base md:text-lg font-semibold text-white">Actividad Reciente</h3>
             <div className="flex items-center space-x-2">
               <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-              <span className="text-sm text-blue-100">En tiempo real</span>
+              <span className="text-xs md:text-sm text-blue-100 hidden sm:inline">En tiempo real</span>
             </div>
           </div>
         </div>
-        <div className="p-6">
-          <div className="space-y-4">
+        <div className="p-4 md:p-6">
+          <div className="space-y-3 md:space-y-4">
             {/* Event Activity */}
-            <div className="p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl border border-blue-200">
-                <div className="flex items-center space-x-4">
-                <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
-                  <Calendar className="w-6 h-6 text-white" />
+            <div className="p-3 md:p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg md:rounded-xl border border-blue-200">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 md:gap-4 w-full">
+                <div className="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg md:rounded-xl flex items-center justify-center flex-shrink-0">
+                  <Calendar className="w-5 h-5 md:w-6 md:h-6 text-white" />
                   </div>
-                <div className="flex-1">
-                  <div className="flex items-center justify-between">
-                    <h4 className="font-semibold text-gray-900">Nuevo Evento Creado</h4>
+                <div className="flex-1 min-w-0 w-full">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-0 w-full">
+                    <h4 className="font-semibold text-sm md:text-base text-gray-900">Nuevo Evento Creado</h4>
                     <span className="text-xs text-gray-500">Hace 2 horas</span>
                   </div>
-                  <p className="text-sm text-gray-600">"Conferencia de Tecnología 2024" - Bogotá</p>
-                  <div className="flex items-center space-x-4 mt-2 text-xs text-gray-500">
+                  <p className="text-xs md:text-sm text-gray-600 mt-1 line-clamp-2">"Conferencia de Tecnología 2024" - Bogotá</p>
+                  <div className="flex flex-col sm:flex-row sm:items-center flex-wrap gap-2 sm:gap-4 mt-2 text-xs text-gray-500">
                     <span className="flex items-center">
                       <Users className="w-3 h-3 mr-1" />
                       150/200 asistentes
@@ -216,7 +216,7 @@ function OrganizerDashboardContent({
                     </span>
                   </div>
                 </div>
-                <div className="px-3 py-1 bg-green-100 text-green-800 text-xs rounded-full font-medium">
+                <div className="px-3 py-1 bg-green-100 text-green-800 text-xs rounded-full font-medium self-start sm:self-auto">
                   Activo
                 </div>
                   </div>
@@ -224,17 +224,17 @@ function OrganizerDashboardContent({
                 
             {/* Ticket Sales Activity */}
             <div className="p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border border-green-200">
-              <div className="flex items-center space-x-4">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
                 <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-emerald-600 rounded-xl flex items-center justify-center">
                   <Ticket className="w-6 h-6 text-white" />
                   </div>
-                <div className="flex-1">
-                  <div className="flex items-center justify-between">
+                <div className="flex-1 w-full">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between w-full">
                     <h4 className="font-semibold text-gray-900">Venta de Entradas</h4>
                     <span className="text-xs text-gray-500">Hace 15 minutos</span>
                   </div>
                   <p className="text-sm text-gray-600">3 entradas VIP vendidas - $450,000</p>
-                  <div className="flex items-center space-x-4 mt-2 text-xs text-gray-500">
+                  <div className="flex flex-col sm:flex-row sm:items-center flex-wrap gap-2 sm:gap-4 mt-2 text-xs text-gray-500">
                     <span className="flex items-center">
                       <Star className="w-3 h-3 mr-1" />
                       Entrada VIP
@@ -245,7 +245,7 @@ function OrganizerDashboardContent({
                     </span>
                   </div>
                 </div>
-                <div className="px-3 py-1 bg-blue-100 text-blue-800 text-xs rounded-full font-medium">
+                <div className="px-3 py-1 bg-blue-100 text-blue-800 text-xs rounded-full font-medium self-start sm:self-auto">
                   Venta
               </div>
               </div>
@@ -253,17 +253,17 @@ function OrganizerDashboardContent({
 
             {/* Payment Activity */}
             <div className="p-4 bg-gradient-to-r from-orange-50 to-yellow-50 rounded-xl border border-orange-200">
-              <div className="flex items-center space-x-4">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
                 <div className="w-12 h-12 bg-gradient-to-r from-orange-500 to-yellow-600 rounded-xl flex items-center justify-center">
                   <CreditCard className="w-6 h-6 text-white" />
                 </div>
-                <div className="flex-1">
-                  <div className="flex items-center justify-between">
+                <div className="flex-1 w-full">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between w-full">
                     <h4 className="font-semibold text-gray-900">Pago Procesado</h4>
                     <span className="text-xs text-gray-500">Hace 1 hora</span>
                   </div>
                   <p className="text-sm text-gray-600">Pago de $150,000 procesado exitosamente</p>
-                  <div className="flex items-center space-x-4 mt-2 text-xs text-gray-500">
+                  <div className="flex flex-col sm:flex-row sm:items-center flex-wrap gap-2 sm:gap-4 mt-2 text-xs text-gray-500">
                     <span className="flex items-center">
                       <CheckCircle className="w-3 h-3 mr-1" />
                       Tarjeta de Crédito
@@ -274,7 +274,7 @@ function OrganizerDashboardContent({
                     </span>
                   </div>
                 </div>
-                <div className="px-3 py-1 bg-green-100 text-green-800 text-xs rounded-full font-medium">
+                <div className="px-3 py-1 bg-green-100 text-green-800 text-xs rounded-full font-medium self-start sm:self-auto">
                   Completado
           </div>
         </div>
@@ -282,17 +282,17 @@ function OrganizerDashboardContent({
 
             {/* QR Scan Activity */}
             <div className="p-4 bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl border border-purple-200">
-              <div className="flex items-center space-x-4">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
                 <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-600 rounded-xl flex items-center justify-center">
                   <QrCode className="w-6 h-6 text-white" />
                 </div>
-                <div className="flex-1">
-                  <div className="flex items-center justify-between">
+                <div className="flex-1 w-full">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between w-full">
                     <h4 className="font-semibold text-gray-900">Asistencia Registrada</h4>
                     <span className="text-xs text-gray-500">Hace 5 minutos</span>
                   </div>
                   <p className="text-sm text-gray-600">María García - Entrada General escaneada</p>
-                  <div className="flex items-center space-x-4 mt-2 text-xs text-gray-500">
+                  <div className="flex flex-col sm:flex-row sm:items-center flex-wrap gap-2 sm:gap-4 mt-2 text-xs text-gray-500">
                     <span className="flex items-center">
                       <Users className="w-3 h-3 mr-1" />
                       Total: 127 asistentes
@@ -303,7 +303,7 @@ function OrganizerDashboardContent({
                     </span>
                   </div>
                 </div>
-                <div className="px-3 py-1 bg-purple-100 text-purple-800 text-xs rounded-full font-medium">
+                <div className="px-3 py-1 bg-purple-100 text-purple-800 text-xs rounded-full font-medium self-start sm:self-auto">
                   Escaneado
                 </div>
               </div>
@@ -311,17 +311,17 @@ function OrganizerDashboardContent({
 
             {/* Promotion Activity */}
             <div className="p-4 bg-gradient-to-r from-indigo-50 to-blue-50 rounded-xl border border-indigo-200">
-              <div className="flex items-center space-x-4">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
                 <div className="w-12 h-12 bg-gradient-to-r from-indigo-500 to-blue-600 rounded-xl flex items-center justify-center">
                   <Percent className="w-6 h-6 text-white" />
                 </div>
-                <div className="flex-1">
-                  <div className="flex items-center justify-between">
+                <div className="flex-1 w-full">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between w-full">
                     <h4 className="font-semibold text-gray-900">Descuento Aplicado</h4>
                     <span className="text-xs text-gray-500">Hace 30 minutos</span>
                   </div>
                   <p className="text-sm text-gray-600">Código "EARLYBIRD" usado - 30% descuento</p>
-                  <div className="flex items-center space-x-4 mt-2 text-xs text-gray-500">
+                  <div className="flex flex-col sm:flex-row sm:items-center flex-wrap gap-2 sm:gap-4 mt-2 text-xs text-gray-500">
                     <span className="flex items-center">
                       <Percent className="w-3 h-3 mr-1" />
                       Ahorro: $45,000
@@ -332,7 +332,7 @@ function OrganizerDashboardContent({
                     </span>
                   </div>
                 </div>
-                <div className="px-3 py-1 bg-indigo-100 text-indigo-800 text-xs rounded-full font-medium">
+                <div className="px-3 py-1 bg-indigo-100 text-indigo-800 text-xs rounded-full font-medium self-start sm:self-auto">
                   Descuento
                 </div>
               </div>
@@ -350,78 +350,78 @@ function OrganizerDashboardContent({
       </div>
 
       {/* Quick Actions with Glassmorphism Effect - All HU Functions */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
         {/* HU4-HU7: Gestión de Eventos */}
-        <div className="bg-gradient-to-br from-green-50 to-green-100 border border-green-200 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-200 backdrop-blur-lg p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-900">Gestión de Eventos</h3>
-            <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-              <Calendar className="w-6 h-6 text-green-600" />
+        <div className="bg-gradient-to-br from-green-50 to-green-100 border border-green-200 rounded-xl md:rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-200 backdrop-blur-lg p-4 md:p-6">
+          <div className="flex items-center justify-between mb-3 md:mb-4">
+            <h3 className="text-base md:text-lg font-semibold text-gray-900">Gestión de Eventos</h3>
+            <div className="w-10 h-10 md:w-12 md:h-12 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
+              <Calendar className="w-5 h-5 md:w-6 md:h-6 text-green-600" />
           </div>
           </div>
-          <p className="text-gray-600 mb-4">
+          <p className="text-xs md:text-sm text-gray-600 mb-3 md:mb-4 line-clamp-2">
             Crear, editar, personalizar y duplicar eventos con información detallada
           </p>
           <button 
             onClick={onCreateEvent}
-            className="w-full bg-gradient-to-r from-green-500 to-emerald-600 text-white px-4 py-2 rounded-xl hover:from-green-600 hover:to-emerald-700 transition-all duration-200 shadow-sm hover:shadow-md"
+            className="w-full bg-gradient-to-r from-green-500 to-emerald-600 text-white px-4 py-2 text-sm md:text-base rounded-xl hover:from-green-600 hover:to-emerald-700 transition-all duration-200 shadow-sm hover:shadow-md"
           >
             Crear Evento
           </button>
         </div>
 
         {/* HU8-HU10: Tipos de Entradas */}
-        <div className="bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-200 backdrop-blur-lg p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-900">Tipos de Entradas</h3>
-            <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-              <Ticket className="w-6 h-6 text-blue-600" />
+        <div className="bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-xl md:rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-200 backdrop-blur-lg p-4 md:p-6">
+          <div className="flex items-center justify-between mb-3 md:mb-4">
+            <h3 className="text-base md:text-lg font-semibold text-gray-900">Tipos de Entradas</h3>
+            <div className="w-10 h-10 md:w-12 md:h-12 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
+              <Ticket className="w-5 h-5 md:w-6 md:h-6 text-blue-600" />
           </div>
           </div>
-          <p className="text-gray-600 mb-4">
+          <p className="text-xs md:text-sm text-gray-600 mb-3 md:mb-4 line-clamp-2">
             Configura entradas, descuentos y límites de compra por usuario
           </p>
           <button 
             onClick={() => onNavigateToTab('tickets')}
-            className="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white px-4 py-2 rounded-xl hover:from-blue-600 hover:to-purple-700 transition-all duration-200 shadow-sm hover:shadow-md"
+            className="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white px-4 py-2 text-sm md:text-base rounded-xl hover:from-blue-600 hover:to-purple-700 transition-all duration-200 shadow-sm hover:shadow-md"
           >
             Configurar
           </button>
         </div>
 
         {/* HU14-HU16: Métodos de Pago */}
-        <div className="bg-gradient-to-br from-orange-50 to-orange-100 border border-orange-200 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-200 backdrop-blur-lg p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-900">Métodos de Pago</h3>
-            <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
-              <CreditCard className="w-6 h-6 text-orange-600" />
+        <div className="bg-gradient-to-br from-orange-50 to-orange-100 border border-orange-200 rounded-xl md:rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-200 backdrop-blur-lg p-4 md:p-6">
+          <div className="flex items-center justify-between mb-3 md:mb-4">
+            <h3 className="text-base md:text-lg font-semibold text-gray-900">Métodos de Pago</h3>
+            <div className="w-10 h-10 md:w-12 md:h-12 bg-orange-100 rounded-lg flex items-center justify-center flex-shrink-0">
+              <CreditCard className="w-5 h-5 md:w-6 md:h-6 text-orange-600" />
           </div>
           </div>
-          <p className="text-gray-600 mb-4">
+          <p className="text-xs md:text-sm text-gray-600 mb-3 md:mb-4 line-clamp-2">
             Configura múltiples métodos de pago y recibe reportes de reconciliación
           </p>
           <button 
             onClick={() => onNavigateToTab('payments')}
-            className="w-full bg-gradient-to-r from-orange-500 to-red-600 text-white px-4 py-2 rounded-xl hover:from-orange-600 hover:to-red-700 transition-all duration-200 shadow-sm hover:shadow-md"
+            className="w-full bg-gradient-to-r from-orange-500 to-red-600 text-white px-4 py-2 text-sm md:text-base rounded-xl hover:from-orange-600 hover:to-red-700 transition-all duration-200 shadow-sm hover:shadow-md"
           >
             Configurar
           </button>
         </div>
 
         {/* HU17-HU19: Control de Asistencia */}
-        <div className="bg-gradient-to-br from-purple-50 to-purple-100 border border-purple-200 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-200 backdrop-blur-lg p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-900">Control de Asistencia</h3>
-            <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-              <QrCode className="w-6 h-6 text-purple-600" />
+        <div className="bg-gradient-to-br from-purple-50 to-purple-100 border border-purple-200 rounded-xl md:rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-200 backdrop-blur-lg p-4 md:p-6">
+          <div className="flex items-center justify-between mb-3 md:mb-4">
+            <h3 className="text-base md:text-lg font-semibold text-gray-900">Control de Asistencia</h3>
+            <div className="w-10 h-10 md:w-12 md:h-12 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
+              <QrCode className="w-5 h-5 md:w-6 md:h-6 text-purple-600" />
       </div>
           </div>
-          <p className="text-gray-600 mb-4">
+          <p className="text-xs md:text-sm text-gray-600 mb-3 md:mb-4 line-clamp-2">
             Escanea QR, registra asistencia y genera reportes en tiempo real
           </p>
           <button 
             onClick={() => onNavigateToTab('attendance')}
-            className="w-full bg-gradient-to-r from-purple-500 to-pink-600 text-white px-4 py-2 rounded-xl hover:from-purple-600 hover:to-pink-700 transition-all duration-200 shadow-sm hover:shadow-md"
+            className="w-full bg-gradient-to-r from-purple-500 to-pink-600 text-white px-4 py-2 text-sm md:text-base rounded-xl hover:from-purple-600 hover:to-pink-700 transition-all duration-200 shadow-sm hover:shadow-md"
           >
             Iniciar Escaneo
           </button>
@@ -449,7 +449,13 @@ export function OrganizerDashboard() {
   const { user, logout } = useAuthStore();
   const [activeTab, setActiveTab] = useState('overview');
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  // Sidebar abierto por defecto en desktop, cerrado en móvil
+  const [isSidebarOpen, setIsSidebarOpen] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return window.innerWidth >= 768;
+    }
+    return true;
+  });
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
 
   const handleLogout = () => {
@@ -598,11 +604,23 @@ export function OrganizerDashboard() {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
+    <div className="min-h-screen bg-gray-50 flex overflow-hidden w-full max-w-full">
+      {/* Mobile Sidebar Overlay */}
+      {isSidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-20 md:hidden"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+      
       {/* Sidebar - Fixed */}
-      <div className={`${isSidebarOpen ? 'w-64' : 'w-16'} bg-white/80 backdrop-blur-md shadow-xl border-r border-white/20 transition-all duration-300 flex-shrink-0 fixed left-0 top-0 h-full z-10`}>
+      <div className={`${
+        isSidebarOpen ? 'w-64' : 'w-16'
+      } bg-white/90 backdrop-blur-md shadow-xl border-r border-white/20 transition-all duration-300 flex-shrink-0 fixed left-0 top-0 h-dvh md:h-full z-30 md:z-40 overflow-y-auto md:overflow-hidden overscroll-contain touch-pan-y ${
+        !isSidebarOpen ? 'hidden md:flex md:flex-col' : 'flex flex-col'
+      }`}>
         {/* Sidebar Header */}
-        <div className="h-16 flex items-center justify-between px-4 bg-gradient-to-r from-blue-600/90 to-purple-600/90 backdrop-blur-sm">
+        <div className={`h-16 flex items-center ${isSidebarOpen ? 'justify-between px-4' : 'justify-center px-2'} bg-gradient-to-r from-blue-600/90 to-purple-600/90 backdrop-blur-sm`}>
           {isSidebarOpen && (
             <div className="flex items-center space-x-3">
               <div className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center shadow-lg border border-white/30">
@@ -623,35 +641,51 @@ export function OrganizerDashboard() {
         </div>
 
         {/* Navigation */}
-        <nav className="p-4 space-y-1">
+        <nav className={`${isSidebarOpen ? 'p-4' : 'px-0 py-4 flex flex-col items-center'} space-y-2 max-h-[calc(100dvh-8rem)] overflow-y-auto md:max-h-none md:overflow-y-visible`}>
           {navigationItems.map((item) => {
             const Icon = item.icon;
             return (
               <button
                 key={item.id}
                 onClick={() => setActiveTab(item.id)}
-                className={`w-full flex items-start space-x-3 px-4 py-3 rounded-xl backdrop-blur-sm transition-all duration-200 ${
+                className={`${
+                  isSidebarOpen 
+                    ? 'w-full flex items-start space-x-3 px-4 py-3 rounded-xl'
+                    : 'w-12 h-12 flex items-center justify-center rounded-lg'
+                } backdrop-blur-sm transition-all duration-200 ${
                   activeTab === item.id
-                    ? 'bg-gradient-to-r from-blue-500/20 to-purple-500/20 text-blue-700 border-l-4 border-indigo-400 shadow-lg border border-white/30'
-                    : 'text-gray-600 hover:bg-gradient-to-r hover:from-blue-500/10 hover:to-purple-500/10 hover:text-blue-700 hover:border-l-4 hover:border-indigo-300 hover:shadow-lg hover:border hover:border-indigo-200/30'
+                    ? (isSidebarOpen 
+                        ? 'bg-gradient-to-r from-blue-500/20 to-purple-500/20 text-blue-700 border-l-4 border-indigo-400 shadow-lg border border-white/30'
+                        : 'bg-gradient-to-r from-blue-500/20 to-purple-500/20')
+                    : (isSidebarOpen 
+                        ? 'text-gray-600 hover:bg-gradient-to-r hover:from-blue-500/10 hover:to-purple-500/10 hover:text-blue-700 hover:border-l-4 hover:border-indigo-300 hover:shadow-lg hover:border hover:border-indigo-200/30'
+                        : 'text-gray-600 hover:bg-gradient-to-r hover:from-blue-500/10 hover:to-purple-500/10')
                 }`}
               >
-                <div className={`p-2 rounded-lg backdrop-blur-sm border transition-all duration-200 ${
-                  activeTab === item.id 
-                    ? 'bg-white/30 border-white/40' 
-                    : 'bg-white/10 border-white/20 hover:bg-blue-100/50 hover:border-blue-300/50'
-                }`}>
-                  <Icon className={`w-4 h-4 transition-colors duration-200 ${
+                {isSidebarOpen ? (
+                  <>
+                    <div className={`p-2 rounded-lg backdrop-blur-sm border transition-all duration-200 ${
+                      activeTab === item.id 
+                        ? 'bg-white/30 border-white/40' 
+                        : 'bg-white/10 border-white/20 hover:bg-blue-100/50 hover:border-blue-300/50'
+                    }`}>
+                      <Icon className={`w-4 h-4 transition-colors duration-200 ${
+                        activeTab === item.id 
+                          ? 'text-blue-600' 
+                          : 'text-gray-500 hover:text-blue-600'
+                      }`} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <span className="font-semibold text-sm">{item.label}</span>
+                      <p className="text-xs text-gray-500 mt-1 leading-tight">{item.description}</p>
+                    </div>
+                  </>
+                ) : (
+                  <Icon className={`w-5 h-5 transition-colors duration-200 ${
                     activeTab === item.id 
                       ? 'text-blue-600' 
                       : 'text-gray-500 hover:text-blue-600'
                   }`} />
-                </div>
-                {isSidebarOpen && (
-                  <div className="flex-1 min-w-0">
-                    <span className="font-semibold text-sm">{item.label}</span>
-                    <p className="text-xs text-gray-500 mt-1 leading-tight">{item.description}</p>
-                  </div>
                 )}
               </button>
             );
@@ -659,57 +693,70 @@ export function OrganizerDashboard() {
         </nav>
 
         {/* Logout Button in Sidebar */}
-        {isSidebarOpen && (
-          <div className="absolute bottom-4 left-4 right-4">
-            <button
-              onClick={handleLogout}
-              className="w-full flex items-center justify-center space-x-2 p-3 bg-gradient-to-r from-red-500/20 to-red-600/20 backdrop-blur-sm text-red-700 rounded-xl border border-red-200 hover:from-red-500/30 hover:to-red-600/30 hover:text-red-800 transition-all duration-200 shadow-sm hover:shadow-md"
-            >
-              <LogOut className="w-4 h-4" />
-              <span className="text-sm font-medium">Cerrar Sesión</span>
-            </button>
-          </div>
-        )}
+        <div className={`${isSidebarOpen ? 'absolute bottom-4 left-4 right-4' : 'mt-auto pb-4 flex justify-center'}`}>
+          <button
+            onClick={handleLogout}
+            className={`${
+              isSidebarOpen 
+                ? 'w-full flex items-center justify-center space-x-2 p-3' 
+                : 'w-12 h-12 flex items-center justify-center'
+            } bg-gradient-to-r from-red-500/20 to-red-600/20 backdrop-blur-sm text-red-700 rounded-xl border border-red-200 hover:from-red-500/30 hover:to-red-600/30 hover:text-red-800 transition-all duration-200 shadow-sm hover:shadow-md`}
+          >
+            <LogOut className="w-4 h-4" />
+            {isSidebarOpen && <span className="text-sm font-medium">Cerrar Sesión</span>}
+          </button>
+        </div>
       </div>
 
       {/* Main Content */}
-      <div className={`flex-1 flex flex-col ${isSidebarOpen ? 'ml-64' : 'ml-16'} transition-all duration-300`}>
+      <div className={`flex-1 flex flex-col transition-all duration-300 ${
+        isSidebarOpen ? 'md:ml-64' : 'md:ml-16'
+      } ${
+        !isSidebarOpen ? 'ml-0' : 'ml-0'
+      }`}>
         {/* Top Header */}
-        <div className={`fixed top-0 right-0 z-20 bg-gradient-to-r from-purple-600/90 via-purple-600/90 to-blue-500/90 backdrop-blur-md shadow-xl transition-all duration-300 ${isSidebarOpen ? 'left-64' : 'left-16'}`}>
-          <div className="h-16 flex items-center justify-between px-6">
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center border border-white/30 shadow-lg">
-                  <Calendar className="w-6 h-6 text-white" />
+        <div className={`fixed top-0 right-0 z-20 bg-gradient-to-r from-purple-600/90 via-purple-600/90 to-blue-500/90 backdrop-blur-md shadow-xl transition-all duration-300 ${
+          isSidebarOpen ? 'md:left-64' : 'md:left-16'
+        } left-0`}>
+          <div className="h-16 flex items-center justify-between px-3 md:px-6 gap-2 md:gap-4">
+            <div className="flex items-center space-x-2 md:space-x-4 flex-1 min-w-0">
+              {/* Hamburger Menu Button for Mobile */}
+              <button
+                onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                className="md:hidden p-2 rounded-xl hover:bg-white/20 backdrop-blur-sm transition-all duration-200 text-white border border-white/20"
+              >
+                <Menu className="w-5 h-5" />
+              </button>
+              
+              <div className="flex items-center space-x-2 md:space-x-3 flex-1 min-w-0">
+                <div className="min-w-0 flex-1">
+                  <h2 className="text-base md:text-2xl font-bold text-white truncate">
+                    {navigationItems.find(item => item.id === activeTab)?.label || 'Panel Principal'}
+                  </h2>
+                  {selectedEvent && (
+                    <div className="mt-1 flex items-center space-x-2">
+                      <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+                      <span className="text-xs md:text-sm text-green-100 font-medium truncate">
+                        {selectedEvent.title}
+                      </span>
+                      <span className="hidden lg:inline text-xs text-blue-200">
+                        ({selectedEvent.status === 'upcoming' ? 'Próximo' : 
+                          selectedEvent.status === 'ongoing' ? 'En curso' : 
+                          selectedEvent.status === 'completed' ? 'Completado' : 'Cancelado'})
+                      </span>
+                    </div>
+                  )}
                 </div>
-                 <div>
-                   <h2 className="text-2xl font-bold text-white">
-                     {navigationItems.find(item => item.id === activeTab)?.label || 'Panel Principal'}
-                   </h2>
-                   {selectedEvent && (
-                     <div className="mt-1 flex items-center space-x-2">
-                       <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-                       <span className="text-sm text-green-100 font-medium">
-                         Evento: {selectedEvent.title}
-                       </span>
-                       <span className="text-xs text-blue-200">
-                         ({selectedEvent.status === 'upcoming' ? 'Próximo' : 
-                           selectedEvent.status === 'ongoing' ? 'En curso' : 
-                           selectedEvent.status === 'completed' ? 'Completado' : 'Cancelado'})
-                       </span>
-                     </div>
-                   )}
-                 </div>
               </div>
             </div>
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center justify-end space-x-2 md:space-x-3 flex-shrink-0">
               {/* Event Selector */}
               {finalEvents.length > 0 ? (
-                <div className="relative">
+                <div className="relative w-8 h-8 md:w-auto md:h-auto">
                   <select
                     value={selectedEventId || ''}
                     onChange={(e) => setSelectedEventId(e.target.value)}
-                    className="appearance-none bg-white/20 backdrop-blur-sm border border-white/30 rounded-xl px-4 py-2 pr-8 text-white font-medium focus:outline-none focus:ring-2 focus:ring-white/50 transition-all duration-200 min-w-[200px]"
+                    className="appearance-none w-full h-full md:h-auto bg-white/20 backdrop-blur-sm border border-white/30 rounded-md md:rounded-xl text-transparent md:text-white text-xs md:text-sm font-medium focus:outline-none focus:ring-2 focus:ring-white/50 transition-all duration-200 cursor-pointer px-1 md:px-4 py-1 md:py-2 pr-1 md:pr-10"
                   >
                     {finalEvents.map(event => (
                       <option key={event.id} value={event.id} className="text-gray-900">
@@ -717,26 +764,26 @@ export function OrganizerDashboard() {
                       </option>
                     ))}
                   </select>
-                  <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-white pointer-events-none" />
+                  <Calendar className="absolute left-1/2 top-1/2 md:right-3 md:left-auto md:top-1/2 transform -translate-x-1/2 -translate-y-1/2 md:transform md:-translate-y-1/2 w-4 h-4 md:w-4 md:h-4 text-white pointer-events-none" />
                 </div>
               ) : (
-                <div className="flex items-center space-x-2 px-4 py-2 bg-yellow-500/20 backdrop-blur-sm border border-yellow-300/30 rounded-xl">
+                <div className="flex items-center space-x-2 px-3 md:px-4 py-2 bg-yellow-500/20 backdrop-blur-sm border border-yellow-300/30 rounded-xl">
                   <Calendar className="w-4 h-4 text-yellow-200" />
-                  <span className="text-yellow-200 text-sm font-medium">Sin eventos</span>
+                  <span className="text-yellow-200 text-xs md:text-sm font-medium hidden sm:inline">Sin eventos</span>
                 </div>
               )}
               
               {/* Profile Menu */}
-              <div className="relative">
+              <div className="relative flex-shrink-0">
                 <button
                   onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
-                  className="flex items-center space-x-3 p-2 rounded-xl hover:bg-white/10 transition-all duration-200"
+                  className="flex items-center space-x-2 md:space-x-3 p-2 rounded-xl hover:bg-white/10 transition-all duration-200"
                 >
-                  <div className="w-10 h-10 bg-gradient-to-r from-purple-500/80 to-blue-500/80 backdrop-blur-sm rounded-full flex items-center justify-center border border-white/30 shadow-lg">
-                    <User className="w-5 h-5 text-white" />
+                  <div className="w-8 h-8 md:w-10 md:h-10 bg-gradient-to-r from-purple-500/80 to-blue-500/80 backdrop-blur-sm rounded-full flex items-center justify-center border border-white/30 shadow-lg">
+                    <User className="w-4 h-4 md:w-5 md:h-5 text-white" />
                   </div>
-                  <div className="text-left">
-                    <p className="text-sm font-medium text-white">{user?.name || 'Organizador'}</p>
+                  <div className="text-left hidden md:block">
+                    <p className="text-sm font-medium text-white truncate max-w-[120px]">{user?.name || 'Organizador'}</p>
                   </div>
                 </button>
 
@@ -779,11 +826,11 @@ export function OrganizerDashboard() {
         </div>
 
         {/* Content Area */}
-        <div className="flex-1 p-6 overflow-y-auto bg-gray-100 mt-16" style={{height: 'calc(100vh - 80px)'}}>
+        <div className="flex-1 min-w-0 overflow-y-auto bg-gray-100 mt-16 w-full px-3 sm:px-4 md:px-6 py-3 sm:py-4 md:py-6 box-border" style={{height: 'calc(100vh - 80px)'}}>
           {/* Content Header */}
-          <div className="mb-6">
+          <div className="mb-4 md:mb-6 w-full max-w-full px-0">
             <div>
-              <h2 className="text-2xl font-bold text-gray-900">
+              <h2 className="text-xl md:text-2xl font-bold text-gray-900">
                 {navigationItems.find(item => item.id === activeTab)?.label}
               </h2>
               <p className="text-gray-600 mt-1">
@@ -794,7 +841,7 @@ export function OrganizerDashboard() {
           {/* Action Buttons - Removed from global header */}
 
           {/* Content Cards */}
-          <div className="p-6 space-y-4">
+          <div className="space-y-4 w-full max-w-full">
             {activeTab === 'overview' && (
               <OrganizerDashboardContent
                 stats={quickStats}
@@ -807,31 +854,31 @@ export function OrganizerDashboard() {
             {activeTab === 'events' && (
               <div className="space-y-6">
                 {/* Event Management Actions */}
-                <div className="flex justify-between items-center">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
                   <div>
                     <h3 className="text-lg font-semibold text-gray-900">Gestión de Eventos</h3>
                   </div>
-                  <div className="flex space-x-3">
+                  <div className="flex flex-wrap gap-2 w-full sm:w-auto">
             <button 
               onClick={handleRefresh}
-                      className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-orange-500 to-red-600 text-white font-medium rounded-xl hover:from-orange-600 hover:to-red-700 transition-all duration-200 shadow-sm"
+                      className="flex-1 sm:flex-none inline-flex items-center justify-center px-3 md:px-4 py-2 bg-gradient-to-r from-orange-500 to-red-600 text-white font-medium rounded-xl hover:from-orange-600 hover:to-red-700 transition-all duration-200 shadow-sm text-sm"
             >
-              <RefreshCw className="w-4 h-4 mr-2" />
-              Actualizar
+              <RefreshCw className="w-4 h-4 sm:mr-2" />
+              <span className="hidden sm:inline">Actualizar</span>
             </button>
             <button 
                       onClick={() => console.log('Exportando eventos...')}
-              className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-medium rounded-xl hover:from-blue-600 hover:to-purple-700 transition-all duration-200 shadow-sm"
+              className="flex-1 sm:flex-none inline-flex items-center justify-center px-3 md:px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-medium rounded-xl hover:from-blue-600 hover:to-purple-700 transition-all duration-200 shadow-sm text-sm"
             >
-              <Download className="w-4 h-4 mr-2" />
-                      Exportar Eventos
+              <Download className="w-4 h-4 sm:mr-2" />
+                      <span className="hidden sm:inline">Exportar</span>
             </button>
             <button 
                       onClick={() => console.log('Crear nuevo evento...')}
-              className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-medium rounded-xl hover:from-green-600 hover:to-emerald-700 transition-all duration-200 shadow-sm"
+              className="flex-1 sm:flex-none inline-flex items-center justify-center px-3 md:px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-medium rounded-xl hover:from-green-600 hover:to-emerald-700 transition-all duration-200 shadow-sm text-sm"
             >
-              <Plus className="w-4 h-4 mr-2" />
-              Nuevo Evento
+              <Plus className="w-4 h-4 sm:mr-2" />
+              <span className="hidden sm:inline">Nuevo</span>
             </button>
                   </div>
           </div>
@@ -862,31 +909,31 @@ export function OrganizerDashboard() {
             {activeTab === 'tickets' && (
               <div className="space-y-6">
                 {/* Ticket Management Actions */}
-                <div className="flex justify-between items-center">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
                   <div>
                     <h3 className="text-lg font-semibold text-gray-900">Gestión de Entradas</h3>
                   </div>
-                  <div className="flex space-x-3">
+                  <div className="flex flex-wrap gap-2 w-full sm:w-auto">
                     <button 
                       onClick={handleRefresh}
-                      className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-orange-500 to-red-600 text-white font-medium rounded-xl hover:from-orange-600 hover:to-red-700 transition-all duration-200 shadow-sm"
+                      className="flex-1 sm:flex-none inline-flex items-center justify-center px-3 md:px-4 py-2 bg-gradient-to-r from-orange-500 to-red-600 text-white font-medium rounded-xl hover:from-orange-600 hover:to-red-700 transition-all duration-200 shadow-sm text-sm"
                     >
-                      <RefreshCw className="w-4 h-4 mr-2" />
-                      Actualizar
+                      <RefreshCw className="w-4 h-4 sm:mr-2" />
+                      <span className="hidden sm:inline">Actualizar</span>
                     </button>
                     <button 
                       onClick={() => console.log('Exportando entradas...')}
-                      className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-medium rounded-xl hover:from-blue-600 hover:to-purple-700 transition-all duration-200 shadow-sm"
+                      className="flex-1 sm:flex-none inline-flex items-center justify-center px-3 md:px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-medium rounded-xl hover:from-blue-600 hover:to-purple-700 transition-all duration-200 shadow-sm text-sm"
                     >
-                      <Download className="w-4 h-4 mr-2" />
-                      Exportar Entradas
+                      <Download className="w-4 h-4 sm:mr-2" />
+                      <span className="hidden sm:inline">Exportar</span>
                     </button>
                     <button 
                       onClick={() => console.log('Crear nuevo tipo de entrada...')}
-                      className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-medium rounded-xl hover:from-green-600 hover:to-emerald-700 transition-all duration-200 shadow-sm"
+                      className="flex-1 sm:flex-none inline-flex items-center justify-center px-3 md:px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-medium rounded-xl hover:from-green-600 hover:to-emerald-700 transition-all duration-200 shadow-sm text-sm"
                     >
-                      <Plus className="w-4 h-4 mr-2" />
-                      Nueva Entrada
+                      <Plus className="w-4 h-4 sm:mr-2" />
+                      <span className="hidden sm:inline">Nueva</span>
                     </button>
                   </div>
                 </div>
@@ -945,32 +992,29 @@ export function OrganizerDashboard() {
             {activeTab === 'promotions' && (
               <div className="space-y-6">
                 {/* Promotion Management Actions */}
-                <div className="flex justify-between items-center">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
                   <div>
                     <h3 className="text-lg font-semibold text-gray-900">Gestión de Promociones</h3>
                   </div>
-                  <div className="flex space-x-3">
+                  <div className="flex flex-wrap gap-2 w-full sm:w-auto">
                     <button 
                       onClick={handleRefresh}
-                      className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-orange-500 to-red-600 text-white font-medium rounded-xl hover:from-orange-600 hover:to-red-700 transition-all duration-200 shadow-sm"
+                      className="flex-1 sm:flex-none inline-flex items-center justify-center px-3 md:px-4 py-2 bg-gradient-to-r from-orange-500 to-red-600 text-white font-medium rounded-xl hover:from-orange-600 hover:to-red-700 transition-all duration-200 shadow-sm text-sm"
                     >
-                      <RefreshCw className="w-4 h-4 mr-2" />
-                      Actualizar
+                      <RefreshCw className="w-4 h-4" />
                     </button>
                     <button 
                       onClick={() => console.log('Exportando promociones...')}
-                      className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-medium rounded-xl hover:from-blue-600 hover:to-purple-700 transition-all duration-200 shadow-sm"
+                      className="flex-1 sm:flex-none inline-flex items-center justify-center px-3 md:px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-medium rounded-xl hover:from-blue-600 hover:to-purple-700 transition-all duration-200 shadow-sm text-sm"
                     >
-                    <Download className="w-4 h-4 mr-2" />
-                      Exportar Promociones
+                      <Download className="w-4 h-4" />
                     </button>
                     <button 
                       onClick={() => console.log('Crear nueva promoción...')}
-                      className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-medium rounded-xl hover:from-green-600 hover:to-emerald-700 transition-all duration-200 shadow-sm"
+                      className="flex-1 sm:flex-none inline-flex items-center justify-center px-3 md:px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-medium rounded-xl hover:from-green-600 hover:to-emerald-700 transition-all duration-200 shadow-sm text-sm"
                     >
-                      <Plus className="w-4 h-4 mr-2" />
-                      Nueva Promoción
-                  </button>
+                      <Plus className="w-4 h-4" />
+                    </button>
                   </div>
                 </div>
 
@@ -1045,71 +1089,68 @@ export function OrganizerDashboard() {
             {activeTab === 'payments' && (
               <div className="space-y-6">
                 {/* Payment Management Actions */}
-                <div className="flex justify-between items-center">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
                   <div>
                     <h3 className="text-lg font-semibold text-gray-900">Métodos de Pago y Reconciliación</h3>
                   </div>
-                  <div className="flex space-x-3">
+                  <div className="flex flex-wrap gap-2 w-full sm:w-auto">
                     <button 
                       onClick={handleRefresh}
-                      className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-orange-500 to-red-600 text-white font-medium rounded-xl hover:from-orange-600 hover:to-red-700 transition-all duration-200 shadow-sm"
+                      className="flex-1 sm:flex-none inline-flex items-center justify-center px-3 md:px-4 py-2 bg-gradient-to-r from-orange-500 to-red-600 text-white font-medium rounded-xl hover:from-orange-600 hover:to-red-700 transition-all duration-200 shadow-sm"
                     >
-                      <RefreshCw className="w-4 h-4 mr-2" />
-                      Actualizar
+                      <RefreshCw className="w-4 h-4" />
                     </button>
                     <button 
                       onClick={() => console.log('Exportando reportes de pago...')}
-                      className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-medium rounded-xl hover:from-blue-600 hover:to-purple-700 transition-all duration-200 shadow-sm"
+                      className="flex-1 sm:flex-none inline-flex items-center justify-center px-3 md:px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-medium rounded-xl hover:from-blue-600 hover:to-purple-700 transition-all duration-200 shadow-sm"
                     >
-                      <Download className="w-4 h-4 mr-2" />
-                      Exportar Reportes
+                      <Download className="w-4 h-4" />
                     </button>
-                    <button className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-medium rounded-xl hover:from-green-600 hover:to-emerald-700 transition-all duration-200 shadow-sm">
-                      <Plus className="w-4 h-4 mr-2" />
-                      Configurar Método
+                    <button className="flex-1 sm:flex-none inline-flex items-center justify-center px-3 md:px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-medium rounded-xl hover:from-green-600 hover:to-emerald-700 transition-all duration-200 shadow-sm">
+                      <Plus className="w-4 h-4" />
                     </button>
                   </div>
                   </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                   {/* Payment Methods */}
-                  <div className="bg-gradient-to-br from-white to-indigo-100/98 backdrop-blur-lg shadow-xl border border-white/20 rounded-2xl p-6">
-                    <h4 className="font-semibold text-gray-900 mb-4">Métodos de Pago Activos</h4>
-                    <div className="space-y-4">
-                      <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                  <div className="bg-gradient-to-br from-white to-indigo-100/98 backdrop-blur-lg shadow-xl border border-white/20 rounded-xl md:rounded-2xl p-4 md:p-6">
+                    <h4 className="font-semibold text-gray-900 mb-3 md:mb-4 text-sm md:text-base">Métodos de Pago Activos</h4>
+                    <div className="space-y-3 md:space-y-4">
+                      <div className="p-3 md:p-4 bg-blue-50 rounded-lg border border-blue-200">
                         <div className="flex items-center justify-between">
-                          <div className="flex items-center space-x-3">
-                            <CreditCard className="w-5 h-5 text-blue-600" />
-                            <div>
-                              <h5 className="font-medium text-gray-900">Tarjetas de Crédito/Débito</h5>
-                              <p className="text-sm text-gray-600">Visa, Mastercard, American Express</p>
-                    </div>
-                  </div>
-                          <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">Activo</span>
-                    </div>
-                      </div>
-                      <div className="p-4 bg-purple-50 rounded-lg border border-purple-200">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center space-x-3">
-                            <Wallet className="w-5 h-5 text-purple-600" />
-                            <div>
-                              <h5 className="font-medium text-gray-900">Wallets Digitales</h5>
-                              <p className="text-sm text-gray-600">PayPal, Apple Pay, Google Pay</p>
+                          <div className="flex items-center space-x-2 md:space-x-3 min-w-0 flex-1">
+                            <CreditCard className="w-4 h-4 md:w-5 md:h-5 text-blue-600 flex-shrink-0" />
+                            <div className="min-w-0 flex-1">
+                              <h5 className="font-medium text-gray-900 text-xs md:text-sm truncate">Tarjetas de Crédito/Débito</h5>
+                              <p className="text-xs md:text-sm text-gray-600 truncate">Visa, Mastercard, American Express</p>
                             </div>
                           </div>
-                          <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">Activo</span>
+                          <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full flex-shrink-0 ml-2">Activo</span>
                         </div>
                       </div>
-                      <div className="p-4 bg-green-50 rounded-lg border border-green-200">
+                      <div className="p-3 md:p-4 bg-purple-50 rounded-lg border border-purple-200">
                         <div className="flex items-center justify-between">
-                          <div className="flex items-center space-x-3">
-                            <Receipt className="w-5 h-5 text-green-600" />
-                            <div>
-                              <h5 className="font-medium text-gray-900">Transferencias Bancarias</h5>
-                              <p className="text-sm text-gray-600">PSE, Nequi, Daviplata</p>
+                          <div className="flex items-center space-x-2 md:space-x-3 min-w-0 flex-1">
+                            <Wallet className="w-4 h-4 md:w-5 md:h-5 text-purple-600 flex-shrink-0" />
+                            <div className="min-w-0 flex-1">
+                              <h5 className="font-medium text-gray-900 text-xs md:text-sm truncate">Wallets Digitales</h5>
+                              <p className="text-xs md:text-sm text-gray-600 truncate">PayPal, Apple Pay, Google Pay</p>
                             </div>
                           </div>
-                          <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">Activo</span>
+                          <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full flex-shrink-0 ml-2">Activo</span>
+                        </div>
+                      </div>
+                      <div className="p-3 md:p-4 bg-green-50 rounded-lg border border-green-200">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-2 md:space-x-3 min-w-0 flex-1">
+                            <Receipt className="w-4 h-4 md:w-5 md:h-5 text-green-600 flex-shrink-0" />
+                            <div className="min-w-0 flex-1">
+                              <h5 className="font-medium text-gray-900 text-xs md:text-sm truncate">Transferencias Bancarias</h5>
+                              <p className="text-xs md:text-sm text-gray-600 truncate">PSE, Nequi, Daviplata</p>
+                            </div>
+                          </div>
+                          <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full flex-shrink-0 ml-2">Activo</span>
                         </div>
                       </div>
                     </div>
@@ -1148,25 +1189,25 @@ export function OrganizerDashboard() {
             {activeTab === 'attendance' && (
               <div className="space-y-6">
                 {/* Attendance Management Actions */}
-                <div className="flex justify-between items-center">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
                   <div>
                     <h3 className="text-lg font-semibold text-gray-900">Control de Asistencia</h3>
                   </div>
-                  <div className="flex space-x-3">
+                  <div className="flex flex-wrap gap-2 w-full sm:w-auto">
                     <button 
                       onClick={handleRefresh}
-                      className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-orange-500 to-red-600 text-white font-medium rounded-xl hover:from-orange-600 hover:to-red-700 transition-all duration-200 shadow-sm"
+                      className="flex-1 sm:flex-none inline-flex items-center justify-center px-3 md:px-4 py-2 bg-gradient-to-r from-orange-500 to-red-600 text-white font-medium rounded-xl hover:from-orange-600 hover:to-red-700 transition-all duration-200 shadow-sm"
                     >
-                      <RefreshCw className="w-4 h-4 mr-2" />
-                      Actualizar
+                      <RefreshCw className="w-4 h-4 sm:mr-2" />
+                      <span className="hidden sm:inline">Actualizar</span>
                     </button>
-                    <button className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-medium rounded-xl hover:from-blue-600 hover:to-purple-700 transition-all duration-200 shadow-sm">
-                      <QrCode className="w-4 h-4 mr-2" />
-                      Iniciar Escaneo
+                    <button className="flex-1 sm:flex-none inline-flex items-center justify-center px-3 md:px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-medium rounded-xl hover:from-blue-600 hover:to-purple-700 transition-all duration-200 shadow-sm">
+                      <QrCode className="w-4 h-4 sm:mr-2" />
+                      <span className="hidden sm:inline">Escanear</span>
                     </button>
-                    <button className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-medium rounded-xl hover:from-green-600 hover:to-emerald-700 transition-all duration-200 shadow-sm">
-                      <CheckCircle className="w-4 h-4 mr-2" />
-                      Registrar Asistencia
+                    <button className="flex-1 sm:flex-none inline-flex items-center justify-center px-3 md:px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-medium rounded-xl hover:from-green-600 hover:to-emerald-700 transition-all duration-200 shadow-sm">
+                      <CheckCircle className="w-4 h-4 sm:mr-2" />
+                      <span className="hidden sm:inline">Registrar</span>
                     </button>
                   </div>
                 </div>
@@ -1231,14 +1272,14 @@ export function OrganizerDashboard() {
                 </div>
 
                 {/* Attendance Reports */}
-                <div className="bg-gradient-to-br from-white to-indigo-100/98 backdrop-blur-lg shadow-xl border border-white/20 rounded-2xl p-6">
-                  <div className="flex justify-between items-center mb-4">
-                    <h4 className="font-semibold text-gray-900">Reportes de Asistencia</h4>
-                    <button className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-600 text-white rounded-xl hover:from-purple-600 hover:to-pink-700 transition-all duration-200">
-                      <FileBarChart className="w-4 h-4 mr-2" />
-                      Generar Reporte
-                      </button>
-                    </div>
+                <div className="bg-gradient-to-br from-white to-indigo-100/98 backdrop-blur-lg shadow-xl border border-white/20 rounded-xl md:rounded-2xl p-4 md:p-6">
+                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-4">
+                    <h4 className="font-semibold text-gray-900 text-sm md:text-base">Reportes de Asistencia</h4>
+                    <button className="w-full sm:w-auto inline-flex items-center justify-center px-3 md:px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-600 text-white text-xs md:text-sm rounded-lg md:rounded-xl hover:from-purple-600 hover:to-pink-700 transition-all duration-200">
+                      <FileBarChart className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" />
+                      <span className="truncate">Generar Reporte</span>
+                    </button>
+                  </div>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
                       <h5 className="font-medium text-gray-900 mb-2">Reporte por Evento</h5>
@@ -1272,31 +1313,28 @@ export function OrganizerDashboard() {
             {activeTab === 'attendees' && (
               <div className="space-y-6">
                 {/* Attendee Management Actions */}
-                <div className="flex justify-between items-center">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
                   <div>
                     <h3 className="text-lg font-semibold text-gray-900">Gestión de Asistentes</h3>
           </div>
-                  <div className="flex space-x-3">
+                  <div className="flex flex-wrap gap-2 w-full sm:w-auto">
                     <button 
                       onClick={handleRefresh}
-                      className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-orange-500 to-red-600 text-white font-medium rounded-xl hover:from-orange-600 hover:to-red-700 transition-all duration-200 shadow-sm"
+                      className="flex-1 sm:flex-none inline-flex items-center justify-center px-3 md:px-4 py-2 bg-gradient-to-r from-orange-500 to-red-600 text-white font-medium rounded-xl hover:from-orange-600 hover:to-red-700 transition-all duration-200 shadow-sm"
                     >
-                      <RefreshCw className="w-4 h-4 mr-2" />
-                      Actualizar
+                      <RefreshCw className="w-4 h-4" />
                     </button>
                     <button 
                       onClick={() => console.log('Exportando lista de asistentes...')}
-                      className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-medium rounded-xl hover:from-blue-600 hover:to-purple-700 transition-all duration-200 shadow-sm"
+                      className="flex-1 sm:flex-none inline-flex items-center justify-center px-3 md:px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-medium rounded-xl hover:from-blue-600 hover:to-purple-700 transition-all duration-200 shadow-sm"
                     >
-                      <Download className="w-4 h-4 mr-2" />
-                      Exportar Lista
+                      <Download className="w-4 h-4" />
                     </button>
                     <button 
                       onClick={() => console.log('Enviar notificación masiva...')}
-                      className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-600 text-white font-medium rounded-xl hover:from-purple-600 hover:to-pink-700 transition-all duration-200 shadow-sm"
+                      className="flex-1 sm:flex-none inline-flex items-center justify-center px-3 md:px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-600 text-white font-medium rounded-xl hover:from-purple-600 hover:to-pink-700 transition-all duration-200 shadow-sm"
                     >
-                      <Bell className="w-4 h-4 mr-2" />
-                      Notificar Asistentes
+                      <Bell className="w-4 h-4" />
                     </button>
                   </div>
                 </div>

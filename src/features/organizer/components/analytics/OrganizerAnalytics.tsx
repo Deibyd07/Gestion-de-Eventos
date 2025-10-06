@@ -181,79 +181,79 @@ export function OrganizerAnalytics() {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 md:space-y-6 w-full">
       {/* Action Buttons */}
-      <div className="flex justify-end">
-        <button className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-medium rounded-xl hover:from-blue-600 hover:to-purple-700 transition-all duration-200 shadow-sm">
-          <Download className="w-4 h-4 mr-2" />
-          Exportar
+      <div className="flex justify-end w-full">
+        <button className="inline-flex items-center px-3 md:px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-medium text-sm rounded-xl hover:from-blue-600 hover:to-purple-700 transition-all duration-200 shadow-sm">
+          <Download className="w-3 h-3 md:w-4 md:h-4 sm:mr-2" />
+          <span className="hidden sm:inline">Exportar</span>
         </button>
       </div>
 
       {/* Time Range Selector */}
-      <div className="bg-gradient-to-br from-white to-indigo-100/98 backdrop-blur-lg shadow-xl border border-gray-300 rounded-2xl p-6">
-        <div className="flex items-center justify-between">
+      <div className="bg-gradient-to-br from-white to-indigo-100/98 backdrop-blur-lg shadow-xl border border-gray-300 rounded-2xl p-4 md:p-6">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
-            <h3 className="text-lg font-semibold text-gray-900 flex items-center">
-              <BarChart3 className="w-5 h-5 mr-2" />
+            <h3 className="text-base md:text-lg font-semibold text-gray-900 flex items-center">
+              <BarChart3 className="w-4 h-4 md:w-5 md:h-5 mr-2" />
               Analytics Avanzados
             </h3>
-            <p className="text-sm text-gray-600 mt-1">
+            <p className="text-xs md:text-sm text-gray-600 mt-1">
               Análisis detallado del rendimiento de tus eventos
             </p>
           </div>
           <select
             value={timeRange}
             onChange={(e) => setTimeRange(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white/80 backdrop-blur-sm"
+            className="w-full sm:w-auto px-3 md:px-4 py-2 text-sm border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white/80 backdrop-blur-sm"
           >
-            <option value="7d">Últimos 7 días</option>
-            <option value="30d">Últimos 30 días</option>
-            <option value="90d">Últimos 90 días</option>
-            <option value="1y">Último año</option>
+            <option value="7d">7 días</option>
+            <option value="30d">30 días</option>
+            <option value="90d">90 días</option>
+            <option value="1y">1 año</option>
           </select>
         </div>
       </div>
 
       {/* Tabs Navigation */}
-      <div className="border-b border-gray-200">
-        <nav className="-mb-px flex space-x-8">
+      <div className="border-b border-gray-200 overflow-x-auto">
+        <nav className="-mb-px flex space-x-4 md:space-x-8 min-w-max">
           <button
             onClick={() => setActiveTab('overview')}
-            className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors duration-200 ${
+            className={`py-2 px-1 border-b-2 font-medium text-xs md:text-sm transition-colors duration-200 whitespace-nowrap ${
               activeTab === 'overview'
                 ? 'border-blue-500 text-blue-600'
                 : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
             }`}
           >
             <div className="flex items-center space-x-2">
-              <BarChart3 className="w-4 h-4" />
+              <BarChart3 className="w-3 h-3 md:w-4 md:h-4" />
               <span>Vista General</span>
             </div>
           </button>
           <button
             onClick={() => setActiveTab('trends')}
-            className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors duration-200 ${
+            className={`py-2 px-1 border-b-2 font-medium text-xs md:text-sm transition-colors duration-200 whitespace-nowrap ${
               activeTab === 'trends'
                 ? 'border-blue-500 text-blue-600'
                 : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
             }`}
           >
             <div className="flex items-center space-x-2">
-              <TrendingUp className="w-4 h-4" />
+              <TrendingUp className="w-3 h-3 md:w-4 md:h-4" />
               <span>Tendencias</span>
             </div>
           </button>
           <button
             onClick={() => setActiveTab('performance')}
-            className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors duration-200 ${
+            className={`py-2 px-1 border-b-2 font-medium text-xs md:text-sm transition-colors duration-200 whitespace-nowrap ${
               activeTab === 'performance'
                 ? 'border-blue-500 text-blue-600'
                 : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
             }`}
           >
             <div className="flex items-center space-x-2">
-              <Target className="w-4 h-4" />
+              <Target className="w-3 h-3 md:w-4 md:h-4" />
               <span>Rendimiento</span>
             </div>
           </button>

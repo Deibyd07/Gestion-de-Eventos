@@ -265,9 +265,30 @@ Password: usuario123
 
 ### 🔒 **Seguridad Robusta**
 - Row Level Security (RLS) en Supabase
-- Encriptación de contraseñas con bcrypt
+- Encriptación de contraseñas con Blowfish (BF)
 - Protección de rutas por rol
 - Validación en frontend y backend
+
+#### 🔐 **Sistema de Encriptación de Contraseñas**
+
+El proyecto implementa un sistema robusto de encriptación de contraseñas utilizando:
+
+- **Algoritmo**: **Blowfish (BF)** con función `crypt()` de PostgreSQL
+- **Salt único**: Cada contraseña tiene un salt aleatorio generado automáticamente
+- **Función de encriptación**: `crypt(password, gen_salt('bf'))`
+- **Verificación segura**: Comparación hash sin almacenar contraseñas en texto plano
+
+**Características de seguridad:**
+- ✅ **Resistente a ataques de fuerza bruta**
+- ✅ **Previene ataques con tablas arcoíris**
+- ✅ **Salt único por contraseña**
+- ✅ **Algoritmo probado y seguro**
+- ✅ **Implementación nativa de PostgreSQL**
+
+**Archivos relacionados:**
+- `database/solucion_completa_contraseñas.sql` - Script de configuración
+- `src/core/stores/authStore.ts` - Lógica de autenticación
+- `src/core/services/supabaseServiceEspanol.ts` - Servicios de usuario
 
 ### 📱 **Mobile First**
 - Diseño responsive en todos los dispositivos

@@ -1,7 +1,7 @@
 import { ReactNode } from 'react';
 import { Header } from './Header';
 import { Footer } from './Footer';
-import { Toast } from '../../../features/events/components/Toast';
+import { Toast } from '../../../modules/events/presentation/components/Toast.component';
 
 interface LayoutProps {
   children: ReactNode;

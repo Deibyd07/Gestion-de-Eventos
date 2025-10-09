@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Calendar, User, ShoppingCart, Menu, X, Search, LogOut, Settings, Shield } from 'lucide-react';
-import { useAuthStore } from '../../../core/stores/authStore';
-import { useCartStore } from '../../../core/stores/cartStore';
+import { useAuthStore } from '../../../modules/authentication/infrastructure/store/Auth.store';
+import { useCartStore } from '../../../modules/payments/infrastructure/store/Cart.store';
 
 export function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);

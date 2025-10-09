@@ -7,18 +7,9 @@ export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: {
-      '@shared': path.resolve(__dirname, './src/shared'),
-    },
-  },
-  optimizeDeps: {
-    exclude: ['lucide-react'],
-  },
-  resolve: {
-    alias: {
       '@': path.resolve(__dirname, './src'),
       '@modules': path.resolve(__dirname, './src/modules'),
       '@shared': path.resolve(__dirname, './src/shared'),
-      '@core': path.resolve(__dirname, './src/core'),
       '@events': path.resolve(__dirname, './src/modules/events'),
       '@auth': path.resolve(__dirname, './src/modules/authentication'),
       '@payments': path.resolve(__dirname, './src/modules/payments'),
@@ -28,5 +19,8 @@ export default defineConfig({
       '@users': path.resolve(__dirname, './src/modules/users'),
       '@notifications': path.resolve(__dirname, './src/modules/notifications'),
     },
+  },
+  optimizeDeps: {
+    exclude: ['lucide-react'],
   },
 });

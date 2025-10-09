@@ -1,19 +1,9 @@
-@import './assets/styles/scrollbar-simple.css';
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 /* Responsive utilities */
 @layer utilities {
-  .scrollbar-hide {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-  }
-  .scrollbar-hide::-webkit-scrollbar {
-    display: none;
-  }
-  
   .break-all {
     word-break: break-all;
   }
@@ -58,14 +48,5 @@
   .sidebar-icon-compact {
     width: 1.25rem; /* 5 */
     height: 1.25rem; /* 5 */
-  }
-
-  /* Hide scrollbar utility for desktop */
-  .hide-scrollbar {
-    -ms-overflow-style: none; /* IE and Edge */
-    scrollbar-width: none; /* Firefox */
-  }
-  .hide-scrollbar::-webkit-scrollbar {
-    display: none; /* Chrome, Safari, Opera */
   }
 }

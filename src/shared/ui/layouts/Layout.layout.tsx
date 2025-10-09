@@ -1,0 +1,21 @@
+import { ReactNode } from 'react';
+import { Header } from './Header.layout';
+import { Footer } from './Footer.layout';
+import { Toast } from '../../../modules/events/presentation/components/Toast.component';
+
+interface LayoutProps {
+  children: ReactNode;
+}
+
+export function Layout({ children }: LayoutProps) {
+  return (
+    <div className="min-h-screen flex flex-col">
+      <Header />
+      <main className="flex-1 pt-20">
+        {children}
+      </main>
+      <Footer />
+      <Toast />
+    </div>
+  );
+}

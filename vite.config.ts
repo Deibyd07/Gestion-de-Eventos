@@ -5,6 +5,11 @@ import path from 'path';
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
+  resolve: {
+    alias: {
+      '@shared': path.resolve(__dirname, './src/shared'),
+    },
+  },
   optimizeDeps: {
     exclude: ['lucide-react'],
   },

@@ -16,7 +16,7 @@ import { AdminRedirect } from './modules/authentication/presentation/guards/Admi
 import { AdminRouteGuard } from './modules/authentication/presentation/guards/AdminRouteGuard.guard';
 
 // Layout
-import { Layout } from './shared/components/layout/Layout';
+import { Layout } from './shared/ui/layouts/Layout.layout';
 
 // Pages - Events
 import { HomePage } from './modules/events/presentation/pages/Home.page';

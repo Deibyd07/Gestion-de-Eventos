@@ -18,7 +18,24 @@
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "noFallthroughCasesInSwitch": true
+    "noFallthroughCasesInSwitch": true,
+
+    /* Path Aliases */
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"],
+      "@modules/*": ["./src/modules/*"],
+      "@shared/*": ["./src/shared/*"],
+      "@core/*": ["./src/core/*"],
+      "@events/*": ["./src/modules/events/*"],
+      "@auth/*": ["./src/modules/authentication/*"],
+      "@payments/*": ["./src/modules/payments/*"],
+      "@analytics/*": ["./src/modules/analytics/*"],
+      "@admin/*": ["./src/modules/administration/*"],
+      "@organizers/*": ["./src/modules/organizers/*"],
+      "@users/*": ["./src/modules/users/*"],
+      "@notifications/*": ["./src/modules/notifications/*"]
+    }
   },
   "include": ["src"]
 }

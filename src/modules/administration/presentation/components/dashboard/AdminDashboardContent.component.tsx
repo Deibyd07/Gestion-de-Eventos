@@ -91,7 +91,7 @@ export const AdminDashboardContent: React.FC<AdminDashboardContentProps> = ({
   dashboardData
 }) => {
   return (
-    <div className="p-4 space-y-2 admin-panel panel-consistent-width">
+    <div className="space-y-4 md:space-y-6 w-full max-w-full">
       {/* Key Metrics Grid */}
       <AdminStatsCards 
         stats={dashboardData.overview}
@@ -106,7 +106,7 @@ export const AdminDashboardContent: React.FC<AdminDashboardContentProps> = ({
       />
 
       {/* Charts and Analytics */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
         <RecentActivity activities={dashboardData.recentActivity} />
         <TopOrganizers 
           organizers={dashboardData.topOrganizers}

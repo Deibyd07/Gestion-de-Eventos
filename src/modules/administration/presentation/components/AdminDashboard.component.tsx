@@ -156,24 +156,26 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   };
 
   return (
-    <div className="p-4 space-y-2 admin-panel panel-consistent-width">
+    <div className="space-y-4 md:space-y-6 w-full max-w-full">
       {/* Controls */}
-      <div className="flex justify-end items-center">
-        <div className="flex space-x-3">
+      <div className="flex flex-col sm:flex-row justify-end items-start sm:items-center gap-2 sm:gap-3">
+        <div className="flex flex-wrap gap-2 w-full sm:w-auto">
           <button
             onClick={handleRefresh}
             disabled={isRefreshing}
-            className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-xl hover:from-orange-600 hover:to-red-700 disabled:opacity-50 transition-all duration-200 shadow-sm"
+            className="flex-1 sm:flex-none inline-flex items-center justify-center space-x-2 px-3 md:px-4 py-2 bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-xl hover:from-orange-600 hover:to-red-700 disabled:opacity-50 transition-all duration-200 shadow-sm text-sm"
           >
             <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-            <span>Actualizar</span>
+            <span className="hidden sm:inline">Actualizar</span>
+            <span className="sm:hidden">↻</span>
           </button>
           <button
             onClick={() => onExportData('dashboard')}
-            className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-xl hover:from-blue-600 hover:to-purple-700 transition-all duration-200 shadow-sm"
+            className="flex-1 sm:flex-none inline-flex items-center justify-center space-x-2 px-3 md:px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-xl hover:from-blue-600 hover:to-purple-700 transition-all duration-200 shadow-sm text-sm"
           >
             <Download className="w-4 h-4" />
-            <span>Exportar</span>
+            <span className="hidden sm:inline">Exportar</span>
+            <span className="sm:hidden">↓</span>
           </button>
         </div>
       </div>

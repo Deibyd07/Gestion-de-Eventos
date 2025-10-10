@@ -159,17 +159,17 @@ export const EventManagement: React.FC = () => {
       {/* Action Buttons */}
       <div className="flex flex-col sm:flex-row justify-end items-stretch sm:items-center gap-2 sm:gap-3">
         <div className="flex flex-row-reverse sm:flex-row flex-wrap gap-2 w-full sm:w-auto">
-          <button className="flex-1 min-w-0 sm:flex-none flex items-center justify-center space-x-2 px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl hover:from-green-600 hover:to-emerald-700 transition-all duration-200 shadow-sm">
-            <Plus className="w-4 h-4" />
-            <span>Nuevo</span>
+          <button className="flex-1 min-w-0 sm:flex-none flex items-center justify-center space-x-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-xl hover:from-blue-600 hover:to-purple-700 transition-all duration-200 shadow-sm">
+            <Download className="w-4 h-4" />
+            <span>Exportar</span>
           </button>
           <button className="flex-1 min-w-0 sm:flex-none flex items-center justify-center space-x-2 px-4 py-2 bg-gradient-to-r from-gray-500 to-gray-600 text-white rounded-xl hover:from-gray-600 hover:to-gray-700 transition-all duration-200 shadow-sm">
             <Upload className="w-4 h-4" />
             <span>Importar</span>
           </button>
-          <button className="flex-1 min-w-0 sm:flex-none flex items-center justify-center space-x-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-xl hover:from-blue-600 hover:to-purple-700 transition-all duration-200 shadow-sm">
-            <Download className="w-4 h-4" />
-            <span>Exportar</span>
+          <button className="flex-1 min-w-0 sm:flex-none flex items-center justify-center space-x-2 px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl hover:from-green-600 hover:to-emerald-700 transition-all duration-200 shadow-sm">
+            <Plus className="w-4 h-4" />
+            <span>Nuevo</span>
           </button>
         </div>
       </div>

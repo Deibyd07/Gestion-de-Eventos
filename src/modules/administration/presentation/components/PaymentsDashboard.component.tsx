@@ -214,13 +214,13 @@ export const PaymentsDashboard: React.FC = () => {
       {/* Controls */}
       <div className="flex justify-end items-center">
         <div className="flex flex-row-reverse sm:flex-row gap-2 sm:gap-3">
-          <button className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-xl hover:from-orange-600 hover:to-red-700 transition-all duration-200 shadow-sm">
-            <RefreshCw className="w-4 h-4" />
-            <span>Actualizar</span>
-          </button>
           <button className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-xl hover:from-blue-600 hover:to-purple-700 transition-all duration-200 shadow-sm">
             <Download className="w-4 h-4" />
             <span>Exportar</span>
+          </button>
+          <button className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-xl hover:from-orange-600 hover:to-red-700 transition-all duration-200 shadow-sm">
+            <RefreshCw className="w-4 h-4" />
+            <span>Actualizar</span>
           </button>
         </div>
       </div>

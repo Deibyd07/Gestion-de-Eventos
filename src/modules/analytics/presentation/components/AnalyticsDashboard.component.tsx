@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { TrendingUp, Users, DollarSign, Calendar, Eye, ShoppingCart, CheckCircle, AlertCircle, Download, Filter } from 'lucide-react';
+import { TrendingUp, Users, DollarSign, Calendar, CheckCircle, AlertCircle, Download, Filter } from 'lucide-react';
 
 interface AnalyticsData {
   totalEvents: number;
@@ -52,16 +52,8 @@ interface AnalyticsFilters {
 
 export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
   data,
-  onExportReport,
-  onFilterChange,
-  userRole
+  onExportReport
 }) => {
-  const [filters, setFilters] = useState<AnalyticsFilters>({
-    dateFrom: '',
-    dateTo: '',
-    eventType: '',
-    location: ''
-  });
   const [activeTab, setActiveTab] = useState<'overview' | 'revenue' | 'attendance'>('overview');
   const [isExportDropdownOpen, setIsExportDropdownOpen] = useState(false);
 
@@ -95,11 +87,6 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
     return new Intl.NumberFormat('es-CO').format(num);
   };
 
-  const updateFilter = (key: keyof AnalyticsFilters, value: string) => {
-    const newFilters = { ...filters, [key]: value };
-    setFilters(newFilters);
-    onFilterChange(newFilters);
-  };
 
   const tabs = [
     { id: 'overview', label: 'Resumen General', icon: TrendingUp },
@@ -158,77 +145,86 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
       </div>
 
       {/* Key Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 metrics-container grid-consistent">
-        <div className="bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-2xl p-6 shadow-xl hover:shadow-2xl transition-all duration-200 backdrop-blur-lg">
-          <div className="flex items-center">
-            <div className="p-3 bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl shadow-sm">
-              <Calendar className="w-6 h-6 text-white" />
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-3">
+        <div className="bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-xl md:rounded-2xl p-3 sm:p-4 shadow-xl hover:shadow-2xl transition-all duration-200 backdrop-blur-lg">
+          <div className="flex items-start sm:items-center justify-between gap-2">
+            <div className="flex-1 min-w-0">
+              <p className="text-xs md:text-sm font-medium text-blue-700 truncate">Total Eventos</p>
+              <p className="text-lg md:text-2xl font-bold text-blue-900">{formatNumber(data.totalEvents)}</p>
+              <p className="text-xs text-green-600 font-medium flex items-center mt-1">
+                <span className="truncate">+12% vs mes anterior</span>
+              </p>
             </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-blue-700">Total Eventos</p>
-              <p className="text-2xl font-bold text-blue-900">{formatNumber(data.totalEvents)}</p>
-              <p className="text-sm text-green-600 font-medium">+12% vs mes anterior</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-gradient-to-br from-green-50 to-green-100 border border-green-200 rounded-2xl p-6 shadow-xl hover:shadow-2xl transition-all duration-200 backdrop-blur-lg">
-          <div className="flex items-center">
-            <div className="p-3 bg-gradient-to-r from-green-500 to-green-600 rounded-xl shadow-sm">
-              <DollarSign className="w-6 h-6 text-white" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-green-700">Ingresos Totales</p>
-              <p className="text-2xl font-bold text-green-900">{formatCurrency(data.totalRevenue)}</p>
-              <p className="text-sm text-green-600 font-medium">+8% vs mes anterior</p>
+            <div className="p-2 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg shadow-sm flex-shrink-0">
+              <Calendar className="w-4 h-4 md:w-5 md:h-5 text-white" />
             </div>
           </div>
         </div>
 
-        <div className="bg-gradient-to-br from-purple-50 to-purple-100 border border-purple-200 rounded-2xl p-6 shadow-xl hover:shadow-2xl transition-all duration-200 backdrop-blur-lg">
-          <div className="flex items-center">
-            <div className="p-3 bg-gradient-to-r from-purple-500 to-purple-600 rounded-xl shadow-sm">
-              <Users className="w-6 h-6 text-white" />
+        <div className="bg-gradient-to-br from-green-50 to-green-100 border border-green-200 rounded-xl md:rounded-2xl p-3 sm:p-4 shadow-xl hover:shadow-2xl transition-all duration-200 backdrop-blur-lg">
+          <div className="flex items-start sm:items-center justify-between gap-2">
+            <div className="flex-1 min-w-0">
+              <p className="text-xs md:text-sm font-medium text-green-700 truncate">Ingresos Totales</p>
+              <p className="text-lg md:text-2xl font-bold text-green-900">{formatCurrency(data.totalRevenue)}</p>
+              <p className="text-xs text-green-600 font-medium flex items-center mt-1">
+                <span className="truncate">+8% vs mes anterior</span>
+              </p>
             </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-purple-700">Total Asistentes</p>
-              <p className="text-2xl font-bold text-purple-900">{formatNumber(data.totalAttendees)}</p>
-              <p className="text-sm text-green-600 font-medium">+15% vs mes anterior</p>
+            <div className="p-2 bg-gradient-to-r from-green-500 to-green-600 rounded-lg shadow-sm flex-shrink-0">
+              <DollarSign className="w-4 h-4 md:w-5 md:h-5 text-white" />
             </div>
           </div>
         </div>
 
-        <div className="bg-gradient-to-br from-yellow-50 to-yellow-100 border border-yellow-200 rounded-2xl p-6 shadow-xl hover:shadow-2xl transition-all duration-200 backdrop-blur-lg">
-          <div className="flex items-center">
-            <div className="p-3 bg-gradient-to-r from-yellow-500 to-yellow-600 rounded-xl shadow-sm">
-              <TrendingUp className="w-6 h-6 text-white" />
+        <div className="bg-gradient-to-br from-purple-50 to-purple-100 border border-purple-200 rounded-xl md:rounded-2xl p-3 sm:p-4 shadow-xl hover:shadow-2xl transition-all duration-200 backdrop-blur-lg">
+          <div className="flex items-start sm:items-center justify-between gap-2">
+            <div className="flex-1 min-w-0">
+              <p className="text-xs md:text-sm font-medium text-purple-700 truncate">Total Asistentes</p>
+              <p className="text-lg md:text-2xl font-bold text-purple-900">{formatNumber(data.totalAttendees)}</p>
+              <p className="text-xs text-green-600 font-medium flex items-center mt-1">
+                <span className="truncate">+15% vs mes anterior</span>
+              </p>
             </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-yellow-700">Tasa de Conversión</p>
-              <p className="text-2xl font-bold text-yellow-900">{data.conversionRate.toFixed(1)}%</p>
-              <p className="text-sm text-green-600 font-medium">+2.3% vs mes anterior</p>
+            <div className="p-2 bg-gradient-to-r from-purple-500 to-purple-600 rounded-lg shadow-sm flex-shrink-0">
+              <Users className="w-4 h-4 md:w-5 md:h-5 text-white" />
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-gradient-to-br from-yellow-50 to-yellow-100 border border-yellow-200 rounded-xl md:rounded-2xl p-3 sm:p-4 shadow-xl hover:shadow-2xl transition-all duration-200 backdrop-blur-lg">
+          <div className="flex items-start sm:items-center justify-between gap-2">
+            <div className="flex-1 min-w-0">
+              <p className="text-xs md:text-sm font-medium text-yellow-700 truncate">Tasa de Conversión</p>
+              <p className="text-lg md:text-2xl font-bold text-yellow-900">{data.conversionRate.toFixed(1)}%</p>
+              <p className="text-xs text-green-600 font-medium flex items-center mt-1">
+                <span className="truncate">+2.3% vs mes anterior</span>
+              </p>
+            </div>
+            <div className="p-2 bg-gradient-to-r from-yellow-500 to-yellow-600 rounded-lg shadow-sm flex-shrink-0">
+              <TrendingUp className="w-4 h-4 md:w-5 md:h-5 text-white" />
             </div>
           </div>
         </div>
       </div>
 
       {/* Navigation Tabs */}
-      <div className="bg-gradient-to-br from-white to-indigo-100/98 backdrop-blur-lg shadow-xl border-b-2 border-gray-300 rounded-2xl p-2">
-        <nav className="flex space-x-2 overflow-x-auto">
+      <div className="bg-gradient-to-br from-white to-indigo-100/98 backdrop-blur-lg shadow-xl border-b-2 border-gray-300 rounded-xl md:rounded-2xl p-2">
+        <nav className="grid grid-cols-3 sm:flex sm:space-x-1 sm:space-x-2 gap-1 sm:gap-0">
           {tabs.map((tab) => {
             const Icon = tab.icon;
             return (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center space-x-2 px-4 py-3 rounded-xl font-medium text-sm transition-all duration-200 whitespace-nowrap ${
+                className={`flex items-center justify-center sm:justify-start space-x-1 sm:space-x-2 px-2 sm:px-4 py-2 sm:py-3 rounded-lg sm:rounded-xl font-medium text-xs sm:text-sm transition-all duration-200 ${
                   activeTab === tab.id
                     ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-sm'
                     : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                 }`}
               >
-                <Icon className="w-4 h-4" />
-                <span>{tab.label}</span>
+                <Icon className="w-3 h-3 sm:w-4 sm:h-4" />
+                <span className="hidden sm:inline">{tab.label}</span>
+                <span className="sm:hidden">{tab.label.split(' ')[0]}</span>
               </button>
             );
           })}
@@ -379,7 +375,7 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
         )}
 
         {/* Geographic Tab */}
-        {activeTab === 'geographic' && (
+        {false && (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
             <div className="bg-gradient-to-br from-white to-indigo-100/98 backdrop-blur-lg shadow-xl border border-white/20 rounded-lg p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Distribución Geográfica</h3>

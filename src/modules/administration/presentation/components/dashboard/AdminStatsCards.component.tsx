@@ -23,17 +23,19 @@ export const AdminStatsCards: React.FC<AdminStatsCardsProps> = ({
   formatNumber
 }) => {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 metrics-container grid-consistent">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
       {/* Total Users */}
-      <div className="bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-2xl p-6 shadow-xl hover:shadow-2xl transition-all duration-200 backdrop-blur-lg">
-        <div className="flex items-center">
-          <div className="p-3 bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl shadow-sm">
-            <Users className="w-6 h-6 text-white" />
+      <div className="bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-xl md:rounded-2xl p-4 md:p-6 shadow-xl hover:shadow-2xl transition-all duration-200 backdrop-blur-lg">
+        <div className="flex items-start sm:items-center justify-between gap-2">
+          <div className="flex-1 min-w-0">
+            <p className="text-xs md:text-sm font-medium text-blue-700">Total Usuarios</p>
+            <p className="text-xl md:text-2xl font-bold text-blue-900">{formatNumber(stats.totalUsers)}</p>
+            <p className="text-xs md:text-sm text-green-600 font-medium flex items-center mt-1">
+              <span className="truncate">+{stats.growth.users}% vs mes anterior</span>
+            </p>
           </div>
-          <div className="ml-4">
-            <p className="text-sm font-medium text-blue-700">Total Usuarios</p>
-            <p className="text-2xl font-bold text-blue-900">{formatNumber(stats.totalUsers)}</p>
-            <p className="text-sm text-green-600 font-medium">+{stats.growth.users}% vs mes anterior</p>
+          <div className="w-10 h-10 md:w-12 md:h-12 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0 ml-2">
+            <Users className="w-5 h-5 md:w-6 md:h-6 text-blue-600" />
           </div>
         </div>
       </div>

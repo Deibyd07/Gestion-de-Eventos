@@ -74,13 +74,73 @@ export const UserList: React.FC<UserListProps> = ({
     }
   };
 
+  const renderUserStatistics = (user: User) => {
+    switch (user.rol) {
+      case 'organizador':
+        return (
+          <div>
+            <div className="text-xs">Eventos: {user.eventos_creados || 0}</div>
+            <div className="text-xs">Ingresos: {formatCurrency(user.ingresos_generados || 0)}</div>
+            {user.rating && (
+              <div className="flex items-center">
+                <Star className="w-3 h-3 text-yellow-400 mr-1" />
+                <span className="text-xs">{user.rating}</span>
+              </div>
+            )}
+          </div>
+        );
+      
+      case 'asistente':
+        return (
+          <div>
+            <div className="text-xs">Eventos asistidos: {user.eventos_asistidos || 0}</div>
+            <div className="text-xs">Participaciones: {user.eventos_asistidos || 0}</div>
+            {user.rating && (
+              <div className="flex items-center">
+                <Star className="w-3 h-3 text-yellow-400 mr-1" />
+                <span className="text-xs">{user.rating}</span>
+              </div>
+            )}
+          </div>
+        );
+      
+      case 'admin':
+        return (
+          <div>
+            <div className="text-xs">Sistema: Activo</div>
+            <div className="text-xs">Permisos: Completo</div>
+            {user.rating && (
+              <div className="flex items-center">
+                <Star className="w-3 h-3 text-yellow-400 mr-1" />
+                <span className="text-xs">{user.rating}</span>
+              </div>
+            )}
+          </div>
+        );
+      
+      default:
+        return (
+          <div>
+            <div className="text-xs">Eventos: {user.eventos_creados || 0}</div>
+            <div className="text-xs">Actividad: {user.estado}</div>
+            {user.rating && (
+              <div className="flex items-center">
+                <Star className="w-3 h-3 text-yellow-400 mr-1" />
+                <span className="text-xs">{user.rating}</span>
+              </div>
+            )}
+          </div>
+        );
+    }
+  };
+
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+    <div className="bg-gradient-to-br from-white to-indigo-100/98 backdrop-blur-lg shadow-xl border border-white/20 rounded-2xl overflow-hidden">
       <div className="overflow-x-auto">
-        <table className="w-full">
-          <thead className="bg-gray-50">
+        <table className="w-full min-w-[800px]">
+          <thead className="bg-gradient-to-r from-gray-50/80 to-blue-50/80 backdrop-blur-sm">
             <tr>
-              <th className="px-6 py-3 text-left">
+              <th className="px-3 md:px-6 py-3 text-left">
                 <input
                   type="checkbox"
                   checked={selectedUsers.length === users.length && users.length > 0}
@@ -88,30 +148,30 @@ export const UserList: React.FC<UserListProps> = ({
                   className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                 />
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-3 md:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Usuario
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-3 md:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden sm:table-cell">
                 Rol
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-3 md:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell">
                 Estado
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-3 md:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden lg:table-cell">
                 Actividad
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-3 md:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden xl:table-cell">
                 Estadísticas
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-3 md:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Acciones
               </th>
             </tr>
           </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
+          <tbody className="bg-white/50 backdrop-blur-sm divide-y divide-gray-200/50">
             {users.map((user) => (
-              <tr key={user.id} className="hover:bg-gray-50">
-                <td className="px-6 py-4 whitespace-nowrap">
+              <tr key={user.id} className="hover:bg-white/80 hover:backdrop-blur-sm transition-all duration-200">
+                <td className="px-3 md:px-6 py-4 whitespace-nowrap">
                   <input
                     type="checkbox"
                     checked={selectedUsers.includes(user.id)}
@@ -119,32 +179,44 @@ export const UserList: React.FC<UserListProps> = ({
                     className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                   />
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap">
+                <td className="px-3 md:px-6 py-4 whitespace-nowrap">
                   <div className="flex items-center">
-                    <div className="flex-shrink-0 h-10 w-10">
+                    <div className="flex-shrink-0 h-8 w-8 md:h-10 md:w-10">
                       <img
-                        className="h-10 w-10 rounded-full"
+                        className="h-8 w-8 md:h-10 md:w-10 rounded-full"
                         src={user.avatar || `https://ui-avatars.com/api/?name=${user.nombre_completo}&background=random`}
                         alt={user.nombre_completo}
                       />
                     </div>
-                    <div className="ml-4">
-                      <div className="text-sm font-medium text-gray-900">
+                    <div className="ml-3 md:ml-4 min-w-0 flex-1">
+                      <div className="text-sm font-medium text-gray-900 truncate">
                         {user.nombre_completo}
                         {user.verificacion && (
-                          <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                            Verificado
+                          <span className="ml-1 md:ml-2 inline-flex items-center px-1.5 md:px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                            ✓
                           </span>
                         )}
                       </div>
-                      <div className="text-sm text-gray-500">{user.correo_electronico}</div>
+                      <div className="text-xs md:text-sm text-gray-500 truncate">{user.correo_electronico}</div>
                       {user.telefono && (
-                        <div className="text-sm text-gray-500">{user.telefono}</div>
+                        <div className="text-xs text-gray-500 truncate">{user.telefono}</div>
                       )}
+                      {/* Mobile: Show role and status inline */}
+                      <div className="sm:hidden flex items-center gap-2 mt-1">
+                        <div className="flex items-center">
+                          {getRoleIcon(user.rol)}
+                          <span className={`ml-1 inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium ${getRoleColor(user.rol)}`}>
+                            {user.rol}
+                          </span>
+                        </div>
+                        <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(user.estado)}`}>
+                          {user.estado}
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap">
+                <td className="px-3 md:px-6 py-4 whitespace-nowrap hidden sm:table-cell">
                   <div className="flex items-center">
                     {getRoleIcon(user.rol)}
                     <span className={`ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getRoleColor(user.rol)}`}>
@@ -152,48 +224,49 @@ export const UserList: React.FC<UserListProps> = ({
                     </span>
                   </div>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap">
+                <td className="px-3 md:px-6 py-4 whitespace-nowrap hidden md:table-cell">
                   <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(user.estado)}`}>
                     {user.estado}
                   </span>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  <div>Registro: {formatDate(user.fecha_registro)}</div>
-                  <div>Última: {formatDate(user.ultima_actividad)}</div>
+                <td className="px-3 md:px-6 py-4 whitespace-nowrap text-sm text-gray-500 hidden lg:table-cell">
+                  <div className="text-xs">Registro: {formatDate(user.fecha_registro)}</div>
+                  <div className="text-xs">Última: {formatDate(user.ultima_actividad)}</div>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  <div>Eventos: {user.eventos_creados || 0}</div>
-                  <div>Ingresos: {formatCurrency(user.ingresos_generados || 0)}</div>
-                  {user.rating && (
-                    <div className="flex items-center">
-                      <Star className="w-3 h-3 text-yellow-400 mr-1" />
-                      <span>{user.rating}</span>
-                    </div>
-                  )}
+                <td className="px-3 md:px-6 py-4 whitespace-nowrap text-sm text-gray-500 hidden xl:table-cell">
+                  {renderUserStatistics(user)}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                  <div className="flex items-center space-x-2">
+                <td className="px-3 md:px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                  <div className="flex items-center space-x-1 md:space-x-2">
                     <button
                       onClick={() => onViewUser(user)}
-                      className="text-blue-600 hover:text-blue-900"
+                      className="p-2 bg-gradient-to-r from-blue-500/20 to-blue-600/20 backdrop-blur-sm text-blue-700 rounded-lg hover:from-blue-500/30 hover:to-blue-600/30 hover:text-blue-800 transition-all duration-200 shadow-sm hover:shadow-md border border-blue-200/50"
+                      title="Ver"
                     >
                       <Eye className="w-4 h-4" />
                     </button>
                     <button
                       onClick={() => onEditUser(user)}
-                      className="text-indigo-600 hover:text-indigo-900"
+                      className="p-2 bg-gradient-to-r from-indigo-500/20 to-indigo-600/20 backdrop-blur-sm text-indigo-700 rounded-lg hover:from-indigo-500/30 hover:to-indigo-600/30 hover:text-indigo-800 transition-all duration-200 shadow-sm hover:shadow-md border border-indigo-200/50"
+                      title="Editar"
                     >
                       <Edit className="w-4 h-4" />
                     </button>
                     <button
                       onClick={() => onToggleUserStatus(user)}
-                      className={user.estado === 'activo' ? 'text-red-600 hover:text-red-900' : 'text-green-600 hover:text-green-900'}
+                      className={`p-2 backdrop-blur-sm rounded-lg transition-all duration-200 shadow-sm hover:shadow-md border ${
+                        user.estado === 'activo' 
+                          ? 'bg-gradient-to-r from-red-500/20 to-red-600/20 text-red-700 hover:from-red-500/30 hover:to-red-600/30 hover:text-red-800 border-red-200/50' 
+                          : 'bg-gradient-to-r from-green-500/20 to-green-600/20 text-green-700 hover:from-green-500/30 hover:to-green-600/30 hover:text-green-800 border-green-200/50'
+                      }`}
+                      title={user.estado === 'activo' ? 'Suspender' : 'Activar'}
                     >
                       {user.estado === 'activo' ? <Ban className="w-4 h-4" /> : <Unlock className="w-4 h-4" />}
                     </button>
                     <button
                       onClick={() => onDeleteUser(user)}
-                      className="text-red-600 hover:text-red-900"
+                      className="p-2 bg-gradient-to-r from-red-500/20 to-red-600/20 backdrop-blur-sm text-red-700 rounded-lg hover:from-red-500/30 hover:to-red-600/30 hover:text-red-800 transition-all duration-200 shadow-sm hover:shadow-md border border-red-200/50"
+                      title="Eliminar"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>

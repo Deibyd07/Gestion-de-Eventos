@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Download, Upload } from 'lucide-react';
 import { UserManagementContent } from './user-management/UserManagementContent.component';
 
 interface User {
@@ -33,6 +34,48 @@ export const UserManagement: React.FC = () => {
   const [showRoleModal, setShowRoleModal] = useState(false);
   const [userToUpdateRole, setUserToUpdateRole] = useState<User | null>(null);
   const [newRole, setNewRole] = useState('');
+
+  // Función para obtener estadísticas basadas en el rol del usuario
+  const getStatsByRole = (userRole: string) => {
+    const allUsers = users;
+    const filteredUsers = filterRole === 'all' ? allUsers : allUsers.filter(u => u.rol === filterRole);
+    
+    switch (userRole) {
+      case 'admin':
+        return {
+          totalUsers: allUsers.length,
+          activeUsers: allUsers.filter(u => u.estado === 'activo').length,
+          organizers: allUsers.filter(u => u.rol === 'organizador').length,
+          verifiedUsers: allUsers.filter(u => u.verificacion).length
+        };
+      case 'organizador':
+        return {
+          totalUsers: filteredUsers.length,
+          activeUsers: filteredUsers.filter(u => u.estado === 'activo').length,
+          attendees: filteredUsers.filter(u => u.rol === 'asistente').length,
+          verifiedUsers: filteredUsers.filter(u => u.verificacion).length
+        };
+      case 'asistente':
+        return {
+          totalUsers: filteredUsers.length,
+          activeUsers: filteredUsers.filter(u => u.estado === 'activo').length,
+          organizers: filteredUsers.filter(u => u.rol === 'organizador').length,
+          verifiedUsers: filteredUsers.filter(u => u.verificacion).length
+        };
+      default:
+        return {
+          totalUsers: allUsers.length,
+          activeUsers: allUsers.filter(u => u.estado === 'activo').length,
+          organizers: allUsers.filter(u => u.rol === 'organizador').length,
+          verifiedUsers: allUsers.filter(u => u.verificacion).length
+        };
+    }
+  };
+
+  // Obtener el rol del usuario actual (simulado)
+  // En una aplicación real, esto vendría del contexto de autenticación
+  const currentUserRole = 'admin';
+  const stats = getStatsByRole(currentUserRole);
 
   // Datos de ejemplo más realistas
   const mockUsers: User[] = [
@@ -219,13 +262,98 @@ export const UserManagement: React.FC = () => {
   };
 
   return (
-    <div className="p-6">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">Gestión de Usuarios</h1>
-        <p className="text-gray-600 mt-2">Administra todos los usuarios del sistema</p>
+    <div className="space-y-4 md:space-y-6 w-full max-w-full">
+
+      {/* Botones de acción */}
+      <div className="flex flex-col sm:flex-row justify-end items-start sm:items-center gap-2 sm:gap-3">
+        <div className="flex flex-wrap gap-2 w-full sm:w-auto">
+          <button
+            onClick={handleImportUsers}
+            className="flex-1 sm:flex-none inline-flex items-center justify-center space-x-2 px-3 md:px-4 py-2 bg-gradient-to-r from-gray-500 to-gray-600 text-white rounded-xl hover:from-gray-600 hover:to-gray-700 transition-all duration-200 shadow-sm text-sm"
+          >
+            <Upload className="w-4 h-4" />
+            <span className="hidden sm:inline">Importar</span>
+            <span className="sm:hidden">↑</span>
+          </button>
+          <button
+            onClick={handleExportUsers}
+            className="flex-1 sm:flex-none inline-flex items-center justify-center space-x-2 px-3 md:px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-xl hover:from-blue-600 hover:to-purple-700 transition-all duration-200 shadow-sm text-sm"
+          >
+            <Download className="w-4 h-4" />
+            <span className="hidden sm:inline">Exportar</span>
+            <span className="sm:hidden">↓</span>
+          </button>
+        </div>
       </div>
 
-      <UserManagementContent
+      {/* Estadísticas rápidas */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
+        {/* Total Usuarios */}
+        <div className="bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-xl md:rounded-2xl p-4 md:p-6 shadow-xl hover:shadow-2xl transition-all duration-200 backdrop-blur-lg">
+          <div className="flex items-center">
+            <div className="p-3 bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl shadow-sm">
+              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+              </svg>
+            </div>
+            <div className="ml-4">
+              <p className="text-sm font-medium text-blue-700">Total Usuarios</p>
+              <p className="text-2xl font-bold text-blue-900">{stats.totalUsers}</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Activos */}
+        <div className="bg-gradient-to-br from-green-50 to-green-100 border border-green-200 rounded-xl md:rounded-2xl p-4 md:p-6 shadow-xl hover:shadow-2xl transition-all duration-200 backdrop-blur-lg">
+          <div className="flex items-center">
+            <div className="p-3 bg-gradient-to-r from-green-500 to-green-600 rounded-xl shadow-sm">
+              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <div className="ml-4">
+              <p className="text-sm font-medium text-green-700">Activos</p>
+              <p className="text-2xl font-bold text-green-900">{stats.activeUsers}</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Organizadores/Asistentes */}
+        <div className="bg-gradient-to-br from-purple-50 to-purple-100 border border-purple-200 rounded-xl md:rounded-2xl p-4 md:p-6 shadow-xl hover:shadow-2xl transition-all duration-200 backdrop-blur-lg">
+          <div className="flex items-center">
+            <div className="p-3 bg-gradient-to-r from-purple-500 to-purple-600 rounded-xl shadow-sm">
+              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+              </svg>
+            </div>
+            <div className="ml-4">
+              <p className="text-sm font-medium text-purple-700">
+                {currentUserRole === 'organizador' ? 'Asistentes' : 'Organizadores'}
+              </p>
+              <p className="text-2xl font-bold text-purple-900">
+                {currentUserRole === 'organizador' ? stats.attendees : stats.organizers}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Verificados */}
+        <div className="bg-gradient-to-br from-orange-50 to-orange-100 border border-orange-200 rounded-xl md:rounded-2xl p-4 md:p-6 shadow-xl hover:shadow-2xl transition-all duration-200 backdrop-blur-lg">
+          <div className="flex items-center">
+            <div className="p-3 bg-gradient-to-r from-orange-500 to-orange-600 rounded-xl shadow-sm">
+              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+              </svg>
+            </div>
+            <div className="ml-4">
+              <p className="text-sm font-medium text-orange-700">Verificados</p>
+              <p className="text-2xl font-bold text-orange-900">{stats.verifiedUsers}</p>
+            </div>
+          </div>
+        </div>
+        </div>
+
+        <UserManagementContent
         users={users}
         loading={loading}
         searchTerm={searchTerm}
@@ -262,6 +390,7 @@ export const UserManagement: React.FC = () => {
         onConfirmRoleUpdate={handleConfirmRoleUpdate}
         formatCurrency={formatCurrency}
         formatDate={formatDate}
+        currentUserRole={currentUserRole}
       />
     </div>
   );

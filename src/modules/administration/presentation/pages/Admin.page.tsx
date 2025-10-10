@@ -15,7 +15,13 @@ export function AdminPage() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('dashboard');
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  // Sidebar abierto por defecto en desktop, cerrado en móvil
+  const [isSidebarOpen, setIsSidebarOpen] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return window.innerWidth >= 768;
+    }
+    return true;
+  });
 
   const handleLogout = () => {
     logout();
@@ -68,11 +74,23 @@ export function AdminPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
+    <div className="min-h-screen bg-gray-50 flex overflow-hidden w-full max-w-full">
+      {/* Mobile Sidebar Overlay */}
+      {isSidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-20 md:hidden"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+      
       {/* Sidebar - Fixed */}
-      <div className={`${isSidebarOpen ? 'w-64' : 'w-16'} bg-white/80 backdrop-blur-md shadow-xl border-r border-white/20 transition-all duration-300 flex-shrink-0 fixed left-0 top-0 h-full z-10`}>
+      <div className={`${
+        isSidebarOpen ? 'w-64' : 'w-16'
+      } bg-white/90 backdrop-blur-md shadow-xl border-r border-white/20 transition-all duration-300 flex-shrink-0 fixed left-0 top-0 h-dvh md:h-full z-30 md:z-40 overflow-y-auto md:overflow-hidden overscroll-contain touch-pan-y ${
+        !isSidebarOpen ? 'hidden md:flex md:flex-col' : 'flex flex-col'
+      }`}>
         {/* Sidebar Header */}
-        <div className="h-16 flex items-center justify-between px-4 bg-gradient-to-r from-blue-600/90 to-purple-600/90 backdrop-blur-sm">
+        <div className={`h-16 flex items-center ${isSidebarOpen ? 'justify-between px-4' : 'justify-center px-2'} bg-gradient-to-r from-blue-600/90 to-purple-600/90 backdrop-blur-sm`}>
           {isSidebarOpen && (
             <div className="flex items-center space-x-3">
               <div className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center shadow-lg border border-white/30">
@@ -84,25 +102,60 @@ export function AdminPage() {
               </div>
             </div>
           )}
-          <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="p-2 rounded-xl hover:bg-white/20 backdrop-blur-sm transition-all duration-200 text-white border border-white/20">
+          <button
+            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+            className="p-2 rounded-xl hover:bg-white/20 backdrop-blur-sm transition-all duration-200 text-white border border-white/20"
+          >
             {isSidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
         </div>
 
         {/* Navigation */}
-        <nav className="p-4 space-y-1">
+        <nav className={`${isSidebarOpen ? 'p-4' : 'px-0 py-4 flex flex-col items-center'} space-y-2 max-h-[calc(100dvh-8rem)] overflow-y-auto md:max-h-none md:overflow-y-visible`}>
           {navigationItems.map((item) => {
             const Icon = item.icon;
             return (
-              <button key={item.id} onClick={() => setActiveTab(item.id)} className={`w-full flex items-start space-x-3 px-4 py-3 rounded-xl backdrop-blur-sm transition-all duration-200 ${activeTab === item.id ? 'bg-gradient-to-r from-blue-500/20 to-purple-500/20 text-blue-700 border-l-4 border-indigo-400 shadow-lg border border-white/30' : 'text-gray-600 hover:bg-gradient-to-r hover:from-blue-500/10 hover:to-purple-500/10 hover:text-blue-700 hover:border-l-4 hover:border-indigo-300 hover:shadow-lg hover:border hover:border-indigo-200/30'}`}>
-                <div className={`p-2 rounded-lg backdrop-blur-sm border transition-all duration-200 ${activeTab === item.id ? 'bg-white/30 border-white/40' : 'bg-white/10 border-white/20 hover:bg-blue-100/50 hover:border-blue-300/50'}`}>
-                  <Icon className={`w-4 h-4 transition-colors duration-200 ${activeTab === item.id ? 'text-blue-600' : 'text-gray-500 hover:text-blue-600'}`} />
-                </div>
-                {isSidebarOpen && (
-                  <div className="flex-1 min-w-0">
-                    <span className="font-semibold text-sm">{item.label}</span>
-                    <p className="text-xs text-gray-500 mt-1 leading-tight">{item.description}</p>
-                  </div>
+              <button
+                key={item.id}
+                onClick={() => setActiveTab(item.id)}
+                className={`${
+                  isSidebarOpen 
+                    ? 'w-full flex items-start space-x-3 px-4 py-3 rounded-xl'
+                    : 'w-12 h-12 flex items-center justify-center rounded-lg'
+                } backdrop-blur-sm transition-all duration-200 ${
+                  activeTab === item.id
+                    ? (isSidebarOpen 
+                        ? 'bg-gradient-to-r from-blue-500/20 to-purple-500/20 text-blue-700 border-l-4 border-indigo-400 shadow-lg border border-white/30'
+                        : 'bg-gradient-to-r from-blue-500/20 to-purple-500/20')
+                    : (isSidebarOpen 
+                        ? 'text-gray-600 hover:bg-gradient-to-r hover:from-blue-500/10 hover:to-purple-500/10 hover:text-blue-700 hover:border-l-4 hover:border-indigo-300 hover:shadow-lg hover:border hover:border-indigo-200/30'
+                        : 'text-gray-600 hover:bg-gradient-to-r hover:from-blue-500/10 hover:to-purple-500/10')
+                }`}
+              >
+                {isSidebarOpen ? (
+                  <>
+                    <div className={`p-2 rounded-lg backdrop-blur-sm border transition-all duration-200 ${
+                      activeTab === item.id 
+                        ? 'bg-white/30 border-white/40' 
+                        : 'bg-white/10 border-white/20 hover:bg-blue-100/50 hover:border-blue-300/50'
+                    }`}>
+                      <Icon className={`w-4 h-4 transition-colors duration-200 ${
+                        activeTab === item.id 
+                          ? 'text-blue-600' 
+                          : 'text-gray-500 hover:text-blue-600'
+                      }`} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <span className="font-semibold text-sm">{item.label}</span>
+                      <p className="text-xs text-gray-500 mt-1 leading-tight">{item.description}</p>
+                    </div>
+                  </>
+                ) : (
+                  <Icon className={`w-5 h-5 transition-colors duration-200 ${
+                    activeTab === item.id 
+                      ? 'text-blue-600' 
+                      : 'text-gray-500 hover:text-blue-600'
+                  }`} />
                 )}
               </button>
             );
@@ -110,42 +163,64 @@ export function AdminPage() {
         </nav>
 
         {/* Logout Button in Sidebar */}
-        {isSidebarOpen && (
-          <div className="absolute bottom-4 left-4 right-4">
-            <button onClick={handleLogout} className="w-full flex items-center justify-center space-x-2 p-3 bg-gradient-to-r from-red-500/20 to-red-600/20 backdrop-blur-sm text-red-700 rounded-xl border border-red-200 hover:from-red-500/30 hover:to-red-600/30 hover:text-red-800 transition-all duration-200 shadow-sm hover:shadow-md">
-              <LogOut className="w-4 h-4" />
-              <span className="text-sm font-medium">Cerrar Sesión</span>
-            </button>
-          </div>
-        )}
+        <div className={`${isSidebarOpen ? 'absolute bottom-4 left-4 right-4' : 'mt-auto pb-4 flex justify-center'}`}>
+          <button
+            onClick={handleLogout}
+            className={`${
+              isSidebarOpen 
+                ? 'w-full flex items-center justify-center space-x-2 p-3' 
+                : 'w-12 h-12 flex items-center justify-center'
+            } bg-gradient-to-r from-red-500/20 to-red-600/20 backdrop-blur-sm text-red-700 rounded-xl border border-red-200 hover:from-red-500/30 hover:to-red-600/30 hover:text-red-800 transition-all duration-200 shadow-sm hover:shadow-md`}
+          >
+            <LogOut className="w-4 h-4" />
+            {isSidebarOpen && <span className="text-sm font-medium">Cerrar Sesión</span>}
+          </button>
+        </div>
       </div>
 
       {/* Main Content */}
-      <div className={`flex-1 flex flex-col ${isSidebarOpen ? 'ml-64' : 'ml-16'} transition-all duration-300`}>
+      <div className={`flex-1 flex flex-col transition-all duration-300 ${
+        isSidebarOpen ? 'md:ml-64' : 'md:ml-16'
+      } ${
+        !isSidebarOpen ? 'ml-0' : 'ml-0'
+      }`}>
         {/* Top Header */}
-        <div className={`fixed top-0 right-0 z-20 bg-gradient-to-r from-purple-600/90 via-purple-600/90 to-blue-500/90 backdrop-blur-md shadow-xl transition-all duration-300 ${isSidebarOpen ? 'left-64' : 'left-16'}`}>
-          <div className="h-16 flex items-center justify-between px-6">
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center border border-white/30 shadow-lg">
-                  <Calendar className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <h2 className="text-2xl font-bold text-white">
+        <div className={`fixed top-0 right-0 z-20 bg-gradient-to-r from-purple-600/90 via-purple-600/90 to-blue-500/90 backdrop-blur-md shadow-xl transition-all duration-300 ${
+          isSidebarOpen ? 'md:left-64' : 'md:left-16'
+        } left-0`}>
+          <div className="h-16 flex items-center justify-between px-3 md:px-6 gap-2 md:gap-4">
+            <div className="flex items-center space-x-2 md:space-x-4 flex-1 min-w-0">
+              {/* Hamburger Menu Button for Mobile */}
+              <button
+                onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                className="md:hidden p-2 rounded-xl hover:bg-white/20 backdrop-blur-sm transition-all duration-200 text-white border border-white/20"
+              >
+                <Menu className="w-5 h-5" />
+              </button>
+              
+              <div className="flex items-center space-x-2 md:space-x-3 flex-1 min-w-0">
+                <div className="min-w-0 flex-1">
+                  <h2 className="text-base md:text-2xl font-bold text-white truncate">
                     {navigationItems.find(item => item.id === activeTab)?.label || 'Dashboard'}
                   </h2>
+                  <p className="text-xs md:text-sm text-blue-100 mt-1 truncate">
+                    {navigationItems.find(item => item.id === activeTab)?.description}
+                  </p>
                 </div>
               </div>
             </div>
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center justify-end space-x-2 md:space-x-3 flex-shrink-0">
               {/* Profile Menu */}
-              <div className="relative">
-                <button onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)} className="flex items-center space-x-3 p-2 rounded-xl hover:bg-white/10 transition-all duration-200">
-                  <div className="w-10 h-10 bg-gradient-to-r from-purple-500/80 to-blue-500/80 backdrop-blur-sm rounded-full flex items-center justify-center border border-white/30 shadow-lg">
-                    <User className="w-5 h-5 text-white" />
+              <div className="relative flex-shrink-0">
+                <button
+                  onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
+                  className="flex items-center space-x-2 md:space-x-3 p-2 rounded-xl hover:bg-white/10 transition-all duration-200"
+                >
+                  <div className="w-8 h-8 md:w-10 md:h-10 bg-gradient-to-r from-purple-500/80 to-blue-500/80 backdrop-blur-sm rounded-full flex items-center justify-center border border-white/30 shadow-lg">
+                    <User className="w-4 h-4 md:w-5 md:h-5 text-white" />
                   </div>
-                  <div className="text-left">
-                    <p className="text-sm font-medium text-white">Administrador</p>
+                  <div className="text-left hidden md:block">
+                    <p className="text-sm font-medium text-white truncate max-w-[120px]">Administrador</p>
                   </div>
                 </button>
 
@@ -172,11 +247,11 @@ export function AdminPage() {
         </div>
 
         {/* Content Area */}
-        <div className="flex-1 p-4 overflow-y-auto bg-gradient-to-br from-gray-50/80 to-blue-50/80 backdrop-blur-sm dashboard-container mt-16" style={{height: 'calc(100vh - 80px)'}}>
+        <div className="flex-1 min-w-0 overflow-y-auto bg-gray-100 mt-16 w-full px-3 sm:px-4 md:px-6 py-3 sm:py-4 md:py-6 box-border" style={{height: 'calc(100vh - 80px)'}}>
           {/* Content Header */}
-          <div className="mb-0">
+          <div className="mb-4 md:mb-6 w-full max-w-full px-0">
             <div>
-              <h2 className="text-2xl font-bold text-gray-900">
+              <h2 className="text-xl md:text-2xl font-bold text-gray-900">
                 {navigationItems.find(item => item.id === activeTab)?.label}
               </h2>
               <p className="text-gray-600 mt-1">
@@ -186,7 +261,7 @@ export function AdminPage() {
           </div>
 
           {/* Content Cards */}
-          <div className="space-y-2 admin-panel panel-consistent-width">
+          <div className="space-y-4 w-full max-w-full">
             {activeTab === 'dashboard' && (
               <AdminDashboard stats={adminStats} onRefresh={handleRefresh} onExportData={handleExportData} onSystemAction={handleSystemAction} />
             )}

@@ -158,83 +158,80 @@ export const EventManagement: React.FC = () => {
     <div className="space-y-4 md:space-y-6 w-full max-w-full">
       {/* Action Buttons */}
       <div className="flex flex-col sm:flex-row justify-end items-stretch sm:items-center gap-2 sm:gap-3">
-        <div className="flex flex-wrap gap-2 w-full sm:w-auto">
-          <button className="flex-1 sm:flex-none inline-flex items-center justify-center space-x-1 md:space-x-2 px-3 md:px-4 py-2 bg-gradient-to-r from-gray-500 to-gray-600 text-white rounded-xl hover:from-gray-600 hover:to-gray-700 transition-all duration-200 shadow-sm text-sm">
-            <Upload className="w-4 h-4" />
-            <span className="hidden sm:inline">Importar</span>
-            <span className="sm:hidden">↑</span>
-          </button>
-          <button className="flex-1 sm:flex-none inline-flex items-center justify-center space-x-1 md:space-x-2 px-3 md:px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-xl hover:from-blue-600 hover:to-purple-700 transition-all duration-200 shadow-sm text-sm">
+        <div className="flex flex-row-reverse sm:flex-row flex-wrap gap-2 w-full sm:w-auto">
+          <button className="flex-1 min-w-0 sm:flex-none flex items-center justify-center space-x-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-xl hover:from-blue-600 hover:to-purple-700 transition-all duration-200 shadow-sm">
             <Download className="w-4 h-4" />
-            <span className="hidden sm:inline">Exportar</span>
-            <span className="sm:hidden">↓</span>
+            <span>Exportar</span>
           </button>
-          <button className="flex-1 sm:flex-none inline-flex items-center justify-center space-x-1 md:space-x-2 px-3 md:px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl hover:from-green-600 hover:to-emerald-700 transition-all duration-200 shadow-sm text-sm">
+          <button className="flex-1 min-w-0 sm:flex-none flex items-center justify-center space-x-2 px-4 py-2 bg-gradient-to-r from-gray-500 to-gray-600 text-white rounded-xl hover:from-gray-600 hover:to-gray-700 transition-all duration-200 shadow-sm">
+            <Upload className="w-4 h-4" />
+            <span>Importar</span>
+          </button>
+          <button className="flex-1 min-w-0 sm:flex-none flex items-center justify-center space-x-2 px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl hover:from-green-600 hover:to-emerald-700 transition-all duration-200 shadow-sm">
             <Plus className="w-4 h-4" />
-            <span className="hidden sm:inline">Nuevo Evento</span>
-            <span className="sm:hidden">+</span>
+            <span>Nuevo</span>
           </button>
         </div>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
-        <div className="bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-xl md:rounded-2xl p-4 md:p-6 shadow-xl hover:shadow-2xl transition-all duration-200 backdrop-blur-lg">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-3">
+        <div className="bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-xl md:rounded-2xl p-3 sm:p-4 shadow-xl hover:shadow-2xl transition-all duration-200 backdrop-blur-lg">
           <div className="flex items-start sm:items-center justify-between gap-2">
             <div className="flex-1 min-w-0">
-              <p className="text-xs md:text-sm font-medium text-blue-700">Total Eventos</p>
-              <p className="text-xl md:text-2xl font-bold text-blue-900">{events.length}</p>
-              <p className="text-xs md:text-sm text-blue-600 font-medium flex items-center mt-1">
+              <p className="text-xs md:text-sm font-medium text-blue-700 truncate">Total Eventos</p>
+              <p className="text-lg md:text-2xl font-bold text-blue-900">{events.length}</p>
+              <p className="text-xs text-blue-600 font-medium flex items-center mt-1">
                 <span className="truncate">Registrados</span>
               </p>
             </div>
-            <div className="w-10 h-10 md:w-12 md:h-12 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0 ml-2">
-              <Calendar className="w-5 h-5 md:w-6 md:h-6 text-blue-600" />
+            <div className="p-2 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg shadow-sm flex-shrink-0">
+              <Calendar className="w-4 h-4 md:w-5 md:h-5 text-white" />
             </div>
           </div>
         </div>
 
-        <div className="bg-gradient-to-br from-green-50 to-green-100 border border-green-200 rounded-xl md:rounded-2xl p-4 md:p-6 shadow-xl hover:shadow-2xl transition-all duration-200 backdrop-blur-lg">
+        <div className="bg-gradient-to-br from-green-50 to-green-100 border border-green-200 rounded-xl md:rounded-2xl p-3 sm:p-4 shadow-xl hover:shadow-2xl transition-all duration-200 backdrop-blur-lg">
           <div className="flex items-start sm:items-center justify-between gap-2">
             <div className="flex-1 min-w-0">
-              <p className="text-xs md:text-sm font-medium text-green-700">Eventos Activos</p>
-              <p className="text-xl md:text-2xl font-bold text-green-900">{events.filter(e => e.status === 'active').length}</p>
-              <p className="text-xs md:text-sm text-green-600 font-medium flex items-center mt-1">
+              <p className="text-xs md:text-sm font-medium text-green-700 truncate">Eventos Activos</p>
+              <p className="text-lg md:text-2xl font-bold text-green-900">{events.filter(e => e.status === 'active').length}</p>
+              <p className="text-xs text-green-600 font-medium flex items-center mt-1">
                 <span className="truncate">En curso</span>
               </p>
             </div>
-            <div className="w-10 h-10 md:w-12 md:h-12 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0 ml-2">
-              <CheckCircle className="w-5 h-5 md:w-6 md:h-6 text-green-600" />
+            <div className="p-2 bg-gradient-to-r from-green-500 to-green-600 rounded-lg shadow-sm flex-shrink-0">
+              <CheckCircle className="w-4 h-4 md:w-5 md:h-5 text-white" />
             </div>
           </div>
         </div>
 
-        <div className="bg-gradient-to-br from-amber-50 to-amber-100 border border-amber-200 rounded-xl md:rounded-2xl p-4 md:p-6 shadow-xl hover:shadow-2xl transition-all duration-200 backdrop-blur-lg">
+        <div className="bg-gradient-to-br from-amber-50 to-amber-100 border border-amber-200 rounded-xl md:rounded-2xl p-3 sm:p-4 shadow-xl hover:shadow-2xl transition-all duration-200 backdrop-blur-lg">
           <div className="flex items-start sm:items-center justify-between gap-2">
             <div className="flex-1 min-w-0">
-              <p className="text-xs md:text-sm font-medium text-amber-700">Pendientes</p>
-              <p className="text-xl md:text-2xl font-bold text-amber-900">{events.filter(e => e.status === 'pending').length}</p>
-              <p className="text-xs md:text-sm text-yellow-600 font-medium flex items-center mt-1">
+              <p className="text-xs md:text-sm font-medium text-amber-700 truncate">Pendientes</p>
+              <p className="text-lg md:text-2xl font-bold text-amber-900">{events.filter(e => e.status === 'pending').length}</p>
+              <p className="text-xs text-yellow-600 font-medium flex items-center mt-1">
                 <span className="truncate">Por aprobar</span>
               </p>
             </div>
-            <div className="w-10 h-10 md:w-12 md:h-12 bg-amber-100 rounded-lg flex items-center justify-center flex-shrink-0 ml-2">
-              <Clock className="w-5 h-5 md:w-6 md:h-6 text-amber-600" />
+            <div className="p-2 bg-gradient-to-r from-amber-500 to-amber-600 rounded-lg shadow-sm flex-shrink-0">
+              <Clock className="w-4 h-4 md:w-5 md:h-5 text-white" />
             </div>
           </div>
         </div>
 
-        <div className="bg-gradient-to-br from-purple-50 to-purple-100 border border-purple-200 rounded-xl md:rounded-2xl p-4 md:p-6 shadow-xl hover:shadow-2xl transition-all duration-200 backdrop-blur-lg">
+        <div className="bg-gradient-to-br from-purple-50 to-purple-100 border border-purple-200 rounded-xl md:rounded-2xl p-3 sm:p-4 shadow-xl hover:shadow-2xl transition-all duration-200 backdrop-blur-lg">
           <div className="flex items-start sm:items-center justify-between gap-2">
             <div className="flex-1 min-w-0">
-              <p className="text-xs md:text-sm font-medium text-purple-700">Total Asistentes</p>
-              <p className="text-xl md:text-2xl font-bold text-purple-900">{events.reduce((sum, e) => sum + e.currentAttendees, 0)}</p>
-              <p className="text-xs md:text-sm text-purple-600 font-medium flex items-center mt-1">
+              <p className="text-xs md:text-sm font-medium text-purple-700 truncate">Total Asistentes</p>
+              <p className="text-lg md:text-2xl font-bold text-purple-900">{events.reduce((sum, e) => sum + e.currentAttendees, 0)}</p>
+              <p className="text-xs text-purple-600 font-medium flex items-center mt-1">
                 <span className="truncate">Registrados</span>
               </p>
             </div>
-            <div className="w-10 h-10 md:w-12 md:h-12 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0 ml-2">
-              <Users className="w-5 h-5 md:w-6 md:h-6 text-purple-600" />
+            <div className="p-2 bg-gradient-to-r from-purple-500 to-purple-600 rounded-lg shadow-sm flex-shrink-0">
+              <Users className="w-4 h-4 md:w-5 md:h-5 text-white" />
             </div>
           </div>
         </div>
@@ -311,7 +308,7 @@ export const EventManagement: React.FC = () => {
             </button>
             <button
               onClick={() => setViewMode('list')}
-              className={`p-2 rounded-xl transition-all duration-200 ${
+              className={`hidden sm:flex p-2 rounded-xl transition-all duration-200 ${
                 viewMode === 'list' 
                   ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-sm' 
                   : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
@@ -381,13 +378,13 @@ export const EventManagement: React.FC = () => {
                 {/* Actions */}
                 <div className="flex items-center justify-between">
                   <div className="flex space-x-1 md:space-x-2">
-                    <button className="p-1 md:p-2 text-gray-400 hover:text-blue-600 transition-colors" title="Ver">
+                    <button className="p-2 text-gray-400 hover:text-blue-600 transition-colors" title="Ver">
                       <Eye className="w-4 h-4" />
                     </button>
-                    <button className="p-1 md:p-2 text-gray-400 hover:text-green-600 transition-colors" title="Editar">
+                    <button className="p-2 text-gray-400 hover:text-green-600 transition-colors" title="Editar">
                       <Edit className="w-4 h-4" />
                     </button>
-                    <button className="p-1 md:p-2 text-gray-400 hover:text-red-600 transition-colors" title="Eliminar">
+                    <button className="p-2 text-gray-400 hover:text-red-600 transition-colors" title="Eliminar">
                       <Trash2 className="w-4 h-4" />
                     </button>
                   </div>
@@ -448,13 +445,13 @@ export const EventManagement: React.FC = () => {
                     </td>
                     <td className="px-3 md:px-6 py-4">
                       <div className="flex space-x-1 md:space-x-2">
-                        <button className="p-1 md:p-2 text-gray-400 hover:text-blue-600 transition-colors" title="Ver">
+                        <button className="p-2 text-gray-400 hover:text-blue-600 transition-colors" title="Ver">
                           <Eye className="w-4 h-4" />
                         </button>
-                        <button className="p-1 md:p-2 text-gray-400 hover:text-green-600 transition-colors" title="Editar">
+                        <button className="p-2 text-gray-400 hover:text-green-600 transition-colors" title="Editar">
                           <Edit className="w-4 h-4" />
                         </button>
-                        <button className="p-1 md:p-2 text-gray-400 hover:text-red-600 transition-colors" title="Eliminar">
+                        <button className="p-2 text-gray-400 hover:text-red-600 transition-colors" title="Eliminar">
                           <Trash2 className="w-4 h-4" />
                         </button>
                       </div>

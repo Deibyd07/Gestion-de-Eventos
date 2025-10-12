@@ -22,11 +22,13 @@ export interface Event {
 
 export interface TicketType {
   id: string;
-  name: string;
-  price: number;
-  description: string;
-  maxQuantity: number;
-  available: number;
+  id_evento: string;
+  nombre_tipo: string;
+  precio: number;
+  descripcion: string;
+  cantidad_maxima: number;
+  cantidad_disponible: number;
+  fecha_creacion: string;
 }
 
 interface EventState {
@@ -74,7 +76,7 @@ const mockEvents: Event[] = [
     ticketTypes: [
       {
         id: '1',
-        name: 'Early Bird',
+        nombre_tipo: 'Early Bird',
         price: 69000,
         description: 'Entrada con descuento por reserva anticipada',
         maxQuantity: 5,
@@ -82,7 +84,7 @@ const mockEvents: Event[] = [
       },
       {
         id: '2',
-        name: 'General',
+        nombre_tipo: 'General',
         price: 89000,
         description: 'Entrada general con acceso completo',
         maxQuantity: 10,
@@ -90,7 +92,7 @@ const mockEvents: Event[] = [
       },
       {
         id: '3',
-        name: 'VIP',
+        nombre_tipo: 'VIP',
         price: 149000,
         description: 'Acceso VIP con networking exclusivo',
         maxQuantity: 3,
@@ -117,7 +119,7 @@ const mockEvents: Event[] = [
     ticketTypes: [
       {
         id: '4',
-        name: 'General',
+        nombre_tipo: 'General',
         price: 45000,
         description: 'Entrada general',
         maxQuantity: 8,
@@ -144,7 +146,7 @@ const mockEvents: Event[] = [
     ticketTypes: [
       {
         id: '5',
-        name: 'Estudiante',
+        nombre_tipo: 'Estudiante',
         price: 25000,
         description: 'Descuento para estudiantes',
         maxQuantity: 3,
@@ -152,7 +154,7 @@ const mockEvents: Event[] = [
       },
       {
         id: '6',
-        name: 'General',
+        nombre_tipo: 'General',
         price: 35000,
         description: 'Entrada general',
         maxQuantity: 5,

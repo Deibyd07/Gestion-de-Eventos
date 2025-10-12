@@ -1,5 +1,5 @@
 // import QRCode from 'qrcode';
-// import { supabase } from '../supabase';
+import { supabase } from '../api/supabase';
 
 export interface QRData {
   ticketId: string;

@@ -39,14 +39,7 @@ export const horizontalSpacing = {
   8: '2rem',
 } as const;
 
-// Breakpoints Responsivos
-export const breakpoints = {
-  sm: '640px',   // @media (min-width: 640px)
-  md: '768px',   // @media (min-width: 768px)
-  lg: '1024px',  // @media (min-width: 1024px)
-  xl: '1280px',  // @media (min-width: 1280px)
-  '2xl': '1536px', // @media (min-width: 1536px)
-} as const;
+// Breakpoints Responsivos - Movido a responsive.ts
 
 // Grid Systems
 export const gridSystems = {
@@ -184,6 +177,4 @@ export const getSpacing = (size: keyof typeof spacing) => {
   return spacing[size];
 };
 
-export const getSpacingClass = (type: 'p' | 'm' | 'spaceY' | 'spaceX', size: keyof typeof spacing) => {
-  return spacingClasses[type][size as keyof typeof spacingClasses[typeof type]];
-};
+// getSpacingClass movido a responsive.ts

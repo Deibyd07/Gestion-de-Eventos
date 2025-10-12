@@ -29,9 +29,9 @@ export * from './utils/cn';
 
 // Re-export common types
 export type { ButtonProps, IconButtonProps, CriticalButtonProps } from './components/Button/Button.component';
-export type { InputProps, InputWithIconProps } from './components/Input/Input.component';
+export type { InputProps } from './components/Input/Input.component';
 export type { CardProps, StatisticalCardProps, CardWithSectionsProps, MetricCardProps } from './components/Card/Card.component';
-export type { ModalProps, ModalWithSectionsProps } from './components/Modal/Modal.component';
+export type { ModalProps } from './components/Modal/Modal.component';
 export type { BadgeProps, BadgeWithIconProps, StatusBadgeProps, RoleBadgeProps } from './components/Badge/Badge.component';
 export type { AlertProps, AlertWithActionProps, DismissibleAlertProps } from './components/Alert/Alert.component';
 export type { ToastProps, ToastContainerProps, ToastOptions } from './components/Toast/Toast.component';

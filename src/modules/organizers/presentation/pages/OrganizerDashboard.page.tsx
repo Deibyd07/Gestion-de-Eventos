@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { 
   Calendar, 
   Users, 
@@ -27,6 +28,7 @@ import { TicketManagement } from '../components/TicketManagement.component';
 import { PromotionManagement } from '../components/PromotionManagement.component';
 import { AttendeeManagement } from '../components/AttendeeManagement.component';
 import { OrganizerDashboardContent } from '../components/OrganizerDashboardContent.component';
+import { OrganizerProfilePanel } from '../components/OrganizerProfilePanel.component';
 import { formatRevenue } from '@shared/lib/utils/Currency.utils';
 
 
@@ -397,7 +399,7 @@ export function OrganizerDashboard() {
                       onClick={() => {
                         console.log('Click en Mi Perfil');
                         setIsProfileMenuOpen(false);
-                        setActiveTab('settings');
+                        setActiveTab('profile');
                       }}
                       className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center space-x-2 cursor-pointer transition-colors duration-200"
                     >
@@ -942,6 +944,10 @@ export function OrganizerDashboard() {
                   eventTitle={selectedEvent?.title}
                 />
               </div>
+            )}
+
+            {activeTab === 'profile' && (
+              <OrganizerProfilePanel />
             )}
 
           </div>

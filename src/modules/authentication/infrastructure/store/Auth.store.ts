@@ -12,6 +12,8 @@ export interface User {
   preferences?: {
     categories: string[];
     location: string;
+    organization?: string;
+    bio?: string;
   };
 }
 

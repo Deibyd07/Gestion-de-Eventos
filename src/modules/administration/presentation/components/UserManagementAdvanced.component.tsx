@@ -20,7 +20,11 @@ interface User {
   verificacion?: boolean;
 }
 
-export const UserManagement: React.FC = () => {
+interface UserManagementProps {
+  onViewOrganizerProfile?: () => void;
+}
+
+export const UserManagement: React.FC<UserManagementProps> = ({ onViewOrganizerProfile }) => {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -383,6 +387,7 @@ export const UserManagement: React.FC = () => {
         onDeleteUser={handleDeleteUser}
         onUpdateUserRole={handleUpdateUserRole}
         onToggleUserStatus={handleToggleUserStatus}
+        onViewOrganizerProfile={onViewOrganizerProfile}
         onExportUsers={handleExportUsers}
         onImportUsers={handleImportUsers}
         onConfirmRoleUpdate={handleConfirmRoleUpdate}

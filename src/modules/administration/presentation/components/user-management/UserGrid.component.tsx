@@ -27,6 +27,7 @@ interface UserGridProps {
   onEditUser: (user: User) => void;
   onDeleteUser: (user: User) => void;
   onToggleUserStatus: (user: User) => void;
+  onViewOrganizerProfile?: (user: User) => void;
   formatCurrency: (amount: number) => string;
   formatDate: (date: string) => string;
 }
@@ -39,6 +40,7 @@ export const UserGrid: React.FC<UserGridProps> = ({
   onEditUser,
   onDeleteUser,
   onToggleUserStatus,
+  onViewOrganizerProfile,
   formatCurrency,
   formatDate
 }) => {
@@ -194,6 +196,15 @@ export const UserGrid: React.FC<UserGridProps> = ({
                 >
                   <Eye className="w-4 h-4" />
                 </button>
+                {user.rol === 'organizador' && onViewOrganizerProfile && (
+                  <button
+                    onClick={() => onViewOrganizerProfile(user)}
+                    className="p-2 bg-gradient-to-r from-purple-500/20 to-purple-600/20 backdrop-blur-sm text-purple-700 rounded-lg hover:from-purple-500/30 hover:to-purple-600/30 hover:text-purple-800 transition-all duration-200 shadow-sm hover:shadow-md border border-purple-200/50"
+                    title="Ver Perfil de Organizador"
+                  >
+                    <Shield className="w-4 h-4" />
+                  </button>
+                )}
                 <button
                   onClick={() => onEditUser(user)}
                   className="p-2 bg-gradient-to-r from-indigo-500/20 to-indigo-600/20 backdrop-blur-sm text-indigo-700 rounded-lg hover:from-indigo-500/30 hover:to-indigo-600/30 hover:text-indigo-800 transition-all duration-200 shadow-sm hover:shadow-md border border-indigo-200/50"

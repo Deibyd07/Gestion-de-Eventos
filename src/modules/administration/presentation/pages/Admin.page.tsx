@@ -8,6 +8,7 @@ import { EventManagement } from '../components/EventManagement.component';
 import { AnalyticsDashboard } from '../../../analytics/presentation/components/AnalyticsDashboard.component';
 import { PaymentsDashboard } from '../components/PaymentsDashboard.component';
 import { AdminProfilePanel } from '../components/AdminProfilePanel.component';
+import { OrganizerProfilePanel } from '../../../organizers/presentation/components/OrganizerProfilePanel.component';
 
 export function AdminPage() {
   const { logout } = useAuthStore();
@@ -260,7 +261,7 @@ export function AdminPage() {
               <EventManagement />
             )}
             {activeTab === 'users' && (
-              <UserManagement />
+              <UserManagement onViewOrganizerProfile={() => setActiveTab('organizer-profile')} />
             )}
             {activeTab === 'analytics' && (
               <AnalyticsDashboard data={{ totalEvents: adminStats.totalEvents, totalRevenue: adminStats.totalRevenue, totalAttendees: 1250, conversionRate: 12.5, averageTicketPrice: 35000, topEvents: [{ id: '1', title: 'Feria Agropecuaria', revenue: 2500000, attendees: 150, date: '2024-01-15' }, { id: '2', title: 'Festival de Música', revenue: 1800000, attendees: 200, date: '2024-02-20' }], revenueByMonth: [{ month: 'Enero', revenue: 1500000, events: 5 }, { month: 'Febrero', revenue: 2200000, events: 8 }, { month: 'Marzo', revenue: 1800000, events: 6 }], attendanceTrends: [{ date: '2024-01-15', checkIns: 140, noShows: 10 }, { date: '2024-02-20', checkIns: 180, noShows: 20 }], ticketSalesByType: [{ type: 'General', sales: 100, revenue: 2000000 }, { type: 'VIP', sales: 50, revenue: 1500000 }], geographicData: [{ location: 'Bogotá', events: 45, revenue: 15000000 }, { location: 'Medellín', events: 32, revenue: 12000000 }, { location: 'Cali', events: 28, revenue: 10000000 }, { location: 'Barranquilla', events: 20, revenue: 8000000 }] }} onExportReport={(format) => console.log('Exportando reporte:', format)} onFilterChange={(filters) => console.log('Filtros:', filters)} userRole="admin" />
@@ -271,9 +272,13 @@ export function AdminPage() {
             {activeTab === 'profile' && (
               <AdminProfilePanel />
             )}
+            {activeTab === 'organizer-profile' && (
+              <OrganizerProfilePanel />
+            )}
           </div>
         </div>
       </div>
+
     </div>
   );
 }

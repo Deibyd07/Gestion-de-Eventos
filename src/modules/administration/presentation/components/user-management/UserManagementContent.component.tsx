@@ -48,6 +48,7 @@ interface UserManagementContentProps {
   setShowRoleModal: (show: boolean) => void;
   newRole: string;
   setNewRole: (role: string) => void;
+  onViewOrganizerProfile?: (user: User) => void;
   onSelectUser: (userId: string) => void;
   onSelectAllUsers: () => void;
   onViewUser: (user: User) => void;
@@ -88,6 +89,7 @@ export const UserManagementContent: React.FC<UserManagementContentProps> = ({
   setShowRoleModal,
   newRole,
   setNewRole,
+  onViewOrganizerProfile,
   onSelectUser,
   onSelectAllUsers,
   onViewUser,
@@ -208,6 +210,7 @@ export const UserManagementContent: React.FC<UserManagementContentProps> = ({
           onDeleteUser={onDeleteUser}
           onUpdateUserRole={onUpdateUserRole}
           onToggleUserStatus={onToggleUserStatus}
+          onViewOrganizerProfile={onViewOrganizerProfile}
           formatCurrency={formatCurrency}
           formatDate={formatDate}
         />

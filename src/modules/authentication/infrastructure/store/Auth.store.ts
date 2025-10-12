@@ -55,8 +55,8 @@ export const useAuthStore = create<AuthState>()(
           }
 
           // Verificar que los campos existan y tengan valores
-          const userName = userData.nombre || userData.name || 'Usuario';
-          const dbRole = userData.tipo_usuario || userData.role || 'asistente';
+          const userName = userData.nombre || 'Usuario';
+          const dbRole = userData.tipo_usuario || 'asistente';
           
           // Mapear roles de la base de datos a los roles del sistema
           const roleMapping: { [key: string]: 'admin' | 'organizer' | 'attendee' } = {
@@ -72,13 +72,13 @@ export const useAuthStore = create<AuthState>()(
 
           const user: User = {
             id: userData.id,
-            email: userData.correo_electronico || userData.email,
+            email: userData.correo_electronico,
             name: userName,
             role: userRole,
             avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${email}`,
             preferences: {
               categories: [],
-              location: userData.ubicacion || userData.location || 'Colombia'
+              location: userData.ubicacion || 'Colombia'
             }
           };
 
@@ -97,17 +97,17 @@ export const useAuthStore = create<AuthState>()(
           // Crear usuario en la base de datos
           const newUserData = await ServicioUsuarios.crearUsuario({
             correo_electronico: userData.email,
-            nombre: userData.name,
+            nombre_completo: userData.name,
             contraseña: userData.password,
-            tipo_usuario: 'attendee' as any,
+            rol: 'asistente' as any,
             ubicacion: 'Colombia'
           });
 
           const user: User = {
             id: newUserData.id,
             email: newUserData.correo_electronico,
-            name: newUserData.nombre,
-            role: newUserData.tipo_usuario as 'admin' | 'organizer' | 'attendee',
+            name: newUserData.nombre_completo,
+            role: 'attendee',
             avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${userData.email}`,
             preferences: {
               categories: [],

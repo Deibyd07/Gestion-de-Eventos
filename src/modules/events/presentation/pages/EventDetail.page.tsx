@@ -56,7 +56,7 @@ export function EventDetailPage() {
   const getTotalPrice = () => {
     return Object.entries(selectedTickets).reduce((total, [ticketTypeId, quantity]) => {
       const ticketType = event.ticketTypes.find(t => t.id === ticketTypeId);
-      return total + (ticketType ? ticketType.price * quantity : 0);
+      return total + (ticketType ? ticketType.precio * quantity : 0);
     }, 0);
   };
 
@@ -71,9 +71,9 @@ export function EventDetailPage() {
         addItem({
           eventId: event.id,
           ticketTypeId: ticketType.id,
-          price: ticketType.price,
+          price: ticketType.precio,
           eventTitle: event.title,
-          ticketTypeName: ticketType.name,
+          ticketTypeName: ticketType.nombre_tipo,
           quantity
         });
       }
@@ -229,25 +229,25 @@ export function EventDetailPage() {
                 <div key={ticketType.id} className="border border-gray-200 rounded-lg p-4">
                   <div className="flex justify-between items-start mb-3">
                     <div>
-                      <h4 className="font-semibold text-gray-900">{ticketType.name}</h4>
-                      <p className="text-sm text-gray-600 mt-1">{ticketType.description}</p>
-                      {ticketType.available <= 5 && ticketType.available > 0 && (
+                      <h4 className="font-semibold text-gray-900">{ticketType.nombre_tipo}</h4>
+                      <p className="text-sm text-gray-600 mt-1">{ticketType.descripcion}</p>
+                      {ticketType.cantidad_disponible <= 5 && ticketType.cantidad_disponible > 0 && (
                         <p className="text-sm text-orange-600 mt-1">
-                          ¡Solo quedan {ticketType.available} disponibles!
+                          ¡Solo quedan {ticketType.cantidad_disponible} disponibles!
                         </p>
                       )}
                     </div>
                     <div className="text-right">
                       <span className="text-lg font-bold text-gray-900">
-                        {formatPriceDisplay(ticketType.price)}
+                        {formatPriceDisplay(ticketType.precio)}
                       </span>
                     </div>
                   </div>
 
-                  {ticketType.available > 0 ? (
+                  {ticketType.cantidad_disponible > 0 ? (
                     <div className="flex items-center justify-between">
                       <span className="text-sm text-gray-600">
-                        {ticketType.available} disponibles
+                        {ticketType.cantidad_disponible} disponibles
                       </span>
                       <div className="flex items-center space-x-3">
                         <button
@@ -263,8 +263,8 @@ export function EventDetailPage() {
                         <button
                           onClick={() => updateTicketQuantity(ticketType.id, 1)}
                           disabled={
-                            (selectedTickets[ticketType.id] || 0) >= ticketType.available ||
-                            (selectedTickets[ticketType.id] || 0) >= ticketType.maxQuantity
+                            (selectedTickets[ticketType.id] || 0) >= ticketType.cantidad_disponible ||
+                            (selectedTickets[ticketType.id] || 0) >= ticketType.cantidad_maxima
                           }
                           className="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-50 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                         >

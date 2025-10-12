@@ -22,6 +22,7 @@ export default defineConfig({
   },
   optimizeDeps: {
     exclude: ['lucide-react'],
+    include: ['three'],
   },
   build: {
     rollupOptions: {
@@ -29,6 +30,12 @@ export default defineConfig({
         // Suprimir warnings de TypeScript durante el build
         if (warning.code === 'UNRESOLVED_IMPORT') return;
         warn(warning);
+      },
+      external: [],
+      output: {
+        manualChunks: {
+          three: ['three']
+        }
       }
     }
   },

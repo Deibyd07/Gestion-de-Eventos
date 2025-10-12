@@ -77,14 +77,14 @@ export function EventCard({ event, viewMode = 'grid', isFavorite = false, onTogg
   const handleAddToCart = () => {
     // Si el evento tiene tipos de tickets, usar el primero disponible
     if (event.ticketTypes && event.ticketTypes.length > 0) {
-      const availableTicket = event.ticketTypes.find(ticket => ticket.available > 0);
+      const availableTicket = event.ticketTypes.find(ticket => ticket.cantidad_disponible > 0);
       if (availableTicket) {
         addItem({
           eventId: event.id,
           ticketTypeId: availableTicket.id,
-          price: availableTicket.price,
+          price: availableTicket.precio,
           eventTitle: event.title,
-          ticketTypeName: availableTicket.name,
+          ticketTypeName: availableTicket.nombre_tipo,
           quantity: 1
         });
         addNotification({

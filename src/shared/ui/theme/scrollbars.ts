@@ -155,12 +155,12 @@ export const useScrollbar = (type: 'white' | 'dashboard' | 'glassmorphism' = 'wh
                         type === 'dashboard' ? 'dashboard-container' : 
                         'glassmorphism-scroll';
   
-  const scrollbarStyles = type === 'white' ? scrollbarStyles.white :
-                         type === 'dashboard' ? scrollbarStyles.dashboard :
-                         scrollbarStyles.glassmorphism;
+  const styles = type === 'white' ? scrollbarStyles.white :
+                type === 'dashboard' ? scrollbarStyles.dashboard :
+                scrollbarStyles.glassmorphism;
   
   return {
     className: scrollbarClass,
-    styles: scrollbarStyles,
+    styles: styles,
   };
 };

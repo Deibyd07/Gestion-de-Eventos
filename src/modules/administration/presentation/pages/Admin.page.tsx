@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { LogOut, User, Menu, X, BarChart3, Users, Calendar, Bell, CreditCard, TrendingUp } from 'lucide-react';
+import { LogOut, User, Menu, X, BarChart3, Users, Calendar, CreditCard, TrendingUp } from 'lucide-react';
 import { useAuthStore } from '../../../authentication/infrastructure/store/Auth.store';
 import { useNavigate } from 'react-router-dom';
 import { AdminDashboard } from '../components/AdminDashboard.component';
@@ -7,7 +7,6 @@ import { UserManagement } from '../components/UserManagementAdvanced.component';
 import { EventManagement } from '../components/EventManagement.component';
 import { AnalyticsDashboard } from '../../../analytics/presentation/components/AnalyticsDashboard.component';
 import { PaymentsDashboard } from '../components/PaymentsDashboard.component';
-import { NotificationsDashboard } from '../components/NotificationsDashboard.component';
 import { AdminProfilePanel } from '../components/AdminProfilePanel.component';
 
 export function AdminPage() {
@@ -34,7 +33,6 @@ export function AdminPage() {
     totalRevenue: 45000000,
     activeEvents: 23,
     pendingApprovals: 5,
-    systemHealth: 'excellent' as const,
     recentActivity: [
       { id: '1', type: 'user_registration' as const, description: 'Nuevo usuario registrado: María García', timestamp: 'Hace 2 horas', severity: 'low' as const },
       { id: '2', type: 'event_created' as const, description: 'Evento creado: "Conferencia de Tecnología 2024"', timestamp: 'Hace 4 horas', severity: 'medium' as const },
@@ -44,12 +42,6 @@ export function AdminPage() {
       { id: '1', name: 'Juan Pérez', events: 12, revenue: 15000000, rating: 4.8 },
       { id: '2', name: 'Ana López', events: 8, revenue: 12000000, rating: 4.9 }
     ],
-    systemMetrics: {
-      serverUptime: '99.9%',
-      responseTime: 120,
-      errorRate: 0.1,
-      activeConnections: 156
-    }
   };
 
   const handleRefresh = async () => {
@@ -69,8 +61,7 @@ export function AdminPage() {
     { id: 'events', label: 'Gestión de Eventos', icon: Calendar, color: 'text-purple-600', description: 'Aprobar y moderar eventos' },
     { id: 'users', label: 'Comunidad', icon: Users, color: 'text-green-600', description: 'Usuarios y organizadores' },
     { id: 'payments', label: 'Finanzas', icon: CreditCard, color: 'text-emerald-600', description: 'Pagos y transacciones' },
-    { id: 'analytics', label: 'Reportes', icon: TrendingUp, color: 'text-orange-600', description: 'Análisis y métricas' },
-    { id: 'notifications', label: 'Comunicación', icon: Bell, color: 'text-pink-600', description: 'Notificaciones y emails' }
+    { id: 'analytics', label: 'Reportes', icon: TrendingUp, color: 'text-orange-600', description: 'Análisis y métricas' }
   ];
 
   return (
@@ -276,9 +267,6 @@ export function AdminPage() {
             )}
             {activeTab === 'payments' && (
               <PaymentsDashboard />
-            )}
-            {activeTab === 'notifications' && (
-              <NotificationsDashboard />
             )}
             {activeTab === 'profile' && (
               <AdminProfilePanel />

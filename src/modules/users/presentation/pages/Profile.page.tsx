@@ -8,18 +8,13 @@ import {
   Save, 
   Settings, 
   Ticket,
-  Activity,
-  Heart,
-  Star,
-  Clock,
-  CheckCircle,
-  Shield,
   Bell,
-  Eye,
   Download,
   CreditCard,
   Edit3,
-  QrCode
+  QrCode,
+  Shield,
+  CheckCircle
 } from 'lucide-react';
 import { useAuthStore } from '../../../authentication/infrastructure/store/Auth.store';
 
@@ -33,10 +28,8 @@ export function ProfilePage() {
     name: user?.name || '',
     email: user?.email || '',
     location: user?.preferences?.location || '',
-    categories: user?.preferences?.categories || []
   });
 
-  const categories = ['Tecnología', 'Música', 'Educación', 'Deportes', 'Arte', 'Gastronomía'];
 
   const handleSave = async () => {
     setIsSaving(true);
@@ -46,7 +39,7 @@ export function ProfilePage() {
       email: formData.email,
       preferences: {
         location: formData.location,
-        categories: formData.categories
+        categories: []
       }
     });
     setIsSaving(false);
@@ -55,20 +48,11 @@ export function ProfilePage() {
     setTimeout(() => setShowSuccess(false), 3000);
   };
 
-  const toggleCategory = (category: string) => {
-    setFormData(prev => ({
-      ...prev,
-      categories: prev.categories.includes(category)
-        ? prev.categories.filter(c => c !== category)
-        : [...prev.categories, category]
-    }));
-  };
 
   const tabs = [
     { id: 'profile', label: 'Mi Perfil', icon: User },
     { id: 'tickets', label: 'Mis Tickets', icon: Ticket },
     { id: 'purchases', label: 'Compras', icon: CreditCard },
-    { id: 'activity', label: 'Actividad', icon: Activity },
     { id: 'settings', label: 'Configuración', icon: Settings }
   ];
 
@@ -202,7 +186,7 @@ export function ProfilePage() {
 
           {/* Stats Cards */}
           <div className="px-4 sm:px-6 py-4 sm:py-6 bg-gray-50/50 border-b border-gray-200">
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               <div className="bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-xl p-3 sm:p-4 shadow-sm hover:shadow-md transition-all duration-200">
                 <div className="flex items-center justify-between">
                   <div>
@@ -227,29 +211,6 @@ export function ProfilePage() {
                 </div>
               </div>
               
-              <div className="bg-gradient-to-br from-purple-50 to-purple-100 border border-purple-200 rounded-xl p-3 sm:p-4 shadow-sm hover:shadow-md transition-all duration-200">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-xs sm:text-sm text-gray-600 font-medium">Favoritos</p>
-                    <p className="text-lg sm:text-2xl font-bold text-purple-600">8</p>
-                  </div>
-                  <div className="p-2 sm:p-3 bg-purple-500 rounded-lg">
-                    <Heart className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
-                  </div>
-                </div>
-              </div>
-              
-              <div className="bg-gradient-to-br from-yellow-50 to-yellow-100 border border-yellow-200 rounded-xl p-3 sm:p-4 shadow-sm hover:shadow-md transition-all duration-200">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-xs sm:text-sm text-gray-600 font-medium">Rating</p>
-                    <p className="text-lg sm:text-2xl font-bold text-yellow-600">4.8</p>
-                  </div>
-                  <div className="p-2 sm:p-3 bg-yellow-500 rounded-lg">
-                    <Star className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
 
@@ -366,51 +327,6 @@ export function ProfilePage() {
                   </div>
                 </div>
 
-                {/* Preferences */}
-                <div className="bg-gradient-to-br from-white to-indigo-100/98 backdrop-blur-lg shadow-xl border border-white/20 rounded-2xl p-4 sm:p-6">
-                  <div className="flex items-center space-x-3 mb-4 sm:mb-6">
-                    <div className="p-2 bg-purple-100 rounded-lg">
-                      <Star className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600" />
-                    </div>
-                    <h2 className="text-lg sm:text-xl font-semibold text-gray-900">Preferencias</h2>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-3">
-                      Categorías de Interés
-                    </label>
-                    {isEditing ? (
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                        {categories.map((category) => (
-                          <label key={category} className="flex items-center space-x-2 cursor-pointer p-2 hover:bg-gray-50 rounded-lg transition-colors duration-200">
-                            <input
-                              type="checkbox"
-                              checked={formData.categories.includes(category)}
-                              onChange={() => toggleCategory(category)}
-                              className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                            />
-                            <span className="text-sm text-gray-700">{category}</span>
-                          </label>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="flex flex-wrap gap-2">
-                        {user?.preferences?.categories && user.preferences.categories.length > 0 ? (
-                          user.preferences.categories.map((category) => (
-                            <span
-                              key={category}
-                              className="px-3 sm:px-4 py-1 sm:py-2 bg-gradient-to-r from-blue-100 to-purple-100 text-blue-800 rounded-lg text-xs sm:text-sm font-medium border border-blue-200 shadow-sm"
-                            >
-                              {category}
-                            </span>
-                          ))
-                        ) : (
-                          <span className="text-gray-500 text-xs sm:text-sm px-3 py-2 bg-gray-50 rounded-lg">No hay categorías seleccionadas</span>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                </div>
               </div>
             )}
 
@@ -564,40 +480,6 @@ export function ProfilePage() {
               </div>
             )}
 
-            {/* Activity Tab */}
-            {activeTab === 'activity' && (
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4 sm:mb-6">Actividad Reciente</h3>
-                
-                <div className="bg-gradient-to-br from-white to-indigo-100/98 backdrop-blur-lg shadow-xl border border-white/20 rounded-2xl p-4 sm:p-6">
-                  <div className="space-y-3 sm:space-y-4">
-                    {[
-                      { action: 'Compraste tickets para "Concierto Rock 2024"', time: 'Hace 2 días', icon: Ticket, color: 'green' },
-                      { action: 'Agregaste "Festival de Jazz" a favoritos', time: 'Hace 3 días', icon: Heart, color: 'red' },
-                      { action: 'Asististe a "Expo Tech"', time: 'Hace 1 semana', icon: CheckCircle, color: 'blue' },
-                      { action: 'Actualizaste tu perfil', time: 'Hace 2 semanas', icon: User, color: 'purple' },
-                      { action: 'Te registraste en la plataforma', time: 'Hace 1 mes', icon: Calendar, color: 'orange' }
-                    ].map((activity, index) => {
-                      const Icon = activity.icon;
-                      return (
-                        <div key={index} className="flex items-start sm:items-center space-x-3 sm:space-x-4 p-3 sm:p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-all duration-200">
-                          <div className={`p-2 sm:p-3 rounded-lg bg-${activity.color}-100 flex-shrink-0`}>
-                            <Icon className={`w-4 h-4 sm:w-5 sm:h-5 text-${activity.color}-600`} />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="font-medium text-gray-900 text-sm sm:text-base">{activity.action}</p>
-                            <p className="text-xs sm:text-sm text-gray-500 flex items-center mt-1">
-                              <Clock className="w-3 h-3 mr-1" />
-                              {activity.time}
-                            </p>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              </div>
-            )}
 
             {/* Settings Tab */}
             {activeTab === 'settings' && (
@@ -647,25 +529,6 @@ export function ProfilePage() {
                       </div>
                     </button>
 
-                    <button className="w-full text-left p-3 sm:p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-all duration-200">
-                      <div className="flex items-center justify-between">
-                        <div className="flex-1 min-w-0">
-                          <p className="font-medium text-gray-900 text-sm sm:text-base">Autenticación de Dos Factores</p>
-                          <p className="text-xs sm:text-sm text-gray-500">Añade una capa extra de seguridad</p>
-                        </div>
-                        <Shield className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 flex-shrink-0" />
-                      </div>
-                    </button>
-
-                    <button className="w-full text-left p-3 sm:p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-all duration-200">
-                      <div className="flex items-center justify-between">
-                        <div className="flex-1 min-w-0">
-                          <p className="font-medium text-gray-900 text-sm sm:text-base">Sesiones Activas</p>
-                          <p className="text-xs sm:text-sm text-gray-500">2 dispositivos conectados</p>
-                        </div>
-                        <Eye className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 flex-shrink-0" />
-                      </div>
-                    </button>
                   </div>
                 </div>
               </div>

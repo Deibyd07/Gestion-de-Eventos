@@ -3,37 +3,24 @@ import {
   CreditCard, 
   DollarSign, 
   TrendingUp, 
-  TrendingDown,
   CheckCircle, 
   XCircle, 
   Clock, 
-  AlertTriangle,
   Download,
   RefreshCw,
   Filter,
   Search,
   Eye,
   MoreVertical,
-  Calendar,
-  Users,
   Activity,
   Shield,
-  Zap,
   Target,
-  Award,
   BarChart3,
-  PieChart,
-  ArrowUpRight,
-  ArrowDownRight,
-  Star,
-  Globe,
-  Smartphone,
-  Monitor
+  Globe
 } from 'lucide-react';
 
 export const PaymentsDashboard: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'overview' | 'transactions' | 'methods'>('overview');
-  const [timeRange, setTimeRange] = useState<'7d' | '30d' | '90d' | '1y'>('30d');
   const [statusFilter, setStatusFilter] = useState<string>('all');
 
   // Datos de ejemplo

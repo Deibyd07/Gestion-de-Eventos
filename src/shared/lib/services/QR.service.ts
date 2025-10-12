@@ -1,5 +1,5 @@
-import QRCode from 'qrcode';
-import { supabase } from '../supabase';
+// import QRCode from 'qrcode';
+// import { supabase } from '../supabase';
 
 export interface QRData {
   ticketId: string;
@@ -17,14 +17,15 @@ export class QRService {
   static async generateQRCode(qrData: QRData): Promise<string> {
     try {
       const qrString = JSON.stringify(qrData);
-      const qrCodeDataURL = await QRCode.toDataURL(qrString, {
-        width: 256,
-        margin: 2,
-        color: {
-          dark: '#000000',
-          light: '#FFFFFF'
-        }
-      });
+      // const qrCodeDataURL = await QRCode.toDataURL(qrString, {
+    const qrCodeDataURL = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=='; // Placeholder
+      // width: 256,
+      // margin: 2,
+      // color: {
+      //   dark: '#000000',
+      //   light: '#FFFFFF'
+      // }
+      // });
       return qrCodeDataURL;
     } catch (error) {
       console.error('Error generating QR code:', error);
@@ -182,15 +183,17 @@ export class QRService {
   // Obtener lista de asistentes de un evento
   static async getEventAttendees(eventId: string) {
     try {
-      const { data, error } = await supabase
-        .from('asistencia')
-        .select(`
-          *,
-          usuarios (nombre_completo, correo_electronico),
-          entradas (tipos_entrada (nombre, precio))
-        `)
-        .eq('id_evento', eventId)
-        .order('fecha_checkin', { ascending: false });
+      // const { data, error } = await supabase
+      //   .from('asistencia')
+      //   .select(`
+      //     *,
+      //     usuarios (nombre_completo, correo_electronico),
+      //     entradas (tipos_entrada (nombre, precio))
+      //   `)
+      //   .eq('id_evento', eventId)
+      //   .order('fecha_checkin', { ascending: false });
+      const data = null;
+      const error = null;
 
       if (error) throw error;
       return data || [];

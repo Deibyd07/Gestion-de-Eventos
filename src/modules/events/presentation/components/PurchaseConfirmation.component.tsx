@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { CheckCircle, Download, QrCode, Mail, Calendar, MapPin, Clock, User, CreditCard, Share2 } from 'lucide-react';
-import { QRCodeSVG } from 'qrcode.react';
+// import { QRCodeSVG } from 'qrcode.react';
 
 interface PurchaseConfirmationProps {
   purchase: {
@@ -205,12 +205,15 @@ export const PurchaseConfirmation: React.FC<PurchaseConfirmationProps> = ({
             </h3>
             <div className="flex justify-center mb-4">
               <div className="p-4 bg-white border-2 border-gray-200 rounded-lg">
-                <QRCodeSVG
+                {/* <QRCodeSVG
                   value={selectedTicket.qrCode}
                   size={200}
                   level="M"
                   includeMargin={true}
-                />
+                /> */}
+                <div className="w-[200px] h-[200px] bg-gray-200 flex items-center justify-center text-gray-500">
+                  QR Code
+                </div>
               </div>
             </div>
             <p className="text-sm text-gray-600 mb-4">

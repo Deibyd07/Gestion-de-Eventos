@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { AttendanceScanner } from '../components/AttendanceScanner';
+// import { AttendanceScanner } from '../components/AttendanceScanner';
 import { ServicioEventos } from '@shared/lib/api/Supabase.service';
 import { useAuthStore } from '../../../authentication/infrastructure/store/Auth.store';
 
@@ -95,12 +95,16 @@ export function AttendancePage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <AttendanceScanner
+      {/* <AttendanceScanner
         eventId={event.id}
         eventTitle={event.titulo}
         eventDate={new Date(event.fecha_evento).toLocaleDateString('es-ES')}
         eventLocation={event.ubicacion}
-      />
+      /> */}
+      <div className="p-8 text-center">
+        <h1 className="text-2xl font-bold text-gray-900 mb-4">Scanner de Asistencia</h1>
+        <p className="text-gray-600">Funcionalidad en desarrollo</p>
+      </div>
     </div>
   );
 }

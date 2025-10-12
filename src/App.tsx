@@ -33,7 +33,6 @@ import { ProfilePage } from './modules/users/presentation/pages/Profile.page';
 
 // Pages - Organizers
 import { OrganizerDashboard } from './modules/organizers/presentation/pages/OrganizerDashboard.page';
-import { OrganizerProfilePage } from './modules/organizers/presentation/pages/OrganizerProfile.page';
 
 // Pages - Administration
 import { AdminPage } from './modules/administration/presentation/pages/Admin.page';
@@ -175,7 +174,6 @@ function App() {
                 <AdminRedirect>
                   <Routes>
                     <Route path="dashboard" element={<OrganizerDashboard />} />
-                    <Route path="profile" element={<OrganizerProfilePage />} />
                     <Route path="events" element={<EventsPage />} />
                     <Route path="events/create" element={<CreateEventPage />} />
                     <Route path="events/:id/edit" element={<CreateEventPage />} />

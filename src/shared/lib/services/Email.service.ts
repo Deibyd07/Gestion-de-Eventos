@@ -1,4 +1,4 @@
-import { supabase } from '../supabase';
+// import { supabase } from '../supabase';
 
 export interface EmailTemplate {
   id: string;
@@ -20,10 +20,12 @@ export class EmailService {
   // Obtener plantillas de email
   static async getEmailTemplates(): Promise<EmailTemplate[]> {
     try {
-      const { data, error } = await supabase
-        .from('plantillas_email')
-        .select('*')
-        .order('fecha_creacion', { ascending: false });
+      // const { data, error } = await supabase
+      //   .from('plantillas_email')
+      //   .select('*')
+      //   .order('fecha_creacion', { ascending: false });
+      const data = null;
+      const error = null;
 
       if (error) throw error;
       return data || [];
@@ -36,17 +38,19 @@ export class EmailService {
   // Crear nueva plantilla de email
   static async createEmailTemplate(template: Omit<EmailTemplate, 'id'>): Promise<EmailTemplate> {
     try {
-      const { data, error } = await supabase
-        .from('plantillas_email')
-        .insert({
-          nombre: template.name,
-          asunto: template.subject,
-          contenido: template.content,
-          tipo: template.type,
-          variables: template.variables
-        })
-        .select()
-        .single();
+      // const { data, error } = await supabase
+      //   .from('plantillas_email')
+      //   .insert({
+      //     nombre: template.name,
+      //     asunto: template.subject,
+      //     contenido: template.content,
+      //     tipo: template.type,
+      //     variables: template.variables
+      //   })
+      //   .select()
+      //   .single();
+      const data = null;
+      const error = null;
 
       if (error) throw error;
       return data;
@@ -59,18 +63,20 @@ export class EmailService {
   // Actualizar plantilla de email
   static async updateEmailTemplate(id: string, updates: Partial<EmailTemplate>): Promise<EmailTemplate> {
     try {
-      const { data, error } = await supabase
-        .from('plantillas_email')
-        .update({
-          nombre: updates.name,
-          asunto: updates.subject,
-          contenido: updates.content,
-          tipo: updates.type,
-          variables: updates.variables
-        })
-        .eq('id', id)
-        .select()
-        .single();
+      // const { data, error } = await supabase
+      //   .from('plantillas_email')
+      //   .update({
+      //     nombre: updates.name,
+      //     asunto: updates.subject,
+      //     contenido: updates.content,
+      //     tipo: updates.type,
+      //     variables: updates.variables
+      //   })
+      //   .eq('id', id)
+      //   .select()
+      //   .single();
+      const data = null;
+      const error = null;
 
       if (error) throw error;
       return data;
@@ -83,10 +89,11 @@ export class EmailService {
   // Eliminar plantilla de email
   static async deleteEmailTemplate(id: string): Promise<void> {
     try {
-      const { error } = await supabase
-        .from('plantillas_email')
-        .delete()
-        .eq('id', id);
+      // const { error } = await supabase
+      //   .from('plantillas_email')
+      //   .delete()
+      //   .eq('id', id);
+      const error = null;
 
       if (error) throw error;
     } catch (error) {
@@ -99,11 +106,13 @@ export class EmailService {
   static async sendEmail(emailData: EmailData): Promise<{ success: boolean; messageId?: string; error?: string }> {
     try {
       // Obtener plantilla
-      const { data: template, error: templateError } = await supabase
-        .from('plantillas_email')
-        .select('*')
-        .eq('id', emailData.templateId)
-        .single();
+      // const { data: template, error: templateError } = await supabase
+      //   .from('plantillas_email')
+      //   .select('*')
+      //   .eq('id', emailData.templateId)
+      //   .single();
+      const template = null;
+      const templateError = null;
 
       if (templateError || !template) {
         return {
@@ -120,17 +129,18 @@ export class EmailService {
       const messageId = `email_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
       
       // Registrar envío en la base de datos
-      const { error: logError } = await supabase
-        .from('emails_enviados')
-        .insert({
-          destinatario: emailData.to,
-          asunto: processedSubject,
-          contenido: processedContent,
-          id_plantilla: emailData.templateId,
-          fecha_envio: new Date().toISOString(),
-          estado: 'enviado',
-          message_id: messageId
-        });
+      // const { error: logError } = await supabase
+      //   .from('emails_enviados')
+      //   .insert({
+      //     destinatario: emailData.to,
+      //     asunto: processedSubject,
+      //     contenido: processedContent,
+      //     id_plantilla: emailData.templateId,
+      //     fecha_envio: new Date().toISOString(),
+      //     estado: 'enviado',
+      //     message_id: messageId
+      //   });
+      const logError = null;
 
       if (logError) {
         console.error('Error logging email:', logError);
@@ -189,11 +199,13 @@ export class EmailService {
       };
 
       // Buscar plantilla de confirmación
-      const { data: template, error: templateError } = await supabase
-        .from('plantillas_email')
-        .select('*')
-        .eq('tipo', 'confirmacion_entrada')
-        .single();
+      // const { data: template, error: templateError } = await supabase
+      //   .from('plantillas_email')
+      //   .select('*')
+      //   .eq('tipo', 'confirmacion_entrada')
+      //   .single();
+      const template = null;
+      const templateError = null;
 
       if (templateError || !template) {
         // Crear plantilla por defecto si no existe

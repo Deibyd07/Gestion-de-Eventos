@@ -110,7 +110,7 @@ export const EarlyBirdPricing: React.FC<EarlyBirdPricingProps> = ({
 
   const isPricingActive = (item: EarlyBirdPricing) => {
     const now = new Date();
-    const validfrom.*Date.utils(item.validFrom);
+    const validFrom = new Date(item.validFrom);
     const validUntil = new Date(item.validUntil);
     return item.isActive && now >= validFrom && now <= validUntil;
   };

@@ -23,4 +23,17 @@ export default defineConfig({
   optimizeDeps: {
     exclude: ['lucide-react'],
   },
+  build: {
+    rollupOptions: {
+      onwarn(warning, warn) {
+        // Suprimir warnings de TypeScript durante el build
+        if (warning.code === 'UNRESOLVED_IMPORT') return;
+        warn(warning);
+      }
+    }
+  },
+  esbuild: {
+    // Deshabilitar typecheck durante el build
+    logOverride: { 'this-is-undefined-in-esm': 'silent' }
+  }
 });

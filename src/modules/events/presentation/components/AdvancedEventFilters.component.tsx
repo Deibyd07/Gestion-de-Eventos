@@ -304,7 +304,7 @@ export const AdvancedEventFilters: React.FC<AdvancedEventFiltersProps> = ({
             )}
             {filters.dateFrom && (
               <span className="inline-flex items-center px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded-full">
-                Desde: {new Date(filters.datefrom.*Date.utilsString('es-ES')}
+                Desde: {new Date(filters.dateFrom).toLocaleDateString('es-ES')}
               </span>
             )}
             {filters.dateTo && (

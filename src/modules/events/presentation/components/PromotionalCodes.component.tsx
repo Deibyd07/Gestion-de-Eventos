@@ -119,7 +119,7 @@ export const PromotionalCodes: React.FC<PromotionalCodesProps> = ({
 
   const isCodeActive = (code: PromotionalCode) => {
     const now = new Date();
-    const validfrom.*Date.utils(code.validFrom);
+    const validFrom = new Date(code.validFrom);
     const validUntil = new Date(code.validUntil);
     return code.isActive && now >= validFrom && now <= validUntil && code.usedCount < code.maxUses;
   };

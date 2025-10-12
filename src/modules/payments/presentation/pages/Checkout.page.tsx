@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Trash2, Plus, Minus, CreditCard, Shield, ArrowLeft, Lock, CheckCircle, Loader2 } from 'lucide-react';
 import { useCartStore } from '../../../payments/infrastructure/store/Cart.store';
 import { useNotificationStore } from '../../../notifications/infrastructure/store/Notification.store';
-import { apiService } from '@shared/lib/api/api';
+// import { apiService } from '@shared/lib/api/api';
 import { formatPriceDisplay, formatPrice } from '@shared/lib/utils/Currency.utils';
 
 export function CheckoutPage() {

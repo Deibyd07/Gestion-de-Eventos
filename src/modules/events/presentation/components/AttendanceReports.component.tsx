@@ -52,7 +52,7 @@ export const AttendanceReports: React.FC<AttendanceReportsProps> = ({
     if (filters.ticketType && attendee.ticketType !== filters.ticketType) return false;
     if (filters.checkInStatus === 'checked-in' && !attendee.isCheckedIn) return false;
     if (filters.checkInStatus === 'not-checked-in' && attendee.isCheckedIn) return false;
-    if (filters.datefrom.*Date.utilsFrom)) return false;
+    if (filters.dateFrom && new Date(attendee.purchaseDate) < new Date(filters.dateFrom)) return false;
     if (filters.dateTo && new Date(attendee.purchaseDate) > new Date(filters.dateTo)) return false;
     return true;
   });

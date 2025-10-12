@@ -13,7 +13,8 @@ import {
   CreditCard,
   Edit3,
   QrCode,
-  Shield
+  Shield,
+  CheckCircle
 } from 'lucide-react';
 import { useAuthStore } from '../../../authentication/infrastructure/store/Auth.store';
 
@@ -37,7 +38,8 @@ export function ProfilePage() {
       name: formData.name,
       email: formData.email,
       preferences: {
-        location: formData.location
+        location: formData.location,
+        categories: []
       }
     });
     setIsSaving(false);

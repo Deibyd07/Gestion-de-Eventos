@@ -1,5 +1,5 @@
-import { Event } from '../../../events/infrastructure/store/Event.store';
-import { User } from '../../../authentication/infrastructure/store/Auth.store';
+// import { Event } from '../../../events/infrastructure/store/Event.store';
+// import { User } from '../../../authentication/infrastructure/store/Auth.store';
 
 // Base API configuration
 const API_BASE_URL = process.env.NODE_ENV === 'production' 
@@ -44,7 +44,7 @@ class ApiService {
   }
 
   // Auth endpoints
-  async login(email: string, password: string): Promise<{ user: User; token: string }> {
+  async login(email: string, password: string): Promise<{ user: any; token: string }> {
     // Mock implementation - replace with actual API call
     await new Promise(resolve => setTimeout(resolve, 1000));
     
@@ -62,7 +62,7 @@ class ApiService {
     return mockResponse;
   }
 
-  async register(userData: { email: string; password: string; name: string }): Promise<{ user: User; token: string }> {
+  async register(userData: { email: string; password: string; name: string }): Promise<{ user: any; token: string }> {
     // Mock implementation
     await new Promise(resolve => setTimeout(resolve, 1000));
     

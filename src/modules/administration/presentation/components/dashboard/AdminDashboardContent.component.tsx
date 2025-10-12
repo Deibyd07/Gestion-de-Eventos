@@ -1,6 +1,5 @@
 import React from 'react';
 import { AdminStatsCards } from './AdminStatsCards.component';
-import { SystemMetrics } from './SystemMetrics.component';
 import { RecentActivity } from './RecentActivity.component';
 import { TopOrganizers } from './TopOrganizers.component';
 import { DeviceLocationStats } from './DeviceLocationStats.component';
@@ -11,7 +10,6 @@ interface AdminStats {
   totalRevenue: number;
   activeEvents: number;
   pendingApprovals: number;
-  systemHealth: 'excellent' | 'good' | 'warning' | 'critical';
   recentActivity: Array<{
     id: string;
     type: 'user_registration' | 'event_created' | 'payment_received' | 'system_alert';
@@ -26,12 +24,6 @@ interface AdminStats {
     revenue: number;
     rating: number;
   }>;
-  systemMetrics: {
-    serverUptime: string;
-    responseTime: number;
-    errorRate: number;
-    activeConnections: number;
-  };
 }
 
 interface AdminDashboardContentProps {
@@ -45,21 +37,11 @@ interface AdminDashboardContentProps {
       totalRevenue: number;
       activeEvents: number;
       pendingApprovals: number;
-      systemHealth: 'excellent' | 'good' | 'warning' | 'critical';
       growth: {
         users: number;
         events: number;
         revenue: number;
       };
-    };
-    metrics: {
-      serverUptime: string;
-      responseTime: number;
-      errorRate: number;
-      activeConnections: number;
-      avgSessionTime: string;
-      pageViews: number;
-      bounceRate: number;
     };
     recentActivity: Array<{
       id: string;
@@ -99,11 +81,6 @@ export const AdminDashboardContent: React.FC<AdminDashboardContentProps> = ({
         formatNumber={formatNumber}
       />
 
-      {/* Secondary Metrics */}
-      <SystemMetrics 
-        systemHealth={stats.systemHealth}
-        systemMetrics={stats.systemMetrics}
-      />
 
       {/* Charts and Analytics */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">

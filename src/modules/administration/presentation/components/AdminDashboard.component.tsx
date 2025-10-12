@@ -8,7 +8,6 @@ interface AdminStats {
   totalRevenue: number;
   activeEvents: number;
   pendingApprovals: number;
-  systemHealth: 'excellent' | 'good' | 'warning' | 'critical';
   recentActivity: Array<{
     id: string;
     type: 'user_registration' | 'event_created' | 'payment_received' | 'system_alert';
@@ -23,12 +22,6 @@ interface AdminStats {
     revenue: number;
     rating: number;
   }>;
-  systemMetrics: {
-    serverUptime: string;
-    responseTime: number;
-    errorRate: number;
-    activeConnections: number;
-  };
 }
 
 interface AdminDashboardProps {
@@ -60,21 +53,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       totalRevenue: 125000000,
       activeEvents: 23,
       pendingApprovals: 5,
-      systemHealth: 'excellent' as const,
       growth: {
         users: 12.5,
         events: 8.3,
         revenue: 15.2
       }
-    },
-    metrics: {
-      serverUptime: '99.9%',
-      responseTime: 120,
-      errorRate: 0.1,
-      activeConnections: 156,
-      avgSessionTime: '4m 32s',
-      pageViews: 12547,
-      bounceRate: 23.4
     },
     recentActivity: [
       {

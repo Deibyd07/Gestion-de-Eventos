@@ -29,6 +29,7 @@
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
     "@supabase/supabase-js": "^2.57.4",
+    "@types/three": "^0.180.0",
     "html5-qrcode": "^2.3.8",
     "lucide-react": "^0.344.0",
     "react": "^18.3.1",
@@ -36,6 +37,7 @@
     "react-hook-form": "^7.63.0",
     "react-qr-code": "^2.0.18",
     "react-router-dom": "^7.9.3",
+    "three": "^0.180.0",
     "yup": "^1.7.1",
     "zustand": "^5.0.8"
   },

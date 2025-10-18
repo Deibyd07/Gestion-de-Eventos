@@ -225,6 +225,22 @@ graph TB
 - **Postcondiciones**: Usuario registrado con rol 'asistente'
 
 ```mermaid
+<<<<<<< HEAD
+graph LR
+    A[👤 Usuario Nuevo]:::actor
+    UC1((UC-001<br/>Registrar<br/>Usuario)):::usecase
+    UC2((Validar<br/>Email)):::usecase
+    UC3((Enviar<br/>Verificación)):::usecase
+    SYS[⚙️ Sistema Email]:::actor
+    
+    A -->|registrarse| UC1
+    UC1 -.->|include| UC2
+    UC1 -.->|include| UC3
+    UC3 --> SYS
+    
+    classDef actor fill:#2E86AB,stroke:#1A5490,stroke-width:3px,color:#fff
+    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529
+=======
 graph TD
     A[Inicio] --> B[Ingresar datos de registro]
     B --> C{¿Datos válidos?}
@@ -241,6 +257,7 @@ graph TD
     style A fill:#90EE90
     style J fill:#FFB6C1
     style G fill:#87CEEB
+>>>>>>> 382bde92c35a337cd47157f444d1a66d82b9e728
 ```
 
 #### **UC-002: Autenticar Usuario**
@@ -250,6 +267,22 @@ graph TD
 - **Postcondiciones**: Usuario autenticado con sesión activa
 
 ```mermaid
+<<<<<<< HEAD
+graph LR
+    A[👤 Usuario]:::actor
+    UC1((UC-002<br/>Autenticar<br/>Usuario)):::usecase
+    UC2((Validar<br/>Credenciales)):::usecase
+    UC3((Generar<br/>Token)):::usecase
+    UC4((Bloquear<br/>Cuenta)):::usecase
+    
+    A -->|login| UC1
+    UC1 -.->|include| UC2
+    UC1 -.->|include| UC3
+    UC1 -.->|extend| UC4
+    
+    classDef actor fill:#2E86AB,stroke:#1A5490,stroke-width:3px,color:#fff
+    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529
+=======
 graph TD
     A[Inicio] --> B[Ingresar email y contraseña]
     B --> C{¿Credenciales válidas?}
@@ -269,6 +302,7 @@ graph TD
     style A fill:#90EE90
     style H fill:#FFB6C1
     style J fill:#87CEEB
+>>>>>>> 382bde92c35a337cd47157f444d1a66d82b9e728
 ```
 
 #### **UC-003: Cerrar Sesión**
@@ -278,6 +312,20 @@ graph TD
 - **Postcondiciones**: Sesión cerrada, usuario desautenticado
 
 ```mermaid
+<<<<<<< HEAD
+graph LR
+    A[👤 Usuario]:::actor
+    UC1((UC-003<br/>Cerrar<br/>Sesión)):::usecase
+    UC2((Invalidar<br/>Token)):::usecase
+    UC3((Limpiar<br/>Caché)):::usecase
+    
+    A -->|logout| UC1
+    UC1 -.->|include| UC2
+    UC1 -.->|include| UC3
+    
+    classDef actor fill:#2E86AB,stroke:#1A5490,stroke-width:3px,color:#fff
+    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529
+=======
 graph TD
     A[Inicio] --> B[Solicitar cerrar sesión]
     B --> C[Invalidar token de sesión]
@@ -289,6 +337,7 @@ graph TD
     style A fill:#90EE90
     style G fill:#FFB6C1
     style C fill:#87CEEB
+>>>>>>> 382bde92c35a337cd47157f444d1a66d82b9e728
 ```
 
 #### **UC-004: Recuperar Contraseña**
@@ -298,6 +347,24 @@ graph TD
 - **Postcondiciones**: Email de recuperación enviado
 
 ```mermaid
+<<<<<<< HEAD
+graph LR
+    A[👤 Usuario]:::actor
+    UC1((UC-004<br/>Recuperar<br/>Contraseña)):::usecase
+    UC2((Validar<br/>Email)):::usecase
+    UC3((Generar<br/>Token)):::usecase
+    UC4((Enviar<br/>Email)):::usecase
+    SYS[⚙️ Sistema Email]:::actor
+    
+    A -->|solicitar| UC1
+    UC1 -.->|include| UC2
+    UC1 -.->|include| UC3
+    UC1 -.->|include| UC4
+    UC4 --> SYS
+    
+    classDef actor fill:#2E86AB,stroke:#1A5490,stroke-width:3px,color:#fff
+    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529
+=======
 graph TD
     A[Inicio] --> B[Ingresar email]
     B --> C{¿Email existe?}
@@ -312,6 +379,7 @@ graph TD
     style A fill:#90EE90
     style E fill:#FFB6C1
     style F fill:#87CEEB
+>>>>>>> 382bde92c35a337cd47157f444d1a66d82b9e728
 ```
 
 #### **UC-005: Cambiar Contraseña**
@@ -321,6 +389,26 @@ graph TD
 - **Postcondiciones**: Contraseña actualizada
 
 ```mermaid
+<<<<<<< HEAD
+graph LR
+    A[👤 Usuario]:::actor
+    UC1((UC-005<br/>Cambiar<br/>Contraseña)):::usecase
+    UC2((Validar<br/>Contraseña<br/>Actual)):::usecase
+    UC3((Hashear<br/>Nueva<br/>Contraseña)):::usecase
+    UC4((Invalidar<br/>Sesiones)):::usecase
+    UC5((Enviar<br/>Confirmación)):::usecase
+    SYS[⚙️ Sistema Email]:::actor
+    
+    A -->|cambiar| UC1
+    UC1 -.->|include| UC2
+    UC1 -.->|include| UC3
+    UC1 -.->|include| UC4
+    UC1 -.->|include| UC5
+    UC5 --> SYS
+    
+    classDef actor fill:#2E86AB,stroke:#1A5490,stroke-width:3px,color:#fff
+    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529
+=======
 graph TD
     A[Inicio] --> B[Ingresar contraseña actual]
     B --> C[Ingresar nueva contraseña]
@@ -344,6 +432,7 @@ graph TD
     style A fill:#90EE90
     style P fill:#FFB6C1
     style K fill:#87CEEB
+>>>>>>> 382bde92c35a337cd47157f444d1a66d82b9e728
 ```
 
 #### **UC-006: Gestionar Perfil**
@@ -353,6 +442,22 @@ graph TD
 - **Postcondiciones**: Perfil actualizado
 
 ```mermaid
+<<<<<<< HEAD
+graph LR
+    A[👤 Usuario]:::actor
+    UC1((UC-006<br/>Gestionar<br/>Perfil)):::usecase
+    UC2((Actualizar<br/>Datos<br/>Personales)):::usecase
+    UC3((Subir<br/>Foto)):::usecase
+    UC4((Configurar<br/>Preferencias)):::usecase
+    
+    A -->|gestionar| UC1
+    UC1 -.->|extend| UC2
+    UC1 -.->|extend| UC3
+    UC1 -.->|extend| UC4
+    
+    classDef actor fill:#2E86AB,stroke:#1A5490,stroke-width:3px,color:#fff
+    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529
+=======
 graph TD
     A[Inicio] --> B[Cargar datos de perfil]
     B --> C[Mostrar formulario de perfil]
@@ -373,6 +478,7 @@ graph TD
     style A fill:#90EE90
     style M fill:#FFB6C1
     style K fill:#87CEEB
+>>>>>>> 382bde92c35a337cd47157f444d1a66d82b9e728
 ```
 
 #### **UC-007: Ver Historial**
@@ -382,6 +488,20 @@ graph TD
 - **Postcondiciones**: Historial de actividades mostrado
 
 ```mermaid
+<<<<<<< HEAD
+graph LR
+    A[👤 Usuario]:::actor
+    UC1((UC-007<br/>Ver<br/>Historial)):::usecase
+    UC2((Filtrar<br/>por Fecha)):::usecase
+    UC3((Exportar<br/>Historial)):::usecase
+    
+    A -->|consultar| UC1
+    UC1 -.->|extend| UC2
+    UC1 -.->|extend| UC3
+    
+    classDef actor fill:#2E86AB,stroke:#1A5490,stroke-width:3px,color:#fff
+    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529
+=======
 graph TD
     A[Inicio] --> B[Solicitar historial]
     B --> C{¿Tipo de historial?}
@@ -399,6 +519,7 @@ graph TD
     style A fill:#90EE90
     style K fill:#FFB6C1
     style G fill:#87CEEB
+>>>>>>> 382bde92c35a337cd47157f444d1a66d82b9e728
 ```
 
 #### **UC-008: Actualizar Datos**
@@ -408,6 +529,22 @@ graph TD
 - **Postcondiciones**: Datos personales actualizados
 
 ```mermaid
+<<<<<<< HEAD
+graph LR
+    A[👤 Usuario]:::actor
+    UC1((UC-008<br/>Actualizar<br/>Datos)):::usecase
+    UC2((Validar<br/>Información)):::usecase
+    UC3((Verificar<br/>Email)):::usecase
+    SYS[⚙️ Sistema Email]:::actor
+    
+    A -->|actualizar| UC1
+    UC1 -.->|include| UC2
+    UC1 -.->|extend| UC3
+    UC3 --> SYS
+    
+    classDef actor fill:#2E86AB,stroke:#1A5490,stroke-width:3px,color:#fff
+    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529
+=======
 graph TD
     A[Inicio] --> B[Cargar datos actuales]
     B --> C[Mostrar formulario]
@@ -431,6 +568,7 @@ graph TD
     style A fill:#90EE90
     style O fill:#FFB6C1
     style L fill:#87CEEB
+>>>>>>> 382bde92c35a337cd47157f444d1a66d82b9e728
 ```
 
 #### **UC-009: Gestionar Usuarios**
@@ -440,6 +578,24 @@ graph TD
 - **Postcondiciones**: Usuarios gestionados según operación
 
 ```mermaid
+<<<<<<< HEAD
+graph LR
+    A[🛡️ Administrador]:::actor
+    UC1((UC-009<br/>Gestionar<br/>Usuarios)):::usecase
+    UC2((Ver<br/>Detalles)):::usecase
+    UC3((Editar<br/>Usuario)):::usecase
+    UC4((Desactivar<br/>Usuario)):::usecase
+    UC5((Eliminar<br/>Usuario)):::usecase
+    
+    A -->|gestionar| UC1
+    UC1 -.->|extend| UC2
+    UC1 -.->|extend| UC3
+    UC1 -.->|extend| UC4
+    UC1 -.->|extend| UC5
+    
+    classDef actor fill:#2E86AB,stroke:#1A5490,stroke-width:3px,color:#fff
+    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529
+=======
 graph TD
     A[Inicio] --> B[Mostrar lista de usuarios]
     B --> C[Aplicar filtros de búsqueda]
@@ -464,6 +620,7 @@ graph TD
     style A fill:#90EE90
     style J fill:#FFB6C1
     style L fill:#87CEEB
+>>>>>>> 382bde92c35a337cd47157f444d1a66d82b9e728
 ```
 
 #### **UC-010: Asignar Roles**
@@ -473,6 +630,24 @@ graph TD
 - **Postcondiciones**: Rol asignado al usuario
 
 ```mermaid
+<<<<<<< HEAD
+graph LR
+    A[🛡️ Administrador]:::actor
+    UC1((UC-010<br/>Asignar<br/>Roles)):::usecase
+    UC2((Validar<br/>Permisos)):::usecase
+    UC3((Invalidar<br/>Sesiones)):::usecase
+    UC4((Notificar<br/>Usuario)):::usecase
+    SYS[⚙️ Sistema Email]:::actor
+    
+    A -->|asignar| UC1
+    UC1 -.->|include| UC2
+    UC1 -.->|include| UC3
+    UC1 -.->|include| UC4
+    UC4 --> SYS
+    
+    classDef actor fill:#2E86AB,stroke:#1A5490,stroke-width:3px,color:#fff
+    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529
+=======
 graph TD
     A[Inicio] --> B[Seleccionar usuario]
     B --> C[Mostrar rol actual]
@@ -495,6 +670,7 @@ graph TD
     style A fill:#90EE90
     style J fill:#FFB6C1
     style K fill:#87CEEB
+>>>>>>> 382bde92c35a337cd47157f444d1a66d82b9e728
 ```
 
 ### **📅 Gestión de Eventos (UC-011 a UC-016)**
@@ -506,6 +682,22 @@ graph TD
 - **Postcondiciones**: Lista de eventos disponibles mostrada
 
 ```mermaid
+<<<<<<< HEAD
+graph LR
+    A[👤 Asistente]:::actor
+    UC1((UC-011<br/>Explorar<br/>Eventos)):::usecase
+    UC2((Aplicar<br/>Filtros)):::usecase
+    UC3((Ordenar<br/>Resultados)):::usecase
+    UC4((Ver Detalle<br/>de Evento)):::usecase
+    
+    A -->|explorar| UC1
+    UC1 -.->|extend| UC2
+    UC1 -.->|extend| UC3
+    UC1 --> UC4
+    
+    classDef actor fill:#2E86AB,stroke:#1A5490,stroke-width:3px,color:#fff
+    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529
+=======
 graph TD
     A[Inicio] --> B[Cargar eventos públicos]
     B --> C{¿Aplicar filtros?}
@@ -527,6 +719,7 @@ graph TD
     style A fill:#90EE90
     style O fill:#FFB6C1
     style I fill:#87CEEB
+>>>>>>> 382bde92c35a337cd47157f444d1a66d82b9e728
 ```
 
 #### **UC-012: Buscar Eventos**
@@ -536,6 +729,22 @@ graph TD
 - **Postcondiciones**: Resultados de búsqueda mostrados
 
 ```mermaid
+<<<<<<< HEAD
+graph LR
+    A[👤 Asistente]:::actor
+    UC1((UC-012<br/>Buscar<br/>Eventos)):::usecase
+    UC2((Validar<br/>Término)):::usecase
+    UC3((Sugerir<br/>Eventos)):::usecase
+    UC4((Ver Detalle<br/>de Evento)):::usecase
+    
+    A -->|buscar| UC1
+    UC1 -.->|include| UC2
+    UC1 -.->|extend| UC3
+    UC1 --> UC4
+    
+    classDef actor fill:#2E86AB,stroke:#1A5490,stroke-width:3px,color:#fff
+    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529
+=======
 graph TD
     A[Inicio] --> B[Ingresar término de búsqueda]
     B --> C{¿Término válido?}
@@ -558,6 +767,7 @@ graph TD
     style A fill:#90EE90
     style M fill:#FFB6C1
     style I fill:#87CEEB
+>>>>>>> 382bde92c35a337cd47157f444d1a66d82b9e728
 ```
 
 #### **UC-013: Ver Detalle de Evento**
@@ -567,6 +777,24 @@ graph TD
 - **Postcondiciones**: Detalles completos del evento mostrados
 
 ```mermaid
+<<<<<<< HEAD
+graph LR
+    A[👤 Asistente]:::actor
+    UC1((UC-013<br/>Ver Detalle<br/>de Evento)):::usecase
+    UC2((Validar<br/>Permisos)):::usecase
+    UC3((Cargar<br/>Imágenes)):::usecase
+    UC4((Cargar<br/>Reseñas)):::usecase
+    UC5((Agregar al<br/>Carrito)):::usecase
+    
+    A -->|ver| UC1
+    UC1 -.->|include| UC2
+    UC1 -.->|include| UC3
+    UC1 -.->|extend| UC4
+    UC1 --> UC5
+    
+    classDef actor fill:#2E86AB,stroke:#1A5490,stroke-width:3px,color:#fff
+    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529
+=======
 graph TD
     A[Inicio] --> B[Solicitar evento por ID]
     B --> C{¿Evento existe?}
@@ -589,6 +817,7 @@ graph TD
     style A fill:#90EE90
     style E fill:#FFB6C1
     style I fill:#87CEEB
+>>>>>>> 382bde92c35a337cd47157f444d1a66d82b9e728
 ```
 
 #### **UC-014: Crear Evento**
@@ -598,6 +827,26 @@ graph TD
 - **Postcondiciones**: Evento creado con información completa
 
 ```mermaid
+<<<<<<< HEAD
+graph LR
+    A[🎭 Organizador]:::actor
+    B[🛡️ Administrador]:::actor
+    UC1((UC-014<br/>Crear<br/>Evento)):::usecase
+    UC2((Validar<br/>Datos)):::usecase
+    UC3((Subir<br/>Imágenes)):::usecase
+    UC4((Crear Tipos<br/>de Entrada)):::usecase
+    UC5((Generar<br/>Slug)):::usecase
+    
+    A -->|crear| UC1
+    B -->|crear| UC1
+    UC1 -.->|include| UC2
+    UC1 -.->|include| UC3
+    UC1 -.->|include| UC4
+    UC1 -.->|include| UC5
+    
+    classDef actor fill:#2E86AB,stroke:#1A5490,stroke-width:3px,color:#fff
+    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529
+=======
 graph TD
     A[Inicio] --> B[Mostrar formulario de evento]
     B --> C[Ingresar información básica]
@@ -623,6 +872,7 @@ graph TD
     style A fill:#90EE90
     style S fill:#FFB6C1
     style M fill:#87CEEB
+>>>>>>> 382bde92c35a337cd47157f444d1a66d82b9e728
 ```
 
 #### **UC-015: Editar Evento**
@@ -632,6 +882,26 @@ graph TD
 - **Postcondiciones**: Evento actualizado con nuevos datos
 
 ```mermaid
+<<<<<<< HEAD
+graph LR
+    A[🎭 Organizador]:::actor
+    B[🛡️ Administrador]:::actor
+    UC1((UC-015<br/>Editar<br/>Evento)):::usecase
+    UC2((Validar<br/>Permisos)):::usecase
+    UC3((Validar<br/>Cambios)):::usecase
+    UC4((Notificar<br/>Asistentes)):::usecase
+    SYS[⚙️ Sistema Email]:::actor
+    
+    A -->|editar| UC1
+    B -->|editar| UC1
+    UC1 -.->|include| UC2
+    UC1 -.->|include| UC3
+    UC1 -.->|extend| UC4
+    UC4 --> SYS
+    
+    classDef actor fill:#2E86AB,stroke:#1A5490,stroke-width:3px,color:#fff
+    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529
+=======
 graph TD
     A[Inicio] --> B[Cargar evento existente]
     B --> C{¿Usuario es propietario?}
@@ -657,6 +927,7 @@ graph TD
     style A fill:#90EE90
     style E fill:#FFB6C1
     style M fill:#87CEEB
+>>>>>>> 382bde92c35a337cd47157f444d1a66d82b9e728
 ```
 
 #### **UC-016: Eliminar Evento**
@@ -666,6 +937,26 @@ graph TD
 - **Postcondiciones**: Evento eliminado del sistema
 
 ```mermaid
+<<<<<<< HEAD
+graph LR
+    A[🎭 Organizador]:::actor
+    B[🛡️ Administrador]:::actor
+    UC1((UC-016<br/>Eliminar<br/>Evento)):::usecase
+    UC2((Validar<br/>Permisos)):::usecase
+    UC3((Verificar<br/>Compras)):::usecase
+    UC4((Confirmar<br/>Eliminación)):::usecase
+    UC5((Eliminar<br/>Recursos)):::usecase
+    
+    A -->|eliminar| UC1
+    B -->|eliminar| UC1
+    UC1 -.->|include| UC2
+    UC1 -.->|include| UC3
+    UC1 -.->|include| UC4
+    UC1 -.->|include| UC5
+    
+    classDef actor fill:#2E86AB,stroke:#1A5490,stroke-width:3px,color:#fff
+    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529
+=======
 graph TD
     A[Inicio] --> B[Solicitar eliminar evento]
     B --> C{¿Usuario es propietario?}
@@ -687,6 +978,7 @@ graph TD
     style A fill:#90EE90
     style E fill:#FFB6C1
     style L fill:#87CEEB
+>>>>>>> 382bde92c35a337cd47157f444d1a66d82b9e728
 ```
 
 ### **🎫 Gestión de Pagos (UC-017 a UC-021)**
@@ -698,6 +990,24 @@ graph TD
 - **Postcondiciones**: Entradas agregadas al carrito
 
 ```mermaid
+<<<<<<< HEAD
+graph LR
+    A[👤 Asistente]:::actor
+    UC1((UC-017<br/>Agregar al<br/>Carrito)):::usecase
+    UC2((Validar<br/>Disponibilidad)):::usecase
+    UC3((Aplicar<br/>Descuentos)):::usecase
+    UC4((Reservar<br/>Entradas)):::usecase
+    UC5((Procesar<br/>Pago)):::usecase
+    
+    A -->|agregar| UC1
+    UC1 -.->|include| UC2
+    UC1 -.->|extend| UC3
+    UC1 -.->|include| UC4
+    UC1 --> UC5
+    
+    classDef actor fill:#2E86AB,stroke:#1A5490,stroke-width:3px,color:#fff
+    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529
+=======
 graph TD
     A[Inicio] --> B[Seleccionar tipo de entrada]
     B --> C[Seleccionar cantidad]
@@ -721,6 +1031,7 @@ graph TD
     style A fill:#90EE90
     style P fill:#FFB6C1
     style L fill:#87CEEB
+>>>>>>> 382bde92c35a337cd47157f444d1a66d82b9e728
 ```
 
 #### **UC-018: Procesar Pago**
@@ -730,6 +1041,30 @@ graph TD
 - **Postcondiciones**: Pago procesado, entradas generadas
 
 ```mermaid
+<<<<<<< HEAD
+graph LR
+    A[👤 Asistente]:::actor
+    UC1((UC-018<br/>Procesar<br/>Pago)):::usecase
+    UC2((Validar<br/>Datos)):::usecase
+    UC3((Procesar con<br/>Stripe)):::usecase
+    UC4((Generar<br/>Entradas)):::usecase
+    UC5((Generar<br/>QR)):::usecase
+    UC6((Enviar<br/>Confirmación)):::usecase
+    SYS1[⚙️ Stripe]:::actor
+    SYS2[⚙️ Sistema Email]:::actor
+    
+    A -->|pagar| UC1
+    UC1 -.->|include| UC2
+    UC1 -.->|include| UC3
+    UC3 --> SYS1
+    UC1 -.->|include| UC4
+    UC1 -.->|include| UC5
+    UC1 -.->|include| UC6
+    UC6 --> SYS2
+    
+    classDef actor fill:#2E86AB,stroke:#1A5490,stroke-width:3px,color:#fff
+    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529
+=======
 graph TD
     A[Inicio] --> B[Revisar carrito]
     B --> C{¿Carrito válido?}
@@ -757,6 +1092,7 @@ graph TD
     style A fill:#90EE90
     style E fill:#FFB6C1
     style P fill:#87CEEB
+>>>>>>> 382bde92c35a337cd47157f444d1a66d82b9e728
 ```
 
 #### **UC-019: Ver Entradas**
@@ -766,6 +1102,22 @@ graph TD
 - **Postcondiciones**: Lista de entradas mostrada
 
 ```mermaid
+<<<<<<< HEAD
+graph LR
+    A[👤 Asistente]:::actor
+    UC1((UC-019<br/>Ver<br/>Entradas)):::usecase
+    UC2((Filtrar por<br/>Estado)):::usecase
+    UC3((Ver Código<br/>QR)):::usecase
+    UC4((Descargar<br/>Entrada)):::usecase
+    
+    A -->|ver| UC1
+    UC1 -.->|extend| UC2
+    UC1 --> UC3
+    UC1 -.->|extend| UC4
+    
+    classDef actor fill:#2E86AB,stroke:#1A5490,stroke-width:3px,color:#fff
+    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529
+=======
 graph TD
     A[Inicio] --> B[Cargar entradas del usuario]
     B --> C{¿Tiene entradas?}
@@ -789,6 +1141,7 @@ graph TD
     style A fill:#90EE90
     style E fill:#FFB6C1
     style L fill:#87CEEB
+>>>>>>> 382bde92c35a337cd47157f444d1a66d82b9e728
 ```
 
 #### **UC-020: Generar QR**
@@ -798,6 +1151,22 @@ graph TD
 - **Postcondiciones**: Código QR generado y guardado
 
 ```mermaid
+<<<<<<< HEAD
+graph LR
+    SYS[⚙️ Sistema]:::actor
+    UC1((UC-020<br/>Generar<br/>QR)):::usecase
+    UC2((Generar<br/>UUID)):::usecase
+    UC3((Cifrar<br/>Datos)):::usecase
+    UC4((Guardar<br/>Imagen)):::usecase
+    
+    SYS -->|generar| UC1
+    UC1 -.->|include| UC2
+    UC1 -.->|include| UC3
+    UC1 -.->|include| UC4
+    
+    classDef actor fill:#2E86AB,stroke:#1A5490,stroke-width:3px,color:#fff
+    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529
+=======
 graph TD
     A[Inicio] --> B[Recibir datos de entrada]
     B --> C[Generar UUID único]
@@ -816,6 +1185,7 @@ graph TD
     style A fill:#90EE90
     style M fill:#FFB6C1
     style F fill:#87CEEB
+>>>>>>> 382bde92c35a337cd47157f444d1a66d82b9e728
 ```
 
 #### **UC-021: Validar Entrada**
@@ -825,6 +1195,24 @@ graph TD
 - **Postcondiciones**: Asistencia registrada, entrada marcada como usada
 
 ```mermaid
+<<<<<<< HEAD
+graph LR
+    A[🎭 Organizador]:::actor
+    UC1((UC-021<br/>Validar<br/>Entrada)):::usecase
+    UC2((Escanear<br/>QR)):::usecase
+    UC3((Validar<br/>Autenticidad)):::usecase
+    UC4((Verificar<br/>Estado)):::usecase
+    UC5((Registrar<br/>Asistencia)):::usecase
+    
+    A -->|validar| UC1
+    UC1 -.->|include| UC2
+    UC1 -.->|include| UC3
+    UC1 -.->|include| UC4
+    UC1 -.->|include| UC5
+    
+    classDef actor fill:#2E86AB,stroke:#1A5490,stroke-width:3px,color:#fff
+    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529
+=======
 graph TD
     A[Inicio] --> B[Escanear código QR]
     B --> C[Decodificar información]
@@ -852,6 +1240,7 @@ graph TD
     style A fill:#90EE90
     style F fill:#FFB6C1
     style O fill:#87CEEB
+>>>>>>> 382bde92c35a337cd47157f444d1a66d82b9e728
 ```
 
 ### **🔔 Gestión de Notificaciones (UC-022 a UC-024)**
@@ -863,6 +1252,32 @@ graph TD
 - **Postcondiciones**: Notificaciones enviadas a usuarios objetivo
 
 ```mermaid
+<<<<<<< HEAD
+graph LR
+    A[🎭 Organizador]:::actor
+    B[🛡️ Administrador]:::actor
+    UC1((UC-022<br/>Enviar<br/>Notificación)):::usecase
+    UC2((Seleccionar<br/>Destinatarios)):::usecase
+    UC3((Redactar<br/>Mensaje)):::usecase
+    UC4((Programar<br/>Envío)):::usecase
+    UC5((Enviar por<br/>Email)):::usecase
+    UC6((Enviar<br/>Push)):::usecase
+    SYS1[⚙️ Sistema Email]:::actor
+    SYS2[⚙️ Sistema Push]:::actor
+    
+    A -->|enviar| UC1
+    B -->|enviar| UC1
+    UC1 -.->|include| UC2
+    UC1 -.->|include| UC3
+    UC1 -.->|extend| UC4
+    UC1 -.->|extend| UC5
+    UC1 -.->|extend| UC6
+    UC5 --> SYS1
+    UC6 --> SYS2
+    
+    classDef actor fill:#2E86AB,stroke:#1A5490,stroke-width:3px,color:#fff
+    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529
+=======
 graph TD
     A[Inicio] --> B[Seleccionar destinatarios]
     B --> C{¿Tipo de destinatarios?}
@@ -895,6 +1310,7 @@ graph TD
     style A fill:#90EE90
     style V fill:#FFB6C1
     style R fill:#87CEEB
+>>>>>>> 382bde92c35a337cd47157f444d1a66d82b9e728
 ```
 
 #### **UC-023: Ver Notificaciones**
@@ -904,6 +1320,22 @@ graph TD
 - **Postcondiciones**: Notificaciones mostradas
 
 ```mermaid
+<<<<<<< HEAD
+graph LR
+    A[👤 Usuario]:::actor
+    UC1((UC-023<br/>Ver<br/>Notificaciones)):::usecase
+    UC2((Marcar como<br/>Leída)):::usecase
+    UC3((Eliminar<br/>Notificación)):::usecase
+    UC4((Filtrar<br/>Notificaciones)):::usecase
+    
+    A -->|ver| UC1
+    UC1 -.->|extend| UC2
+    UC1 -.->|extend| UC3
+    UC1 -.->|extend| UC4
+    
+    classDef actor fill:#2E86AB,stroke:#1A5490,stroke-width:3px,color:#fff
+    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529
+=======
 graph TD
     A[Inicio] --> B[Cargar notificaciones]
     B --> C{¿Hay notificaciones?}
@@ -926,6 +1358,7 @@ graph TD
     style A fill:#90EE90
     style E fill:#FFB6C1
     style K fill:#87CEEB
+>>>>>>> 382bde92c35a337cd47157f444d1a66d82b9e728
 ```
 
 #### **UC-024: Configurar Preferencias**
@@ -935,6 +1368,22 @@ graph TD
 - **Postcondiciones**: Preferencias de notificación actualizadas
 
 ```mermaid
+<<<<<<< HEAD
+graph LR
+    A[👤 Usuario]:::actor
+    UC1((UC-024<br/>Configurar<br/>Preferencias)):::usecase
+    UC2((Activar/Desactivar<br/>Email)):::usecase
+    UC3((Activar/Desactivar<br/>Push)):::usecase
+    UC4((Configurar<br/>Frecuencia)):::usecase
+    
+    A -->|configurar| UC1
+    UC1 -.->|extend| UC2
+    UC1 -.->|extend| UC3
+    UC1 -.->|extend| UC4
+    
+    classDef actor fill:#2E86AB,stroke:#1A5490,stroke-width:3px,color:#fff
+    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529
+=======
 graph TD
     A[Inicio] --> B[Cargar preferencias actuales]
     B --> C[Mostrar configuración]
@@ -959,6 +1408,7 @@ graph TD
     style A fill:#90EE90
     style Q fill:#FFB6C1
     style N fill:#87CEEB
+>>>>>>> 382bde92c35a337cd47157f444d1a66d82b9e728
 ```
 
 ### **📊 Gestión de Analytics (UC-025 a UC-030)**
@@ -970,6 +1420,26 @@ graph TD
 - **Postcondiciones**: Dashboard personalizado mostrado
 
 ```mermaid
+<<<<<<< HEAD
+graph LR
+    A[👤 Asistente]:::actor
+    B[🎭 Organizador]:::actor
+    C[🛡️ Administrador]:::actor
+    UC1((UC-025<br/>Ver<br/>Dashboard)):::usecase
+    UC2((Cargar<br/>Métricas)):::usecase
+    UC3((Generar<br/>Gráficos)):::usecase
+    UC4((Actualizar en<br/>Tiempo Real)):::usecase
+    
+    A -->|ver| UC1
+    B -->|ver| UC1
+    C -->|ver| UC1
+    UC1 -.->|include| UC2
+    UC1 -.->|include| UC3
+    UC1 -.->|extend| UC4
+    
+    classDef actor fill:#2E86AB,stroke:#1A5490,stroke-width:3px,color:#fff
+    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529
+=======
 graph TD
     A[Inicio] --> B{¿Rol del usuario?}
     B -->|Asistente| C[Cargar eventos próximos]
@@ -992,6 +1462,7 @@ graph TD
     style A fill:#90EE90
     style P fill:#FFB6C1
     style O fill:#87CEEB
+>>>>>>> 382bde92c35a337cd47157f444d1a66d82b9e728
 ```
 
 #### **UC-026: Generar Reportes**
@@ -1001,6 +1472,24 @@ graph TD
 - **Postcondiciones**: Reporte generado y descargable
 
 ```mermaid
+<<<<<<< HEAD
+graph LR
+    A[👤 Usuario]:::actor
+    UC1((UC-026<br/>Generar<br/>Reportes)):::usecase
+    UC2((Seleccionar<br/>Tipo)):::usecase
+    UC3((Aplicar<br/>Filtros)):::usecase
+    UC4((Seleccionar<br/>Formato)):::usecase
+    UC5((Exportar<br/>Reporte)):::usecase
+    
+    A -->|generar| UC1
+    UC1 -.->|include| UC2
+    UC1 -.->|extend| UC3
+    UC1 -.->|include| UC4
+    UC1 -.->|include| UC5
+    
+    classDef actor fill:#2E86AB,stroke:#1A5490,stroke-width:3px,color:#fff
+    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529
+=======
 graph TD
     A[Inicio] --> B[Seleccionar tipo de reporte]
     B --> C{¿Tipo de reporte?}
@@ -1029,6 +1518,7 @@ graph TD
     style A fill:#90EE90
     style S fill:#FFB6C1
     style O fill:#87CEEB
+>>>>>>> 382bde92c35a337cd47157f444d1a66d82b9e728
 ```
 
 #### **UC-027: Ver Métricas**
@@ -1038,6 +1528,24 @@ graph TD
 - **Postcondiciones**: Métricas actualizadas en tiempo real
 
 ```mermaid
+<<<<<<< HEAD
+graph LR
+    SYS[⚙️ Sistema]:::actor
+    UC1((UC-027<br/>Ver<br/>Métricas)):::usecase
+    UC2((Recopilar<br/>Datos)):::usecase
+    UC3((Calcular<br/>KPIs)):::usecase
+    UC4((Actualizar<br/>Caché)):::usecase
+    UC5((Generar<br/>Alertas)):::usecase
+    
+    SYS -->|procesar| UC1
+    UC1 -.->|include| UC2
+    UC1 -.->|include| UC3
+    UC1 -.->|include| UC4
+    UC1 -.->|extend| UC5
+    
+    classDef actor fill:#2E86AB,stroke:#1A5490,stroke-width:3px,color:#fff
+    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529
+=======
 graph TD
     A[Inicio] --> B[Recopilar datos del sistema]
     B --> C[Procesar eventos nuevos]
@@ -1056,6 +1564,7 @@ graph TD
     style A fill:#90EE90
     style M fill:#FFB6C1
     style G fill:#87CEEB
+>>>>>>> 382bde92c35a337cd47157f444d1a66d82b9e728
 ```
 
 #### **UC-028: Dashboard del Organizador**
@@ -1065,6 +1574,24 @@ graph TD
 - **Postcondiciones**: Dashboard personalizado mostrado
 
 ```mermaid
+<<<<<<< HEAD
+graph LR
+    A[🎭 Organizador]:::actor
+    UC1((UC-028<br/>Dashboard del<br/>Organizador)):::usecase
+    UC2((Cargar<br/>Eventos)):::usecase
+    UC3((Calcular<br/>Ventas)):::usecase
+    UC4((Mostrar<br/>Tendencias)):::usecase
+    UC5((Ver Métricas<br/>de Eventos)):::usecase
+    
+    A -->|ver| UC1
+    UC1 -.->|include| UC2
+    UC1 -.->|include| UC3
+    UC1 -.->|include| UC4
+    UC1 --> UC5
+    
+    classDef actor fill:#2E86AB,stroke:#1A5490,stroke-width:3px,color:#fff
+    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529
+=======
 graph TD
     A[Inicio] --> B[Cargar eventos del organizador]
     B --> C[Calcular ventas totales]
@@ -1086,6 +1613,7 @@ graph TD
     style A fill:#90EE90
     style P fill:#FFB6C1
     style K fill:#87CEEB
+>>>>>>> 382bde92c35a337cd47157f444d1a66d82b9e728
 ```
 
 #### **UC-029: Gestionar Asistentes**
@@ -1095,6 +1623,26 @@ graph TD
 - **Postcondiciones**: Asistentes gestionados según operación
 
 ```mermaid
+<<<<<<< HEAD
+graph LR
+    A[🎭 Organizador]:::actor
+    UC1((UC-029<br/>Gestionar<br/>Asistentes)):::usecase
+    UC2((Ver<br/>Detalles)):::usecase
+    UC3((Exportar<br/>Lista)):::usecase
+    UC4((Enviar<br/>Mensaje)):::usecase
+    UC5((Check-in<br/>Manual)):::usecase
+    SYS[⚙️ Sistema Email]:::actor
+    
+    A -->|gestionar| UC1
+    UC1 -.->|extend| UC2
+    UC1 -.->|extend| UC3
+    UC1 -.->|extend| UC4
+    UC1 -.->|extend| UC5
+    UC4 --> SYS
+    
+    classDef actor fill:#2E86AB,stroke:#1A5490,stroke-width:3px,color:#fff
+    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529
+=======
 graph TD
     A[Inicio] --> B[Seleccionar evento]
     B --> C[Cargar lista de asistentes]
@@ -1120,6 +1668,7 @@ graph TD
     style A fill:#90EE90
     style K fill:#FFB6C1
     style P fill:#87CEEB
+>>>>>>> 382bde92c35a337cd47157f444d1a66d82b9e728
 ```
 
 #### **UC-030: Ver Métricas de Eventos**
@@ -1129,6 +1678,26 @@ graph TD
 - **Postcondiciones**: Métricas del evento mostradas
 
 ```mermaid
+<<<<<<< HEAD
+graph LR
+    A[🎭 Organizador]:::actor
+    B[🛡️ Administrador]:::actor
+    UC1((UC-030<br/>Ver Métricas<br/>de Eventos)):::usecase
+    UC2((Calcular<br/>Ocupación)):::usecase
+    UC3((Analizar<br/>Ventas)):::usecase
+    UC4((Comparar<br/>Eventos)):::usecase
+    UC5((Exportar<br/>Datos)):::usecase
+    
+    A -->|ver| UC1
+    B -->|ver| UC1
+    UC1 -.->|include| UC2
+    UC1 -.->|include| UC3
+    UC1 -.->|extend| UC4
+    UC1 -.->|extend| UC5
+    
+    classDef actor fill:#2E86AB,stroke:#1A5490,stroke-width:3px,color:#fff
+    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529
+=======
 graph TD
     A[Inicio] --> B[Seleccionar evento]
     B --> C[Cargar datos del evento]
@@ -1151,6 +1720,7 @@ graph TD
     style A fill:#90EE90
     style Q fill:#FFB6C1
     style K fill:#87CEEB
+>>>>>>> 382bde92c35a337cd47157f444d1a66d82b9e728
 ```
 
 ### **⚙️ Gestión de Administración (UC-031 a UC-039)**
@@ -1162,6 +1732,24 @@ graph TD
 - **Postcondiciones**: Código promocional creado
 
 ```mermaid
+<<<<<<< HEAD
+graph LR
+    A[🎭 Organizador]:::actor
+    UC1((UC-031<br/>Crear Códigos<br/>Promocionales)):::usecase
+    UC2((Configurar<br/>Descuento)):::usecase
+    UC3((Validar<br/>Disponibilidad)):::usecase
+    UC4((Establecer<br/>Límites)):::usecase
+    UC5((Configurar<br/>Vigencia)):::usecase
+    
+    A -->|crear| UC1
+    UC1 -.->|include| UC2
+    UC1 -.->|include| UC3
+    UC1 -.->|include| UC4
+    UC1 -.->|include| UC5
+    
+    classDef actor fill:#2E86AB,stroke:#1A5490,stroke-width:3px,color:#fff
+    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529
+=======
 graph TD
     A[Inicio] --> B[Ingresar código promocional]
     B --> C[Seleccionar tipo de descuento]
@@ -1186,6 +1774,7 @@ graph TD
     style A fill:#90EE90
     style Q fill:#FFB6C1
     style O fill:#87CEEB
+>>>>>>> 382bde92c35a337cd47157f444d1a66d82b9e728
 ```
 
 #### **UC-032: Gestionar Lista de Espera**
@@ -1195,6 +1784,26 @@ graph TD
 - **Postcondiciones**: Lista de espera gestionada
 
 ```mermaid
+<<<<<<< HEAD
+graph LR
+    A[🎭 Organizador]:::actor
+    UC1((UC-032<br/>Gestionar Lista<br/>de Espera)):::usecase
+    UC2((Ver<br/>Lista)):::usecase
+    UC3((Liberar<br/>Entradas)):::usecase
+    UC4((Notificar<br/>Usuarios)):::usecase
+    UC5((Eliminar de<br/>Lista)):::usecase
+    SYS[⚙️ Sistema Email]:::actor
+    
+    A -->|gestionar| UC1
+    UC1 -.->|extend| UC2
+    UC1 -.->|extend| UC3
+    UC1 -.->|extend| UC4
+    UC1 -.->|extend| UC5
+    UC4 --> SYS
+    
+    classDef actor fill:#2E86AB,stroke:#1A5490,stroke-width:3px,color:#fff
+    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529
+=======
 graph TD
     A[Inicio] --> B[Cargar lista de espera]
     B --> C[Ordenar por fecha de registro]
@@ -1219,6 +1828,7 @@ graph TD
     style A fill:#90EE90
     style I fill:#FFB6C1
     style K fill:#87CEEB
+>>>>>>> 382bde92c35a337cd47157f444d1a66d82b9e728
 ```
 
 #### **UC-033: Configurar Check-in**
@@ -1228,6 +1838,24 @@ graph TD
 - **Postcondiciones**: Check-in configurado
 
 ```mermaid
+<<<<<<< HEAD
+graph LR
+    A[🎭 Organizador]:::actor
+    UC1((UC-033<br/>Configurar<br/>Check-in)):::usecase
+    UC2((Seleccionar<br/>Método)):::usecase
+    UC3((Configurar<br/>Horarios)):::usecase
+    UC4((Asignar<br/>Personal)):::usecase
+    UC5((Configurar<br/>Reglas)):::usecase
+    
+    A -->|configurar| UC1
+    UC1 -.->|include| UC2
+    UC1 -.->|include| UC3
+    UC1 -.->|extend| UC4
+    UC1 -.->|include| UC5
+    
+    classDef actor fill:#2E86AB,stroke:#1A5490,stroke-width:3px,color:#fff
+    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529
+=======
 graph TD
     A[Inicio] --> B[Seleccionar evento]
     B --> C[Configurar método de check-in]
@@ -1252,6 +1880,7 @@ graph TD
     style A fill:#90EE90
     style Q fill:#FFB6C1
     style O fill:#87CEEB
+>>>>>>> 382bde92c35a337cd47157f444d1a66d82b9e728
 ```
 
 #### **UC-034: Dashboard de Administración**
@@ -1261,6 +1890,24 @@ graph TD
 - **Postcondiciones**: Dashboard de administración mostrado
 
 ```mermaid
+<<<<<<< HEAD
+graph LR
+    A[🛡️ Administrador]:::actor
+    UC1((UC-034<br/>Dashboard de<br/>Administración)):::usecase
+    UC2((Cargar Métricas<br/>Globales)):::usecase
+    UC3((Monitorear<br/>Sistema)):::usecase
+    UC4((Ver<br/>Alertas)):::usecase
+    UC5((Generar<br/>Reportes)):::usecase
+    
+    A -->|ver| UC1
+    UC1 -.->|include| UC2
+    UC1 -.->|include| UC3
+    UC1 -.->|extend| UC4
+    UC1 --> UC5
+    
+    classDef actor fill:#2E86AB,stroke:#1A5490,stroke-width:3px,color:#fff
+    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529
+=======
 graph TD
     A[Inicio] --> B[Cargar métricas globales]
     B --> C[Calcular usuarios totales]
@@ -1282,6 +1929,7 @@ graph TD
     style A fill:#90EE90
     style P fill:#FFB6C1
     style K fill:#87CEEB
+>>>>>>> 382bde92c35a337cd47157f444d1a66d82b9e728
 ```
 
 #### **UC-035: Gestionar Configuración del Sistema**
@@ -1291,6 +1939,24 @@ graph TD
 - **Postcondiciones**: Configuración del sistema actualizada
 
 ```mermaid
+<<<<<<< HEAD
+graph LR
+    A[🛡️ Administrador]:::actor
+    UC1((UC-035<br/>Gestionar<br/>Configuración)):::usecase
+    UC2((Configurar<br/>Parámetros)):::usecase
+    UC3((Configurar<br/>Pagos)):::usecase
+    UC4((Configurar<br/>Email)):::usecase
+    UC5((Configurar<br/>Seguridad)):::usecase
+    
+    A -->|gestionar| UC1
+    UC1 -.->|extend| UC2
+    UC1 -.->|extend| UC3
+    UC1 -.->|extend| UC4
+    UC1 -.->|extend| UC5
+    
+    classDef actor fill:#2E86AB,stroke:#1A5490,stroke-width:3px,color:#fff
+    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529
+=======
 graph TD
     A[Inicio] --> B[Cargar configuración actual]
     B --> C[Mostrar panel de configuración]
@@ -1317,6 +1983,7 @@ graph TD
     style A fill:#90EE90
     style Q fill:#FFB6C1
     style M fill:#87CEEB
+>>>>>>> 382bde92c35a337cd47157f444d1a66d82b9e728
 ```
 
 #### **UC-036: Ver Métricas Globales**
@@ -1326,6 +1993,24 @@ graph TD
 - **Postcondiciones**: Métricas globales mostradas
 
 ```mermaid
+<<<<<<< HEAD
+graph LR
+    A[🛡️ Administrador]:::actor
+    UC1((UC-036<br/>Ver Métricas<br/>Globales)):::usecase
+    UC2((Calcular<br/>KPIs)):::usecase
+    UC3((Analizar<br/>Tendencias)):::usecase
+    UC4((Comparar<br/>Períodos)):::usecase
+    UC5((Exportar<br/>Métricas)):::usecase
+    
+    A -->|ver| UC1
+    UC1 -.->|include| UC2
+    UC1 -.->|include| UC3
+    UC1 -.->|extend| UC4
+    UC1 -.->|extend| UC5
+    
+    classDef actor fill:#2E86AB,stroke:#1A5490,stroke-width:3px,color:#fff
+    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529
+=======
 graph TD
     A[Inicio] --> B[Seleccionar período]
     B --> C[Cargar datos de usuarios]
@@ -1348,6 +2033,7 @@ graph TD
     style A fill:#90EE90
     style Q fill:#FFB6C1
     style G fill:#87CEEB
+>>>>>>> 382bde92c35a337cd47157f444d1a66d82b9e728
 ```
 
 #### **UC-037: Monitorear Rendimiento**
@@ -1357,6 +2043,26 @@ graph TD
 - **Postcondiciones**: Estado del sistema monitoreado
 
 ```mermaid
+<<<<<<< HEAD
+graph LR
+    A[🛡️ Administrador]:::actor
+    UC1((UC-037<br/>Monitorear<br/>Rendimiento)):::usecase
+    UC2((Verificar<br/>Recursos)):::usecase
+    UC3((Detectar<br/>Problemas)):::usecase
+    UC4((Generar<br/>Alertas)):::usecase
+    UC5((Notificar<br/>Equipo)):::usecase
+    SYS[⚙️ Sistema Email]:::actor
+    
+    A -->|monitorear| UC1
+    UC1 -.->|include| UC2
+    UC1 -.->|extend| UC3
+    UC1 -.->|extend| UC4
+    UC4 -.->|extend| UC5
+    UC5 --> SYS
+    
+    classDef actor fill:#2E86AB,stroke:#1A5490,stroke-width:3px,color:#fff
+    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529
+=======
 graph TD
     A[Inicio] --> B[Conectar con servicios de monitoreo]
     B --> C[Cargar uso de CPU]
@@ -1377,6 +2083,7 @@ graph TD
     style A fill:#90EE90
     style P fill:#FFB6C1
     style O fill:#87CEEB
+>>>>>>> 382bde92c35a337cd47157f444d1a66d82b9e728
 ```
 
 #### **UC-038: Gestionar Backup y Restauración**
@@ -1386,6 +2093,24 @@ graph TD
 - **Postcondiciones**: Backup creado o restauración completada
 
 ```mermaid
+<<<<<<< HEAD
+graph LR
+    A[🛡️ Administrador]:::actor
+    UC1((UC-038<br/>Gestionar Backup<br/>y Restauración)):::usecase
+    UC2((Crear<br/>Backup)):::usecase
+    UC3((Restaurar<br/>Backup)):::usecase
+    UC4((Verificar<br/>Integridad)):::usecase
+    UC5((Programar<br/>Backups)):::usecase
+    
+    A -->|gestionar| UC1
+    UC1 -.->|extend| UC2
+    UC1 -.->|extend| UC3
+    UC1 -.->|include| UC4
+    UC1 -.->|extend| UC5
+    
+    classDef actor fill:#2E86AB,stroke:#1A5490,stroke-width:3px,color:#fff
+    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529
+=======
 graph TD
     A[Inicio] --> B{¿Acción a realizar?}
     B -->|Crear backup| C[Seleccionar tipo de backup]
@@ -1423,6 +2148,7 @@ graph TD
     style A fill:#90EE90
     style T fill:#FFB6C1
     style I fill:#87CEEB
+>>>>>>> 382bde92c35a337cd47157f444d1a66d82b9e728
 ```
 
 #### **UC-039: Configurar Integraciones**
@@ -1432,6 +2158,26 @@ graph TD
 - **Postcondiciones**: Integración configurada y activa
 
 ```mermaid
+<<<<<<< HEAD
+graph LR
+    A[🛡️ Administrador]:::actor
+    UC1((UC-039<br/>Configurar<br/>Integraciones)):::usecase
+    UC2((Seleccionar<br/>Integración)):::usecase
+    UC3((Ingresar<br/>Credenciales)):::usecase
+    UC4((Probar<br/>Conexión)):::usecase
+    UC5((Activar<br/>Integración)):::usecase
+    SYS[⚙️ Servicio Externo]:::actor
+    
+    A -->|configurar| UC1
+    UC1 -.->|include| UC2
+    UC1 -.->|include| UC3
+    UC1 -.->|include| UC4
+    UC1 -.->|include| UC5
+    UC4 --> SYS
+    
+    classDef actor fill:#2E86AB,stroke:#1A5490,stroke-width:3px,color:#fff
+    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529
+=======
 graph TD
     A[Inicio] --> B[Listar integraciones disponibles]
     B --> C[Seleccionar integración]
@@ -1463,6 +2209,7 @@ graph TD
     style A fill:#90EE90
     style U fill:#FFB6C1
     style Q fill:#87CEEB
+>>>>>>> 382bde92c35a337cd47157f444d1a66d82b9e728
 ```
 
 ---
@@ -1540,6 +2287,9 @@ graph TD
 
 ---
 
+<<<<<<< HEAD
+*Este diagrama de casos de uso representa la funcionalidad completa del sistema EventHub, mostrando todas las interacciones entre actores y casos de uso, proporcionando una visión integral del sistema de gestión de eventos.*
+=======
 ## 📝 **Notas sobre los Diagramas**
 
 ### **Convenciones de Color**
@@ -1561,3 +2311,4 @@ graph TD
 ---
 
 *Este diagrama de casos de uso representa la funcionalidad completa del sistema EventHub, mostrando todas las interacciones entre actores y casos de uso, proporcionando una visión integral del sistema de gestión de eventos.*
+>>>>>>> 382bde92c35a337cd47157f444d1a66d82b9e728

@@ -224,11 +224,45 @@ graph TB
 - **Precondiciones**: Usuario no registrado
 - **Postcondiciones**: Usuario registrado con rol 'asistente'
 
+```mermaid
+graph LR
+    A[👤 Usuario Nuevo]:::actor
+    UC1((UC-001<br/>Registrar<br/>Usuario)):::usecase
+    UC2((Validar<br/>Email)):::usecase
+    UC3((Enviar<br/>Verificación)):::usecase
+    SYS[⚙️ Sistema Email]:::actor
+    
+    A -->|registrarse| UC1
+    UC1 -.->|include| UC2
+    UC1 -.->|include| UC3
+    UC3 --> SYS
+    
+    classDef actor fill:#2E86AB,stroke:#1A5490,stroke-width:3px,color:#fff
+    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529
+```
+
 #### **UC-002: Autenticar Usuario**
 - **Actor Principal**: Asistente, Organizador, Administrador
 - **Descripción**: Permite a usuarios iniciar sesión con credenciales válidas
 - **Precondiciones**: Usuario registrado
 - **Postcondiciones**: Usuario autenticado con sesión activa
+
+```mermaid
+graph LR
+    A[👤 Usuario]:::actor
+    UC1((UC-002<br/>Autenticar<br/>Usuario)):::usecase
+    UC2((Validar<br/>Credenciales)):::usecase
+    UC3((Generar<br/>Token)):::usecase
+    UC4((Bloquear<br/>Cuenta)):::usecase
+    
+    A -->|login| UC1
+    UC1 -.->|include| UC2
+    UC1 -.->|include| UC3
+    UC1 -.->|extend| UC4
+    
+    classDef actor fill:#2E86AB,stroke:#1A5490,stroke-width:3px,color:#fff
+    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529
+```
 
 #### **UC-003: Cerrar Sesión**
 - **Actor Principal**: Asistente, Organizador, Administrador
@@ -236,11 +270,45 @@ graph TB
 - **Precondiciones**: Usuario autenticado
 - **Postcondiciones**: Sesión cerrada, usuario desautenticado
 
+```mermaid
+graph LR
+    A[👤 Usuario]:::actor
+    UC1((UC-003<br/>Cerrar<br/>Sesión)):::usecase
+    UC2((Invalidar<br/>Token)):::usecase
+    UC3((Limpiar<br/>Caché)):::usecase
+    
+    A -->|logout| UC1
+    UC1 -.->|include| UC2
+    UC1 -.->|include| UC3
+    
+    classDef actor fill:#2E86AB,stroke:#1A5490,stroke-width:3px,color:#fff
+    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529
+```
+
 #### **UC-004: Recuperar Contraseña**
 - **Actor Principal**: Asistente, Organizador, Administrador
 - **Descripción**: Permite a usuarios recuperar su contraseña mediante email
 - **Precondiciones**: Usuario registrado
 - **Postcondiciones**: Email de recuperación enviado
+
+```mermaid
+graph LR
+    A[👤 Usuario]:::actor
+    UC1((UC-004<br/>Recuperar<br/>Contraseña)):::usecase
+    UC2((Validar<br/>Email)):::usecase
+    UC3((Generar<br/>Token)):::usecase
+    UC4((Enviar<br/>Email)):::usecase
+    SYS[⚙️ Sistema Email]:::actor
+    
+    A -->|solicitar| UC1
+    UC1 -.->|include| UC2
+    UC1 -.->|include| UC3
+    UC1 -.->|include| UC4
+    UC4 --> SYS
+    
+    classDef actor fill:#2E86AB,stroke:#1A5490,stroke-width:3px,color:#fff
+    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529
+```
 
 #### **UC-005: Cambiar Contraseña**
 - **Actor Principal**: Asistente, Organizador, Administrador
@@ -248,11 +316,49 @@ graph TB
 - **Precondiciones**: Usuario autenticado
 - **Postcondiciones**: Contraseña actualizada
 
+```mermaid
+graph LR
+    A[👤 Usuario]:::actor
+    UC1((UC-005<br/>Cambiar<br/>Contraseña)):::usecase
+    UC2((Validar<br/>Contraseña<br/>Actual)):::usecase
+    UC3((Hashear<br/>Nueva<br/>Contraseña)):::usecase
+    UC4((Invalidar<br/>Sesiones)):::usecase
+    UC5((Enviar<br/>Confirmación)):::usecase
+    SYS[⚙️ Sistema Email]:::actor
+    
+    A -->|cambiar| UC1
+    UC1 -.->|include| UC2
+    UC1 -.->|include| UC3
+    UC1 -.->|include| UC4
+    UC1 -.->|include| UC5
+    UC5 --> SYS
+    
+    classDef actor fill:#2E86AB,stroke:#1A5490,stroke-width:3px,color:#fff
+    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529
+```
+
 #### **UC-006: Gestionar Perfil**
 - **Actor Principal**: Asistente, Organizador, Administrador
 - **Descripción**: Permite a usuarios gestionar su perfil personal
 - **Precondiciones**: Usuario autenticado
 - **Postcondiciones**: Perfil actualizado
+
+```mermaid
+graph LR
+    A[👤 Usuario]:::actor
+    UC1((UC-006<br/>Gestionar<br/>Perfil)):::usecase
+    UC2((Actualizar<br/>Datos<br/>Personales)):::usecase
+    UC3((Subir<br/>Foto)):::usecase
+    UC4((Configurar<br/>Preferencias)):::usecase
+    
+    A -->|gestionar| UC1
+    UC1 -.->|extend| UC2
+    UC1 -.->|extend| UC3
+    UC1 -.->|extend| UC4
+    
+    classDef actor fill:#2E86AB,stroke:#1A5490,stroke-width:3px,color:#fff
+    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529
+```
 
 #### **UC-007: Ver Historial**
 - **Actor Principal**: Asistente, Organizador, Administrador
@@ -260,11 +366,43 @@ graph TB
 - **Precondiciones**: Usuario autenticado
 - **Postcondiciones**: Historial de actividades mostrado
 
+```mermaid
+graph LR
+    A[👤 Usuario]:::actor
+    UC1((UC-007<br/>Ver<br/>Historial)):::usecase
+    UC2((Filtrar<br/>por Fecha)):::usecase
+    UC3((Exportar<br/>Historial)):::usecase
+    
+    A -->|consultar| UC1
+    UC1 -.->|extend| UC2
+    UC1 -.->|extend| UC3
+    
+    classDef actor fill:#2E86AB,stroke:#1A5490,stroke-width:3px,color:#fff
+    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529
+```
+
 #### **UC-008: Actualizar Datos**
 - **Actor Principal**: Asistente, Administrador
 - **Descripción**: Permite a usuarios modificar su información personal
 - **Precondiciones**: Usuario autenticado
 - **Postcondiciones**: Datos personales actualizados
+
+```mermaid
+graph LR
+    A[👤 Usuario]:::actor
+    UC1((UC-008<br/>Actualizar<br/>Datos)):::usecase
+    UC2((Validar<br/>Información)):::usecase
+    UC3((Verificar<br/>Email)):::usecase
+    SYS[⚙️ Sistema Email]:::actor
+    
+    A -->|actualizar| UC1
+    UC1 -.->|include| UC2
+    UC1 -.->|extend| UC3
+    UC3 --> SYS
+    
+    classDef actor fill:#2E86AB,stroke:#1A5490,stroke-width:3px,color:#fff
+    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529
+```
 
 #### **UC-009: Gestionar Usuarios**
 - **Actor Principal**: Administrador
@@ -272,11 +410,49 @@ graph TB
 - **Precondiciones**: Usuario autenticado como administrador
 - **Postcondiciones**: Usuarios gestionados según operación
 
+```mermaid
+graph LR
+    A[🛡️ Administrador]:::actor
+    UC1((UC-009<br/>Gestionar<br/>Usuarios)):::usecase
+    UC2((Ver<br/>Detalles)):::usecase
+    UC3((Editar<br/>Usuario)):::usecase
+    UC4((Desactivar<br/>Usuario)):::usecase
+    UC5((Eliminar<br/>Usuario)):::usecase
+    
+    A -->|gestionar| UC1
+    UC1 -.->|extend| UC2
+    UC1 -.->|extend| UC3
+    UC1 -.->|extend| UC4
+    UC1 -.->|extend| UC5
+    
+    classDef actor fill:#2E86AB,stroke:#1A5490,stroke-width:3px,color:#fff
+    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529
+```
+
 #### **UC-010: Asignar Roles**
 - **Actor Principal**: Administrador
 - **Descripción**: Permite a administradores asignar y modificar roles de usuario
 - **Precondiciones**: Usuario autenticado como administrador
 - **Postcondiciones**: Rol asignado al usuario
+
+```mermaid
+graph LR
+    A[🛡️ Administrador]:::actor
+    UC1((UC-010<br/>Asignar<br/>Roles)):::usecase
+    UC2((Validar<br/>Permisos)):::usecase
+    UC3((Invalidar<br/>Sesiones)):::usecase
+    UC4((Notificar<br/>Usuario)):::usecase
+    SYS[⚙️ Sistema Email]:::actor
+    
+    A -->|asignar| UC1
+    UC1 -.->|include| UC2
+    UC1 -.->|include| UC3
+    UC1 -.->|include| UC4
+    UC4 --> SYS
+    
+    classDef actor fill:#2E86AB,stroke:#1A5490,stroke-width:3px,color:#fff
+    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529
+```
 
 ### **📅 Gestión de Eventos (UC-011 a UC-016)**
 
@@ -286,11 +462,45 @@ graph TB
 - **Precondiciones**: Usuario autenticado
 - **Postcondiciones**: Lista de eventos disponibles mostrada
 
+```mermaid
+graph LR
+    A[👤 Asistente]:::actor
+    UC1((UC-011<br/>Explorar<br/>Eventos)):::usecase
+    UC2((Aplicar<br/>Filtros)):::usecase
+    UC3((Ordenar<br/>Resultados)):::usecase
+    UC4((Ver Detalle<br/>de Evento)):::usecase
+    
+    A -->|explorar| UC1
+    UC1 -.->|extend| UC2
+    UC1 -.->|extend| UC3
+    UC1 --> UC4
+    
+    classDef actor fill:#2E86AB,stroke:#1A5490,stroke-width:3px,color:#fff
+    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529
+```
+
 #### **UC-012: Buscar Eventos**
 - **Actor Principal**: Asistente
 - **Descripción**: Permite a usuarios buscar eventos específicos
 - **Precondiciones**: Usuario autenticado
 - **Postcondiciones**: Resultados de búsqueda mostrados
+
+```mermaid
+graph LR
+    A[👤 Asistente]:::actor
+    UC1((UC-012<br/>Buscar<br/>Eventos)):::usecase
+    UC2((Validar<br/>Término)):::usecase
+    UC3((Sugerir<br/>Eventos)):::usecase
+    UC4((Ver Detalle<br/>de Evento)):::usecase
+    
+    A -->|buscar| UC1
+    UC1 -.->|include| UC2
+    UC1 -.->|extend| UC3
+    UC1 --> UC4
+    
+    classDef actor fill:#2E86AB,stroke:#1A5490,stroke-width:3px,color:#fff
+    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529
+```
 
 #### **UC-013: Ver Detalle de Evento**
 - **Actor Principal**: Asistente
@@ -298,11 +508,51 @@ graph TB
 - **Precondiciones**: Usuario autenticado
 - **Postcondiciones**: Detalles completos del evento mostrados
 
+```mermaid
+graph LR
+    A[👤 Asistente]:::actor
+    UC1((UC-013<br/>Ver Detalle<br/>de Evento)):::usecase
+    UC2((Validar<br/>Permisos)):::usecase
+    UC3((Cargar<br/>Imágenes)):::usecase
+    UC4((Cargar<br/>Reseñas)):::usecase
+    UC5((Agregar al<br/>Carrito)):::usecase
+    
+    A -->|ver| UC1
+    UC1 -.->|include| UC2
+    UC1 -.->|include| UC3
+    UC1 -.->|extend| UC4
+    UC1 --> UC5
+    
+    classDef actor fill:#2E86AB,stroke:#1A5490,stroke-width:3px,color:#fff
+    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529
+```
+
 #### **UC-014: Crear Evento**
 - **Actor Principal**: Organizador, Administrador
 - **Descripción**: Permite a organizadores crear eventos con información completa
 - **Precondiciones**: Usuario autenticado como organizador
 - **Postcondiciones**: Evento creado con información completa
+
+```mermaid
+graph LR
+    A[🎭 Organizador]:::actor
+    B[🛡️ Administrador]:::actor
+    UC1((UC-014<br/>Crear<br/>Evento)):::usecase
+    UC2((Validar<br/>Datos)):::usecase
+    UC3((Subir<br/>Imágenes)):::usecase
+    UC4((Crear Tipos<br/>de Entrada)):::usecase
+    UC5((Generar<br/>Slug)):::usecase
+    
+    A -->|crear| UC1
+    B -->|crear| UC1
+    UC1 -.->|include| UC2
+    UC1 -.->|include| UC3
+    UC1 -.->|include| UC4
+    UC1 -.->|include| UC5
+    
+    classDef actor fill:#2E86AB,stroke:#1A5490,stroke-width:3px,color:#fff
+    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529
+```
 
 #### **UC-015: Editar Evento**
 - **Actor Principal**: Organizador, Administrador
@@ -310,11 +560,53 @@ graph TB
 - **Precondiciones**: Usuario autenticado como organizador, evento existente
 - **Postcondiciones**: Evento actualizado con nuevos datos
 
+```mermaid
+graph LR
+    A[🎭 Organizador]:::actor
+    B[🛡️ Administrador]:::actor
+    UC1((UC-015<br/>Editar<br/>Evento)):::usecase
+    UC2((Validar<br/>Permisos)):::usecase
+    UC3((Validar<br/>Cambios)):::usecase
+    UC4((Notificar<br/>Asistentes)):::usecase
+    SYS[⚙️ Sistema Email]:::actor
+    
+    A -->|editar| UC1
+    B -->|editar| UC1
+    UC1 -.->|include| UC2
+    UC1 -.->|include| UC3
+    UC1 -.->|extend| UC4
+    UC4 --> SYS
+    
+    classDef actor fill:#2E86AB,stroke:#1A5490,stroke-width:3px,color:#fff
+    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529
+```
+
 #### **UC-016: Eliminar Evento**
 - **Actor Principal**: Organizador, Administrador
 - **Descripción**: Permite a organizadores eliminar eventos sin compras
 - **Precondiciones**: Usuario autenticado como organizador, evento sin compras
 - **Postcondiciones**: Evento eliminado del sistema
+
+```mermaid
+graph LR
+    A[🎭 Organizador]:::actor
+    B[🛡️ Administrador]:::actor
+    UC1((UC-016<br/>Eliminar<br/>Evento)):::usecase
+    UC2((Validar<br/>Permisos)):::usecase
+    UC3((Verificar<br/>Compras)):::usecase
+    UC4((Confirmar<br/>Eliminación)):::usecase
+    UC5((Eliminar<br/>Recursos)):::usecase
+    
+    A -->|eliminar| UC1
+    B -->|eliminar| UC1
+    UC1 -.->|include| UC2
+    UC1 -.->|include| UC3
+    UC1 -.->|include| UC4
+    UC1 -.->|include| UC5
+    
+    classDef actor fill:#2E86AB,stroke:#1A5490,stroke-width:3px,color:#fff
+    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529
+```
 
 ### **🎫 Gestión de Pagos (UC-017 a UC-021)**
 
@@ -324,11 +616,55 @@ graph TB
 - **Precondiciones**: Usuario autenticado, evento con entradas disponibles
 - **Postcondiciones**: Entradas agregadas al carrito
 
+```mermaid
+graph LR
+    A[👤 Asistente]:::actor
+    UC1((UC-017<br/>Agregar al<br/>Carrito)):::usecase
+    UC2((Validar<br/>Disponibilidad)):::usecase
+    UC3((Aplicar<br/>Descuentos)):::usecase
+    UC4((Reservar<br/>Entradas)):::usecase
+    UC5((Procesar<br/>Pago)):::usecase
+    
+    A -->|agregar| UC1
+    UC1 -.->|include| UC2
+    UC1 -.->|extend| UC3
+    UC1 -.->|include| UC4
+    UC1 --> UC5
+    
+    classDef actor fill:#2E86AB,stroke:#1A5490,stroke-width:3px,color:#fff
+    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529
+```
+
 #### **UC-018: Procesar Pago**
 - **Actor Principal**: Asistente
 - **Descripción**: Procesa el pago de entradas de forma segura
 - **Precondiciones**: Usuario autenticado con entradas en carrito
 - **Postcondiciones**: Pago procesado, entradas generadas
+
+```mermaid
+graph LR
+    A[👤 Asistente]:::actor
+    UC1((UC-018<br/>Procesar<br/>Pago)):::usecase
+    UC2((Validar<br/>Datos)):::usecase
+    UC3((Procesar con<br/>Stripe)):::usecase
+    UC4((Generar<br/>Entradas)):::usecase
+    UC5((Generar<br/>QR)):::usecase
+    UC6((Enviar<br/>Confirmación)):::usecase
+    SYS1[⚙️ Stripe]:::actor
+    SYS2[⚙️ Sistema Email]:::actor
+    
+    A -->|pagar| UC1
+    UC1 -.->|include| UC2
+    UC1 -.->|include| UC3
+    UC3 --> SYS1
+    UC1 -.->|include| UC4
+    UC1 -.->|include| UC5
+    UC1 -.->|include| UC6
+    UC6 --> SYS2
+    
+    classDef actor fill:#2E86AB,stroke:#1A5490,stroke-width:3px,color:#fff
+    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529
+```
 
 #### **UC-019: Ver Entradas**
 - **Actor Principal**: Asistente
@@ -336,17 +672,70 @@ graph TB
 - **Precondiciones**: Usuario autenticado con entradas compradas
 - **Postcondiciones**: Lista de entradas mostrada
 
+```mermaid
+graph LR
+    A[👤 Asistente]:::actor
+    UC1((UC-019<br/>Ver<br/>Entradas)):::usecase
+    UC2((Filtrar por<br/>Estado)):::usecase
+    UC3((Ver Código<br/>QR)):::usecase
+    UC4((Descargar<br/>Entrada)):::usecase
+    
+    A -->|ver| UC1
+    UC1 -.->|extend| UC2
+    UC1 --> UC3
+    UC1 -.->|extend| UC4
+    
+    classDef actor fill:#2E86AB,stroke:#1A5490,stroke-width:3px,color:#fff
+    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529
+```
+
 #### **UC-020: Generar QR**
 - **Actor Principal**: Sistema
 - **Descripción**: Genera automáticamente códigos QR únicos para cada entrada
 - **Precondiciones**: Entrada válida creada
 - **Postcondiciones**: Código QR generado y guardado
 
+```mermaid
+graph LR
+    SYS[⚙️ Sistema]:::actor
+    UC1((UC-020<br/>Generar<br/>QR)):::usecase
+    UC2((Generar<br/>UUID)):::usecase
+    UC3((Cifrar<br/>Datos)):::usecase
+    UC4((Guardar<br/>Imagen)):::usecase
+    
+    SYS -->|generar| UC1
+    UC1 -.->|include| UC2
+    UC1 -.->|include| UC3
+    UC1 -.->|include| UC4
+    
+    classDef actor fill:#2E86AB,stroke:#1A5490,stroke-width:3px,color:#fff
+    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529
+```
+
 #### **UC-021: Validar Entrada**
 - **Actor Principal**: Organizador
 - **Descripción**: Permite a organizadores validar entradas mediante códigos QR
 - **Precondiciones**: Evento activo, entrada válida
 - **Postcondiciones**: Asistencia registrada, entrada marcada como usada
+
+```mermaid
+graph LR
+    A[🎭 Organizador]:::actor
+    UC1((UC-021<br/>Validar<br/>Entrada)):::usecase
+    UC2((Escanear<br/>QR)):::usecase
+    UC3((Validar<br/>Autenticidad)):::usecase
+    UC4((Verificar<br/>Estado)):::usecase
+    UC5((Registrar<br/>Asistencia)):::usecase
+    
+    A -->|validar| UC1
+    UC1 -.->|include| UC2
+    UC1 -.->|include| UC3
+    UC1 -.->|include| UC4
+    UC1 -.->|include| UC5
+    
+    classDef actor fill:#2E86AB,stroke:#1A5490,stroke-width:3px,color:#fff
+    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529
+```
 
 ### **🔔 Gestión de Notificaciones (UC-022 a UC-024)**
 
@@ -356,17 +745,78 @@ graph TB
 - **Precondiciones**: Usuario autenticado con permisos
 - **Postcondiciones**: Notificaciones enviadas a usuarios objetivo
 
+```mermaid
+graph LR
+    A[🎭 Organizador]:::actor
+    B[🛡️ Administrador]:::actor
+    UC1((UC-022<br/>Enviar<br/>Notificación)):::usecase
+    UC2((Seleccionar<br/>Destinatarios)):::usecase
+    UC3((Redactar<br/>Mensaje)):::usecase
+    UC4((Programar<br/>Envío)):::usecase
+    UC5((Enviar por<br/>Email)):::usecase
+    UC6((Enviar<br/>Push)):::usecase
+    SYS1[⚙️ Sistema Email]:::actor
+    SYS2[⚙️ Sistema Push]:::actor
+    
+    A -->|enviar| UC1
+    B -->|enviar| UC1
+    UC1 -.->|include| UC2
+    UC1 -.->|include| UC3
+    UC1 -.->|extend| UC4
+    UC1 -.->|extend| UC5
+    UC1 -.->|extend| UC6
+    UC5 --> SYS1
+    UC6 --> SYS2
+    
+    classDef actor fill:#2E86AB,stroke:#1A5490,stroke-width:3px,color:#fff
+    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529
+```
+
 #### **UC-023: Ver Notificaciones**
 - **Actor Principal**: Asistente, Organizador, Administrador
 - **Descripción**: Permite a usuarios ver todas sus notificaciones recibidas
 - **Precondiciones**: Usuario autenticado
 - **Postcondiciones**: Notificaciones mostradas
 
+```mermaid
+graph LR
+    A[👤 Usuario]:::actor
+    UC1((UC-023<br/>Ver<br/>Notificaciones)):::usecase
+    UC2((Marcar como<br/>Leída)):::usecase
+    UC3((Eliminar<br/>Notificación)):::usecase
+    UC4((Filtrar<br/>Notificaciones)):::usecase
+    
+    A -->|ver| UC1
+    UC1 -.->|extend| UC2
+    UC1 -.->|extend| UC3
+    UC1 -.->|extend| UC4
+    
+    classDef actor fill:#2E86AB,stroke:#1A5490,stroke-width:3px,color:#fff
+    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529
+```
+
 #### **UC-024: Configurar Preferencias**
 - **Actor Principal**: Asistente, Organizador, Administrador
 - **Descripción**: Permite a usuarios configurar sus preferencias de notificación
 - **Precondiciones**: Usuario autenticado
 - **Postcondiciones**: Preferencias de notificación actualizadas
+
+```mermaid
+graph LR
+    A[👤 Usuario]:::actor
+    UC1((UC-024<br/>Configurar<br/>Preferencias)):::usecase
+    UC2((Activar/Desactivar<br/>Email)):::usecase
+    UC3((Activar/Desactivar<br/>Push)):::usecase
+    UC4((Configurar<br/>Frecuencia)):::usecase
+    
+    A -->|configurar| UC1
+    UC1 -.->|extend| UC2
+    UC1 -.->|extend| UC3
+    UC1 -.->|extend| UC4
+    
+    classDef actor fill:#2E86AB,stroke:#1A5490,stroke-width:3px,color:#fff
+    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529
+```
 
 ### **📊 Gestión de Analytics (UC-025 a UC-030)**
 
@@ -376,11 +826,51 @@ graph TB
 - **Precondiciones**: Usuario autenticado
 - **Postcondiciones**: Dashboard personalizado mostrado
 
+```mermaid
+graph LR
+    A[👤 Asistente]:::actor
+    B[🎭 Organizador]:::actor
+    C[🛡️ Administrador]:::actor
+    UC1((UC-025<br/>Ver<br/>Dashboard)):::usecase
+    UC2((Cargar<br/>Métricas)):::usecase
+    UC3((Generar<br/>Gráficos)):::usecase
+    UC4((Actualizar en<br/>Tiempo Real)):::usecase
+    
+    A -->|ver| UC1
+    B -->|ver| UC1
+    C -->|ver| UC1
+    UC1 -.->|include| UC2
+    UC1 -.->|include| UC3
+    UC1 -.->|extend| UC4
+    
+    classDef actor fill:#2E86AB,stroke:#1A5490,stroke-width:3px,color:#fff
+    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529
+```
+
 #### **UC-026: Generar Reportes**
 - **Actor Principal**: Asistente, Organizador, Administrador
 - **Descripción**: Permite generar reportes personalizados con métricas
 - **Precondiciones**: Usuario autenticado con permisos
 - **Postcondiciones**: Reporte generado y descargable
+
+```mermaid
+graph LR
+    A[👤 Usuario]:::actor
+    UC1((UC-026<br/>Generar<br/>Reportes)):::usecase
+    UC2((Seleccionar<br/>Tipo)):::usecase
+    UC3((Aplicar<br/>Filtros)):::usecase
+    UC4((Seleccionar<br/>Formato)):::usecase
+    UC5((Exportar<br/>Reporte)):::usecase
+    
+    A -->|generar| UC1
+    UC1 -.->|include| UC2
+    UC1 -.->|extend| UC3
+    UC1 -.->|include| UC4
+    UC1 -.->|include| UC5
+    
+    classDef actor fill:#2E86AB,stroke:#1A5490,stroke-width:3px,color:#fff
+    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529
+```
 
 #### **UC-027: Ver Métricas**
 - **Actor Principal**: Sistema
@@ -388,11 +878,49 @@ graph TB
 - **Precondiciones**: Sistema activo
 - **Postcondiciones**: Métricas actualizadas en tiempo real
 
+```mermaid
+graph LR
+    SYS[⚙️ Sistema]:::actor
+    UC1((UC-027<br/>Ver<br/>Métricas)):::usecase
+    UC2((Recopilar<br/>Datos)):::usecase
+    UC3((Calcular<br/>KPIs)):::usecase
+    UC4((Actualizar<br/>Caché)):::usecase
+    UC5((Generar<br/>Alertas)):::usecase
+    
+    SYS -->|procesar| UC1
+    UC1 -.->|include| UC2
+    UC1 -.->|include| UC3
+    UC1 -.->|include| UC4
+    UC1 -.->|extend| UC5
+    
+    classDef actor fill:#2E86AB,stroke:#1A5490,stroke-width:3px,color:#fff
+    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529
+```
+
 #### **UC-028: Dashboard del Organizador**
 - **Actor Principal**: Organizador
 - **Descripción**: Muestra dashboard especializado para organizadores
 - **Precondiciones**: Usuario autenticado como organizador
 - **Postcondiciones**: Dashboard personalizado mostrado
+
+```mermaid
+graph LR
+    A[🎭 Organizador]:::actor
+    UC1((UC-028<br/>Dashboard del<br/>Organizador)):::usecase
+    UC2((Cargar<br/>Eventos)):::usecase
+    UC3((Calcular<br/>Ventas)):::usecase
+    UC4((Mostrar<br/>Tendencias)):::usecase
+    UC5((Ver Métricas<br/>de Eventos)):::usecase
+    
+    A -->|ver| UC1
+    UC1 -.->|include| UC2
+    UC1 -.->|include| UC3
+    UC1 -.->|include| UC4
+    UC1 --> UC5
+    
+    classDef actor fill:#2E86AB,stroke:#1A5490,stroke-width:3px,color:#fff
+    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529
+```
 
 #### **UC-029: Gestionar Asistentes**
 - **Actor Principal**: Organizador
@@ -400,11 +928,53 @@ graph TB
 - **Precondiciones**: Usuario autenticado como organizador, evento con asistentes
 - **Postcondiciones**: Asistentes gestionados según operación
 
+```mermaid
+graph LR
+    A[🎭 Organizador]:::actor
+    UC1((UC-029<br/>Gestionar<br/>Asistentes)):::usecase
+    UC2((Ver<br/>Detalles)):::usecase
+    UC3((Exportar<br/>Lista)):::usecase
+    UC4((Enviar<br/>Mensaje)):::usecase
+    UC5((Check-in<br/>Manual)):::usecase
+    SYS[⚙️ Sistema Email]:::actor
+    
+    A -->|gestionar| UC1
+    UC1 -.->|extend| UC2
+    UC1 -.->|extend| UC3
+    UC1 -.->|extend| UC4
+    UC1 -.->|extend| UC5
+    UC4 --> SYS
+    
+    classDef actor fill:#2E86AB,stroke:#1A5490,stroke-width:3px,color:#fff
+    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529
+```
+
 #### **UC-030: Ver Métricas de Eventos**
 - **Actor Principal**: Organizador, Administrador
 - **Descripción**: Permite ver métricas específicas de eventos
 - **Precondiciones**: Usuario autenticado como organizador, evento existente
 - **Postcondiciones**: Métricas del evento mostradas
+
+```mermaid
+graph LR
+    A[🎭 Organizador]:::actor
+    B[🛡️ Administrador]:::actor
+    UC1((UC-030<br/>Ver Métricas<br/>de Eventos)):::usecase
+    UC2((Calcular<br/>Ocupación)):::usecase
+    UC3((Analizar<br/>Ventas)):::usecase
+    UC4((Comparar<br/>Eventos)):::usecase
+    UC5((Exportar<br/>Datos)):::usecase
+    
+    A -->|ver| UC1
+    B -->|ver| UC1
+    UC1 -.->|include| UC2
+    UC1 -.->|include| UC3
+    UC1 -.->|extend| UC4
+    UC1 -.->|extend| UC5
+    
+    classDef actor fill:#2E86AB,stroke:#1A5490,stroke-width:3px,color:#fff
+    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529
+```
 
 ### **⚙️ Gestión de Administración (UC-031 a UC-039)**
 
@@ -414,11 +984,51 @@ graph TB
 - **Precondiciones**: Usuario autenticado como organizador
 - **Postcondiciones**: Código promocional creado
 
+```mermaid
+graph LR
+    A[🎭 Organizador]:::actor
+    UC1((UC-031<br/>Crear Códigos<br/>Promocionales)):::usecase
+    UC2((Configurar<br/>Descuento)):::usecase
+    UC3((Validar<br/>Disponibilidad)):::usecase
+    UC4((Establecer<br/>Límites)):::usecase
+    UC5((Configurar<br/>Vigencia)):::usecase
+    
+    A -->|crear| UC1
+    UC1 -.->|include| UC2
+    UC1 -.->|include| UC3
+    UC1 -.->|include| UC4
+    UC1 -.->|include| UC5
+    
+    classDef actor fill:#2E86AB,stroke:#1A5490,stroke-width:3px,color:#fff
+    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529
+```
+
 #### **UC-032: Gestionar Lista de Espera**
 - **Actor Principal**: Organizador
 - **Descripción**: Permite a organizadores gestionar listas de espera
 - **Precondiciones**: Usuario autenticado como organizador, evento con lista de espera
 - **Postcondiciones**: Lista de espera gestionada
+
+```mermaid
+graph LR
+    A[🎭 Organizador]:::actor
+    UC1((UC-032<br/>Gestionar Lista<br/>de Espera)):::usecase
+    UC2((Ver<br/>Lista)):::usecase
+    UC3((Liberar<br/>Entradas)):::usecase
+    UC4((Notificar<br/>Usuarios)):::usecase
+    UC5((Eliminar de<br/>Lista)):::usecase
+    SYS[⚙️ Sistema Email]:::actor
+    
+    A -->|gestionar| UC1
+    UC1 -.->|extend| UC2
+    UC1 -.->|extend| UC3
+    UC1 -.->|extend| UC4
+    UC1 -.->|extend| UC5
+    UC4 --> SYS
+    
+    classDef actor fill:#2E86AB,stroke:#1A5490,stroke-width:3px,color:#fff
+    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529
+```
 
 #### **UC-033: Configurar Check-in**
 - **Actor Principal**: Organizador
@@ -426,11 +1036,49 @@ graph TB
 - **Precondiciones**: Usuario autenticado como organizador
 - **Postcondiciones**: Check-in configurado
 
+```mermaid
+graph LR
+    A[🎭 Organizador]:::actor
+    UC1((UC-033<br/>Configurar<br/>Check-in)):::usecase
+    UC2((Seleccionar<br/>Método)):::usecase
+    UC3((Configurar<br/>Horarios)):::usecase
+    UC4((Asignar<br/>Personal)):::usecase
+    UC5((Configurar<br/>Reglas)):::usecase
+    
+    A -->|configurar| UC1
+    UC1 -.->|include| UC2
+    UC1 -.->|include| UC3
+    UC1 -.->|extend| UC4
+    UC1 -.->|include| UC5
+    
+    classDef actor fill:#2E86AB,stroke:#1A5490,stroke-width:3px,color:#fff
+    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529
+```
+
 #### **UC-034: Dashboard de Administración**
 - **Actor Principal**: Administrador
 - **Descripción**: Muestra dashboard especializado para administradores
 - **Precondiciones**: Usuario autenticado como administrador
 - **Postcondiciones**: Dashboard de administración mostrado
+
+```mermaid
+graph LR
+    A[🛡️ Administrador]:::actor
+    UC1((UC-034<br/>Dashboard de<br/>Administración)):::usecase
+    UC2((Cargar Métricas<br/>Globales)):::usecase
+    UC3((Monitorear<br/>Sistema)):::usecase
+    UC4((Ver<br/>Alertas)):::usecase
+    UC5((Generar<br/>Reportes)):::usecase
+    
+    A -->|ver| UC1
+    UC1 -.->|include| UC2
+    UC1 -.->|include| UC3
+    UC1 -.->|extend| UC4
+    UC1 --> UC5
+    
+    classDef actor fill:#2E86AB,stroke:#1A5490,stroke-width:3px,color:#fff
+    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529
+```
 
 #### **UC-035: Gestionar Configuración del Sistema**
 - **Actor Principal**: Administrador
@@ -438,11 +1086,49 @@ graph TB
 - **Precondiciones**: Usuario autenticado como administrador
 - **Postcondiciones**: Configuración del sistema actualizada
 
+```mermaid
+graph LR
+    A[🛡️ Administrador]:::actor
+    UC1((UC-035<br/>Gestionar<br/>Configuración)):::usecase
+    UC2((Configurar<br/>Parámetros)):::usecase
+    UC3((Configurar<br/>Pagos)):::usecase
+    UC4((Configurar<br/>Email)):::usecase
+    UC5((Configurar<br/>Seguridad)):::usecase
+    
+    A -->|gestionar| UC1
+    UC1 -.->|extend| UC2
+    UC1 -.->|extend| UC3
+    UC1 -.->|extend| UC4
+    UC1 -.->|extend| UC5
+    
+    classDef actor fill:#2E86AB,stroke:#1A5490,stroke-width:3px,color:#fff
+    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529
+```
+
 #### **UC-036: Ver Métricas Globales**
 - **Actor Principal**: Administrador
 - **Descripción**: Permite a administradores ver métricas globales del sistema
 - **Precondiciones**: Usuario autenticado como administrador
 - **Postcondiciones**: Métricas globales mostradas
+
+```mermaid
+graph LR
+    A[🛡️ Administrador]:::actor
+    UC1((UC-036<br/>Ver Métricas<br/>Globales)):::usecase
+    UC2((Calcular<br/>KPIs)):::usecase
+    UC3((Analizar<br/>Tendencias)):::usecase
+    UC4((Comparar<br/>Períodos)):::usecase
+    UC5((Exportar<br/>Métricas)):::usecase
+    
+    A -->|ver| UC1
+    UC1 -.->|include| UC2
+    UC1 -.->|include| UC3
+    UC1 -.->|extend| UC4
+    UC1 -.->|extend| UC5
+    
+    classDef actor fill:#2E86AB,stroke:#1A5490,stroke-width:3px,color:#fff
+    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529
+```
 
 #### **UC-037: Monitorear Rendimiento**
 - **Actor Principal**: Administrador
@@ -450,17 +1136,78 @@ graph TB
 - **Precondiciones**: Usuario autenticado como administrador
 - **Postcondiciones**: Estado del sistema monitoreado
 
+```mermaid
+graph LR
+    A[🛡️ Administrador]:::actor
+    UC1((UC-037<br/>Monitorear<br/>Rendimiento)):::usecase
+    UC2((Verificar<br/>Recursos)):::usecase
+    UC3((Detectar<br/>Problemas)):::usecase
+    UC4((Generar<br/>Alertas)):::usecase
+    UC5((Notificar<br/>Equipo)):::usecase
+    SYS[⚙️ Sistema Email]:::actor
+    
+    A -->|monitorear| UC1
+    UC1 -.->|include| UC2
+    UC1 -.->|extend| UC3
+    UC1 -.->|extend| UC4
+    UC4 -.->|extend| UC5
+    UC5 --> SYS
+    
+    classDef actor fill:#2E86AB,stroke:#1A5490,stroke-width:3px,color:#fff
+    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529
+```
+
 #### **UC-038: Gestionar Backup y Restauración**
 - **Actor Principal**: Administrador
 - **Descripción**: Permite a administradores crear respaldos del sistema
 - **Precondiciones**: Usuario autenticado como administrador
 - **Postcondiciones**: Backup creado o restauración completada
 
+```mermaid
+graph LR
+    A[🛡️ Administrador]:::actor
+    UC1((UC-038<br/>Gestionar Backup<br/>y Restauración)):::usecase
+    UC2((Crear<br/>Backup)):::usecase
+    UC3((Restaurar<br/>Backup)):::usecase
+    UC4((Verificar<br/>Integridad)):::usecase
+    UC5((Programar<br/>Backups)):::usecase
+    
+    A -->|gestionar| UC1
+    UC1 -.->|extend| UC2
+    UC1 -.->|extend| UC3
+    UC1 -.->|include| UC4
+    UC1 -.->|extend| UC5
+    
+    classDef actor fill:#2E86AB,stroke:#1A5490,stroke-width:3px,color:#fff
+    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529
+```
+
 #### **UC-039: Configurar Integraciones**
 - **Actor Principal**: Administrador
 - **Descripción**: Permite a administradores configurar integraciones externas
 - **Precondiciones**: Usuario autenticado como administrador
 - **Postcondiciones**: Integración configurada y activa
+
+```mermaid
+graph LR
+    A[🛡️ Administrador]:::actor
+    UC1((UC-039<br/>Configurar<br/>Integraciones)):::usecase
+    UC2((Seleccionar<br/>Integración)):::usecase
+    UC3((Ingresar<br/>Credenciales)):::usecase
+    UC4((Probar<br/>Conexión)):::usecase
+    UC5((Activar<br/>Integración)):::usecase
+    SYS[⚙️ Servicio Externo]:::actor
+    
+    A -->|configurar| UC1
+    UC1 -.->|include| UC2
+    UC1 -.->|include| UC3
+    UC1 -.->|include| UC4
+    UC1 -.->|include| UC5
+    UC4 --> SYS
+    
+    classDef actor fill:#2E86AB,stroke:#1A5490,stroke-width:3px,color:#fff
+    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529
+```
 
 ---
 
@@ -536,6 +1283,5 @@ graph TB
 ### **Total de Casos de Uso**: 39 casos de uso
 
 ---
-
 
 *Este diagrama de casos de uso representa la funcionalidad completa del sistema EventHub, mostrando todas las interacciones entre actores y casos de uso, proporcionando una visión integral del sistema de gestión de eventos.*

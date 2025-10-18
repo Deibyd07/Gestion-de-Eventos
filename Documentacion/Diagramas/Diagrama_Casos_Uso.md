@@ -238,7 +238,8 @@ graph LR
     UC3 --> SYS
     
     classDef actor fill:#2E86AB,stroke:#1A5490,stroke-width:3px,color:#fff
-    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529```
+    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529
+```
 
 #### **UC-002: Autenticar Usuario**
 - **Actor Principal**: Asistente, Organizador, Administrador
@@ -260,7 +261,8 @@ graph LR
     UC1 -.->|extend| UC4
     
     classDef actor fill:#2E86AB,stroke:#1A5490,stroke-width:3px,color:#fff
-    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529```
+    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529
+```
 
 #### **UC-003: Cerrar Sesión**
 - **Actor Principal**: Asistente, Organizador, Administrador
@@ -280,7 +282,8 @@ graph LR
     UC1 -.->|include| UC3
     
     classDef actor fill:#2E86AB,stroke:#1A5490,stroke-width:3px,color:#fff
-    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529```
+    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529
+```
 
 #### **UC-004: Recuperar Contraseña**
 - **Actor Principal**: Asistente, Organizador, Administrador
@@ -304,7 +307,8 @@ graph LR
     UC4 --> SYS
     
     classDef actor fill:#2E86AB,stroke:#1A5490,stroke-width:3px,color:#fff
-    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529```
+    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529
+```
 
 #### **UC-005: Cambiar Contraseña**
 - **Actor Principal**: Asistente, Organizador, Administrador
@@ -330,7 +334,8 @@ graph LR
     UC5 --> SYS
     
     classDef actor fill:#2E86AB,stroke:#1A5490,stroke-width:3px,color:#fff
-    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529```
+    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529
+```
 
 #### **UC-006: Gestionar Perfil**
 - **Actor Principal**: Asistente, Organizador, Administrador
@@ -352,7 +357,8 @@ graph LR
     UC1 -.->|extend| UC4
     
     classDef actor fill:#2E86AB,stroke:#1A5490,stroke-width:3px,color:#fff
-    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529```
+    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529
+```
 
 #### **UC-007: Ver Historial**
 - **Actor Principal**: Asistente, Organizador, Administrador
@@ -372,7 +378,8 @@ graph LR
     UC1 -.->|extend| UC3
     
     classDef actor fill:#2E86AB,stroke:#1A5490,stroke-width:3px,color:#fff
-    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529```
+    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529
+```
 
 #### **UC-008: Actualizar Datos**
 - **Actor Principal**: Asistente, Administrador
@@ -394,7 +401,8 @@ graph LR
     UC3 --> SYS
     
     classDef actor fill:#2E86AB,stroke:#1A5490,stroke-width:3px,color:#fff
-    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529```
+    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529
+```
 
 #### **UC-009: Gestionar Usuarios**
 - **Actor Principal**: Administrador
@@ -418,7 +426,8 @@ graph LR
     UC1 -.->|extend| UC5
     
     classDef actor fill:#2E86AB,stroke:#1A5490,stroke-width:3px,color:#fff
-    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529```
+    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529
+```
 
 #### **UC-010: Asignar Roles**
 - **Actor Principal**: Administrador
@@ -442,7 +451,8 @@ graph LR
     UC4 --> SYS
     
     classDef actor fill:#2E86AB,stroke:#1A5490,stroke-width:3px,color:#fff
-    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529```
+    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529
+```
 
 ### **📅 Gestión de Eventos (UC-011 a UC-016)**
 
@@ -466,7 +476,8 @@ graph LR
     UC1 --> UC4
     
     classDef actor fill:#2E86AB,stroke:#1A5490,stroke-width:3px,color:#fff
-    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529```
+    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529
+```
 
 #### **UC-012: Buscar Eventos**
 - **Actor Principal**: Asistente
@@ -488,7 +499,8 @@ graph LR
     UC1 --> UC4
     
     classDef actor fill:#2E86AB,stroke:#1A5490,stroke-width:3px,color:#fff
-    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529```
+    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529
+```
 
 #### **UC-013: Ver Detalle de Evento**
 - **Actor Principal**: Asistente
@@ -512,7 +524,8 @@ graph LR
     UC1 --> UC5
     
     classDef actor fill:#2E86AB,stroke:#1A5490,stroke-width:3px,color:#fff
-    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529```
+    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529
+```
 
 #### **UC-014: Crear Evento**
 - **Actor Principal**: Organizador, Administrador
@@ -538,7 +551,8 @@ graph LR
     UC1 -.->|include| UC5
     
     classDef actor fill:#2E86AB,stroke:#1A5490,stroke-width:3px,color:#fff
-    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529```
+    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529
+```
 
 #### **UC-015: Editar Evento**
 - **Actor Principal**: Organizador, Administrador
@@ -564,7 +578,8 @@ graph LR
     UC4 --> SYS
     
     classDef actor fill:#2E86AB,stroke:#1A5490,stroke-width:3px,color:#fff
-    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529```
+    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529
+```
 
 #### **UC-016: Eliminar Evento**
 - **Actor Principal**: Organizador, Administrador
@@ -590,7 +605,8 @@ graph LR
     UC1 -.->|include| UC5
     
     classDef actor fill:#2E86AB,stroke:#1A5490,stroke-width:3px,color:#fff
-    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529```
+    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529
+```
 
 ### **🎫 Gestión de Pagos (UC-017 a UC-021)**
 
@@ -616,7 +632,8 @@ graph LR
     UC1 --> UC5
     
     classDef actor fill:#2E86AB,stroke:#1A5490,stroke-width:3px,color:#fff
-    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529```
+    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529
+```
 
 #### **UC-018: Procesar Pago**
 - **Actor Principal**: Asistente
@@ -646,7 +663,8 @@ graph LR
     UC6 --> SYS2
     
     classDef actor fill:#2E86AB,stroke:#1A5490,stroke-width:3px,color:#fff
-    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529```
+    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529
+```
 
 #### **UC-019: Ver Entradas**
 - **Actor Principal**: Asistente
@@ -668,7 +686,8 @@ graph LR
     UC1 -.->|extend| UC4
     
     classDef actor fill:#2E86AB,stroke:#1A5490,stroke-width:3px,color:#fff
-    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529```
+    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529
+```
 
 #### **UC-020: Generar QR**
 - **Actor Principal**: Sistema
@@ -690,7 +709,8 @@ graph LR
     UC1 -.->|include| UC4
     
     classDef actor fill:#2E86AB,stroke:#1A5490,stroke-width:3px,color:#fff
-    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529```
+    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529
+```
 
 #### **UC-021: Validar Entrada**
 - **Actor Principal**: Organizador
@@ -714,7 +734,8 @@ graph LR
     UC1 -.->|include| UC5
     
     classDef actor fill:#2E86AB,stroke:#1A5490,stroke-width:3px,color:#fff
-    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529```
+    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529
+```
 
 ### **🔔 Gestión de Notificaciones (UC-022 a UC-024)**
 
@@ -748,7 +769,8 @@ graph LR
     UC6 --> SYS2
     
     classDef actor fill:#2E86AB,stroke:#1A5490,stroke-width:3px,color:#fff
-    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529```
+    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529
+```
 
 #### **UC-023: Ver Notificaciones**
 - **Actor Principal**: Asistente, Organizador, Administrador
@@ -770,7 +792,8 @@ graph LR
     UC1 -.->|extend| UC4
     
     classDef actor fill:#2E86AB,stroke:#1A5490,stroke-width:3px,color:#fff
-    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529```
+    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529
+```
 
 #### **UC-024: Configurar Preferencias**
 - **Actor Principal**: Asistente, Organizador, Administrador
@@ -792,7 +815,8 @@ graph LR
     UC1 -.->|extend| UC4
     
     classDef actor fill:#2E86AB,stroke:#1A5490,stroke-width:3px,color:#fff
-    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529```
+    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529
+```
 
 ### **📊 Gestión de Analytics (UC-025 a UC-030)**
 
@@ -820,7 +844,8 @@ graph LR
     UC1 -.->|extend| UC4
     
     classDef actor fill:#2E86AB,stroke:#1A5490,stroke-width:3px,color:#fff
-    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529```
+    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529
+```
 
 #### **UC-026: Generar Reportes**
 - **Actor Principal**: Asistente, Organizador, Administrador
@@ -844,7 +869,8 @@ graph LR
     UC1 -.->|include| UC5
     
     classDef actor fill:#2E86AB,stroke:#1A5490,stroke-width:3px,color:#fff
-    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529```
+    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529
+```
 
 #### **UC-027: Ver Métricas**
 - **Actor Principal**: Sistema
@@ -868,7 +894,8 @@ graph LR
     UC1 -.->|extend| UC5
     
     classDef actor fill:#2E86AB,stroke:#1A5490,stroke-width:3px,color:#fff
-    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529```
+    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529
+```
 
 #### **UC-028: Dashboard del Organizador**
 - **Actor Principal**: Organizador
@@ -892,7 +919,8 @@ graph LR
     UC1 --> UC5
     
     classDef actor fill:#2E86AB,stroke:#1A5490,stroke-width:3px,color:#fff
-    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529```
+    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529
+```
 
 #### **UC-029: Gestionar Asistentes**
 - **Actor Principal**: Organizador
@@ -918,7 +946,8 @@ graph LR
     UC4 --> SYS
     
     classDef actor fill:#2E86AB,stroke:#1A5490,stroke-width:3px,color:#fff
-    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529```
+    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529
+```
 
 #### **UC-030: Ver Métricas de Eventos**
 - **Actor Principal**: Organizador, Administrador
@@ -944,7 +973,8 @@ graph LR
     UC1 -.->|extend| UC5
     
     classDef actor fill:#2E86AB,stroke:#1A5490,stroke-width:3px,color:#fff
-    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529```
+    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529
+```
 
 ### **⚙️ Gestión de Administración (UC-031 a UC-039)**
 
@@ -970,7 +1000,8 @@ graph LR
     UC1 -.->|include| UC5
     
     classDef actor fill:#2E86AB,stroke:#1A5490,stroke-width:3px,color:#fff
-    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529```
+    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529
+```
 
 #### **UC-032: Gestionar Lista de Espera**
 - **Actor Principal**: Organizador
@@ -996,7 +1027,8 @@ graph LR
     UC4 --> SYS
     
     classDef actor fill:#2E86AB,stroke:#1A5490,stroke-width:3px,color:#fff
-    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529```
+    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529
+```
 
 #### **UC-033: Configurar Check-in**
 - **Actor Principal**: Organizador
@@ -1020,7 +1052,8 @@ graph LR
     UC1 -.->|include| UC5
     
     classDef actor fill:#2E86AB,stroke:#1A5490,stroke-width:3px,color:#fff
-    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529```
+    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529
+```
 
 #### **UC-034: Dashboard de Administración**
 - **Actor Principal**: Administrador
@@ -1044,7 +1077,8 @@ graph LR
     UC1 --> UC5
     
     classDef actor fill:#2E86AB,stroke:#1A5490,stroke-width:3px,color:#fff
-    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529```
+    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529
+```
 
 #### **UC-035: Gestionar Configuración del Sistema**
 - **Actor Principal**: Administrador
@@ -1068,7 +1102,8 @@ graph LR
     UC1 -.->|extend| UC5
     
     classDef actor fill:#2E86AB,stroke:#1A5490,stroke-width:3px,color:#fff
-    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529```
+    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529
+```
 
 #### **UC-036: Ver Métricas Globales**
 - **Actor Principal**: Administrador
@@ -1092,7 +1127,8 @@ graph LR
     UC1 -.->|extend| UC5
     
     classDef actor fill:#2E86AB,stroke:#1A5490,stroke-width:3px,color:#fff
-    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529```
+    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529
+```
 
 #### **UC-037: Monitorear Rendimiento**
 - **Actor Principal**: Administrador
@@ -1118,7 +1154,8 @@ graph LR
     UC5 --> SYS
     
     classDef actor fill:#2E86AB,stroke:#1A5490,stroke-width:3px,color:#fff
-    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529```
+    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529
+```
 
 #### **UC-038: Gestionar Backup y Restauración**
 - **Actor Principal**: Administrador
@@ -1142,7 +1179,8 @@ graph LR
     UC1 -.->|extend| UC5
     
     classDef actor fill:#2E86AB,stroke:#1A5490,stroke-width:3px,color:#fff
-    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529```
+    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529
+```
 
 #### **UC-039: Configurar Integraciones**
 - **Actor Principal**: Administrador
@@ -1168,7 +1206,8 @@ graph LR
     UC4 --> SYS
     
     classDef actor fill:#2E86AB,stroke:#1A5490,stroke-width:3px,color:#fff
-    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529```
+    classDef usecase fill:#F8F9FA,stroke:#6C757D,stroke-width:2px,color:#212529
+```
 
 ---
 

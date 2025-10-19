@@ -79,7 +79,7 @@ export function ProfilePage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50/80 to-blue-50/80 backdrop-blur-sm p-3 sm:p-4 md:p-6">
-      <div className="max-w-6xl mx-auto">
+      <div className="w-full">
         {/* Header Section */}
         <div className="mb-4 sm:mb-6 md:mb-8">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">

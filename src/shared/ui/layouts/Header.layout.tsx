@@ -24,18 +24,16 @@ export function Header() {
 
   return (
     <header className="bg-gradient-to-r from-purple-600/90 via-purple-600/90 to-blue-500/90 backdrop-blur-md shadow-xl border-b border-white/20 fixed top-0 left-0 right-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="w-full px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-20">
           {/* Logo */}
-          <div className="flex items-center">
-            <Link to="/" className="flex items-center space-x-2 group">
-              <div className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center shadow-lg border border-white/30 transform group-hover:scale-105 transition-transform duration-200">
-                <Calendar className="w-6 h-6 text-white" />
-              </div>
-              <span className="text-2xl font-bold text-white">
-                EventHub
-              </span>
-            </Link>
+          <div className="flex items-center space-x-2">
+            <div className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center shadow-lg border border-white/30">
+              <Calendar className="w-6 h-6 text-white" />
+            </div>
+            <span className="text-2xl font-bold text-white">
+              EventHub
+            </span>
           </div>
 
           {/* Desktop Navigation */}

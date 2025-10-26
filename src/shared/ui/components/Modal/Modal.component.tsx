@@ -72,14 +72,14 @@ export const Modal: React.FC<ModalProps> = ({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-black bg-opacity-50 transition-opacity duration-200"
+        className="fixed inset-0 bg-black/50 backdrop-blur-sm transition-opacity duration-200"
         onClick={handleOverlayClick}
       />
       
       {/* Modal */}
       <div
         className={cn(
-          'relative bg-white rounded-xl shadow-xl max-h-[90vh] overflow-y-auto w-full',
+          'relative bg-white/95 backdrop-blur-lg rounded-2xl shadow-2xl border border-white/20 max-h-[90vh] overflow-y-auto w-full',
           modalSizes[size]
         )}
         onClick={(e) => e.stopPropagation()}

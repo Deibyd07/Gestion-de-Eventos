@@ -29,6 +29,7 @@ import { PromotionManagement } from '../components/PromotionManagement.component
 import { AttendeeManagement } from '../components/AttendeeManagement.component';
 import { OrganizerDashboardContent } from '../components/OrganizerDashboardContent.component';
 import { OrganizerProfilePanel } from '../components/OrganizerProfilePanel.component';
+import { CreateEventModal, CreateEventFormData } from '../../../events/presentation/components/CreateEventModal.component';
 import { formatRevenue } from '@shared/lib/utils/Currency.utils';
 
 
@@ -57,6 +58,8 @@ export function OrganizerDashboard() {
     return true;
   });
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
+  const [isCreateEventModalOpen, setIsCreateEventModalOpen] = useState(false);
+  const [isCreatingEvent, setIsCreatingEvent] = useState(false);
 
   const handleLogout = () => {
     logout();
@@ -148,6 +151,30 @@ export function OrganizerDashboard() {
 
   const handleRefresh = async () => {
     console.log('Actualizando datos...');
+  };
+
+  const handleCreateEvent = async (formData: CreateEventFormData) => {
+    setIsCreatingEvent(true);
+    
+    try {
+      // Simular llamada a API
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // Aquí iría la lógica real para crear el evento
+      console.log('Creando evento:', formData);
+      
+      // Cerrar modal
+      setIsCreateEventModalOpen(false);
+      
+      // Mostrar mensaje de éxito (puedes implementar un toast)
+      console.log('Evento creado exitosamente');
+      
+    } catch (error) {
+      console.error('Error al crear evento:', error);
+      // Aquí podrías mostrar un mensaje de error
+    } finally {
+      setIsCreatingEvent(false);
+    }
   };
 
 
@@ -445,7 +472,10 @@ export function OrganizerDashboard() {
             {activeTab === 'overview' && (
               <OrganizerDashboardContent
                 stats={quickStats}
-                onCreateEvent={() => setActiveTab('events')}
+                onCreateEvent={() => {
+                  setActiveTab('events');
+                  setIsCreateEventModalOpen(true);
+                }}
                 onNavigateToTab={setActiveTab}
                 formatRevenue={formatRevenue}
               />
@@ -474,7 +504,7 @@ export function OrganizerDashboard() {
                       <span className="hidden sm:inline">Exportar</span>
             </button>
             <button 
-                      onClick={() => console.log('Crear nuevo evento...')}
+                      onClick={() => setIsCreateEventModalOpen(true)}
               className="flex-1 sm:flex-none inline-flex items-center justify-center px-3 md:px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-medium rounded-xl hover:from-green-600 hover:to-emerald-700 transition-all duration-200 shadow-sm text-sm"
             >
               <Plus className="w-4 h-4 sm:mr-2" />
@@ -495,7 +525,7 @@ export function OrganizerDashboard() {
                            event.status === 'completed' ? 'completed' : 
                            event.status === 'cancelled' ? 'cancelled' : 'draft'
                   }))}
-                  onCreateEvent={() => console.log('Crear nuevo evento desde componente...')}
+                  onCreateEvent={() => setIsCreateEventModalOpen(true)}
                   onEditEvent={(eventId) => console.log('Edit event:', eventId)}
                   onViewEvent={(eventId) => console.log('View event:', eventId)}
                   onDeleteEvent={(eventId) => console.log('Delete event:', eventId)}
@@ -953,6 +983,14 @@ export function OrganizerDashboard() {
           </div>
         </div>
       </div>
+
+      {/* Modal de Crear Evento */}
+      <CreateEventModal
+        isOpen={isCreateEventModalOpen}
+        onClose={() => setIsCreateEventModalOpen(false)}
+        onSave={handleCreateEvent}
+        isLoading={isCreatingEvent}
+      />
     </div>
   );
 }

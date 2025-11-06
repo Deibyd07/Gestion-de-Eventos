@@ -31,6 +31,7 @@ import { OrganizerDashboardContent } from '../components/OrganizerDashboardConte
 import { OrganizerProfilePanel } from '../components/OrganizerProfilePanel.component';
 import { CreateEventModal, CreateEventFormData } from '../../../events/presentation/components/CreateEventModal.component';
 import { CreateTicketModal, CreateTicketFormData } from '../components/CreateTicketModal.component';
+import { CreatePromotionModal, CreatePromotionFormData } from '../components/CreatePromotionModal.component';
 import { formatRevenue } from '@shared/lib/utils/Currency.utils';
 
 
@@ -63,6 +64,8 @@ export function OrganizerDashboard() {
   const [isCreatingEvent, setIsCreatingEvent] = useState(false);
   const [isCreateTicketModalOpen, setIsCreateTicketModalOpen] = useState(false);
   const [isCreatingTicket, setIsCreatingTicket] = useState(false);
+  const [isCreatePromotionModalOpen, setIsCreatePromotionModalOpen] = useState(false);
+  const [isCreatingPromotion, setIsCreatingPromotion] = useState(false);
 
   const handleLogout = () => {
     logout();
@@ -201,6 +204,30 @@ export function OrganizerDashboard() {
       // Aquí podrías mostrar un mensaje de error
     } finally {
       setIsCreatingTicket(false);
+    }
+  };
+
+  const handleCreatePromotion = async (formData: CreatePromotionFormData) => {
+    setIsCreatingPromotion(true);
+    
+    try {
+      // Simular llamada a API
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // Aquí iría la lógica real para crear la promoción
+      console.log('Creando código de descuento:', formData);
+      
+      // Cerrar modal
+      setIsCreatePromotionModalOpen(false);
+      
+      // Mostrar mensaje de éxito (puedes implementar un toast)
+      console.log('Código de descuento creado exitosamente');
+      
+    } catch (error) {
+      console.error('Error al crear código de descuento:', error);
+      // Aquí podrías mostrar un mensaje de error
+    } finally {
+      setIsCreatingPromotion(false);
     }
   };
 
@@ -658,19 +685,22 @@ export function OrganizerDashboard() {
                       onClick={handleRefresh}
                       className="flex-1 sm:flex-none inline-flex items-center justify-center px-3 md:px-4 py-2 bg-gradient-to-r from-orange-500 to-red-600 text-white font-medium rounded-xl hover:from-orange-600 hover:to-red-700 transition-all duration-200 shadow-sm text-sm"
                     >
-                      <RefreshCw className="w-4 h-4" />
+                      <RefreshCw className="w-4 h-4 sm:mr-2" />
+                      <span className="hidden sm:inline">Actualizar</span>
                     </button>
-                    <button 
+                    <button
                       onClick={() => console.log('Exportando promociones...')}
                       className="flex-1 sm:flex-none inline-flex items-center justify-center px-3 md:px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-medium rounded-xl hover:from-blue-600 hover:to-purple-700 transition-all duration-200 shadow-sm text-sm"
                     >
-                      <Download className="w-4 h-4" />
+                      <Download className="w-4 h-4 sm:mr-2" />
+                      <span className="hidden sm:inline">Exportar</span>
                     </button>
                     <button 
-                      onClick={() => console.log('Crear nueva promoción...')}
+                      onClick={() => setIsCreatePromotionModalOpen(true)}
                       className="flex-1 sm:flex-none inline-flex items-center justify-center px-3 md:px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-medium rounded-xl hover:from-green-600 hover:to-emerald-700 transition-all duration-200 shadow-sm text-sm"
                     >
-                      <Plus className="w-4 h-4" />
+                      <Plus className="w-4 h-4 sm:mr-2" />
+                      <span className="hidden sm:inline">Nuevo</span>
                     </button>
                   </div>
                 </div>
@@ -733,7 +763,7 @@ export function OrganizerDashboard() {
                       createdDate: '2024-01-01'
                     }
                   ]}
-                  onCreatePromotion={() => console.log('Create promotion')}
+                  onCreatePromotion={() => setIsCreatePromotionModalOpen(true)}
                   onEditPromotion={(promotionId) => console.log('Edit promotion:', promotionId)}
                   onDeletePromotion={(promotionId) => console.log('Delete promotion:', promotionId)}
                   onDuplicatePromotion={(promotionId) => console.log('Duplicate promotion:', promotionId)}
@@ -1025,6 +1055,14 @@ export function OrganizerDashboard() {
         onClose={() => setIsCreateTicketModalOpen(false)}
         onSave={handleCreateTicket}
         isLoading={isCreatingTicket}
+      />
+
+      {/* Modal de Crear Código de Descuento */}
+      <CreatePromotionModal
+        isOpen={isCreatePromotionModalOpen}
+        onClose={() => setIsCreatePromotionModalOpen(false)}
+        onSave={handleCreatePromotion}
+        isLoading={isCreatingPromotion}
       />
     </div>
   );

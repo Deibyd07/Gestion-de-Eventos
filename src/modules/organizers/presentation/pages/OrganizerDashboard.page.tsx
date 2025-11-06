@@ -30,6 +30,7 @@ import { AttendeeManagement } from '../components/AttendeeManagement.component';
 import { OrganizerDashboardContent } from '../components/OrganizerDashboardContent.component';
 import { OrganizerProfilePanel } from '../components/OrganizerProfilePanel.component';
 import { CreateEventModal, CreateEventFormData } from '../../../events/presentation/components/CreateEventModal.component';
+import { CreateTicketModal, CreateTicketFormData } from '../components/CreateTicketModal.component';
 import { formatRevenue } from '@shared/lib/utils/Currency.utils';
 
 
@@ -60,6 +61,8 @@ export function OrganizerDashboard() {
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const [isCreateEventModalOpen, setIsCreateEventModalOpen] = useState(false);
   const [isCreatingEvent, setIsCreatingEvent] = useState(false);
+  const [isCreateTicketModalOpen, setIsCreateTicketModalOpen] = useState(false);
+  const [isCreatingTicket, setIsCreatingTicket] = useState(false);
 
   const handleLogout = () => {
     logout();
@@ -174,6 +177,30 @@ export function OrganizerDashboard() {
       // Aquí podrías mostrar un mensaje de error
     } finally {
       setIsCreatingEvent(false);
+    }
+  };
+
+  const handleCreateTicket = async (formData: CreateTicketFormData) => {
+    setIsCreatingTicket(true);
+    
+    try {
+      // Simular llamada a API
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // Aquí iría la lógica real para crear la entrada
+      console.log('Creando tipo de entrada:', formData);
+      
+      // Cerrar modal
+      setIsCreateTicketModalOpen(false);
+      
+      // Mostrar mensaje de éxito (puedes implementar un toast)
+      console.log('Tipo de entrada creado exitosamente');
+      
+    } catch (error) {
+      console.error('Error al crear tipo de entrada:', error);
+      // Aquí podrías mostrar un mensaje de error
+    } finally {
+      setIsCreatingTicket(false);
     }
   };
 
@@ -559,7 +586,7 @@ export function OrganizerDashboard() {
                       <span className="hidden sm:inline">Exportar</span>
                     </button>
                     <button 
-                      onClick={() => console.log('Crear nuevo tipo de entrada...')}
+                      onClick={() => setIsCreateTicketModalOpen(true)}
                       className="flex-1 sm:flex-none inline-flex items-center justify-center px-3 md:px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-medium rounded-xl hover:from-green-600 hover:to-emerald-700 transition-all duration-200 shadow-sm text-sm"
                     >
                       <Plus className="w-4 h-4 sm:mr-2" />
@@ -609,7 +636,7 @@ export function OrganizerDashboard() {
                       eventId: 'event-1'
                     }
                   ]}
-                  onCreateTicket={() => console.log('Create ticket')}
+                  onCreateTicket={() => setIsCreateTicketModalOpen(true)}
                   onEditTicket={(ticketId) => console.log('Edit ticket:', ticketId)}
                   onDeleteTicket={(ticketId) => console.log('Delete ticket:', ticketId)}
                   onDuplicateTicket={(ticketId) => console.log('Duplicate ticket:', ticketId)}
@@ -990,6 +1017,14 @@ export function OrganizerDashboard() {
         onClose={() => setIsCreateEventModalOpen(false)}
         onSave={handleCreateEvent}
         isLoading={isCreatingEvent}
+      />
+
+      {/* Modal de Crear Tipo de Entrada */}
+      <CreateTicketModal
+        isOpen={isCreateTicketModalOpen}
+        onClose={() => setIsCreateTicketModalOpen(false)}
+        onSave={handleCreateTicket}
+        isLoading={isCreatingTicket}
       />
     </div>
   );

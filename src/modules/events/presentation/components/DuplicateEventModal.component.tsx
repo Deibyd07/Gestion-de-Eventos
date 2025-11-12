@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Copy, X, Calendar, MapPin, Clock, Users, DollarSign } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Copy, X, Calendar, MapPin, Clock, Users, DollarSign, AlertCircle, Loader2, Check } from 'lucide-react';
 
 interface Event {
   id: string;
@@ -20,53 +20,95 @@ interface Event {
 }
 
 interface DuplicateEventModalProps {
-  event: Event;
+  event: Event | null;
   isOpen: boolean;
   onClose: () => void;
-  onDuplicate: (duplicatedEvent: Partial<Event>) => void;
+  onDuplicate: (adjustments: {
+    titulo?: string;
+    fecha_evento?: string;
+    hora_evento?: string;
+  }) => Promise<void>;
+  isLoading?: boolean;
 }
 
 export const DuplicateEventModal: React.FC<DuplicateEventModalProps> = ({
   event,
   isOpen,
   onClose,
-  onDuplicate
+  onDuplicate,
+  isLoading: externalLoading
 }) => {
-  const [newTitle, setNewTitle] = useState(`${event.titulo} (Copia)`);
+  const [newTitle, setNewTitle] = useState('');
   const [newDate, setNewDate] = useState('');
-  const [newTime, setNewTime] = useState(event.hora_evento);
+  const [newTime, setNewTime] = useState('');
   const [isDuplicating, setIsDuplicating] = useState(false);
+  const [error, setError] = useState<string>('');
+  const [success, setSuccess] = useState(false);
+
+  const isLoading = isDuplicating || externalLoading;
+
+  // Inicializar campos cuando se abre el modal o cambia el evento
+  useEffect(() => {
+    if (isOpen && event) {
+      setNewTitle(`${event.titulo} (Copia)`);
+      setNewDate(event.fecha_evento);
+      setNewTime(event.hora_evento);
+      setError('');
+      setSuccess(false);
+    }
+  }, [isOpen, event]);
 
   const handleDuplicate = async () => {
+    if (!newTitle.trim()) {
+      setError('El título es obligatorio');
+      return;
+    }
+
+    if (!newDate) {
+      setError('La fecha del evento es obligatoria');
+      return;
+    }
+
+    if (!newTime) {
+      setError('La hora del evento es obligatoria');
+      return;
+    }
+
+    console.log('🚀 Modal: Iniciando duplicación...');
+    console.log('📝 Modal: Ajustes del usuario:', {
+      titulo: newTitle.trim(),
+      fecha_evento: newDate,
+      hora_evento: newTime
+    });
+
     setIsDuplicating(true);
+    setError('');
     
     try {
-      // Create duplicated event data
-      const duplicatedEvent = {
-        titulo: newTitle,
-        descripcion: event.descripcion,
-        url_imagen: event.url_imagen,
+      await onDuplicate({
+        titulo: newTitle.trim(),
         fecha_evento: newDate,
-        hora_evento: newTime,
-        ubicacion: event.ubicacion,
-        categoria: event.categoria,
-        maximo_asistentes: event.maximo_asistentes,
-        tipos_entrada: event.tipos_entrada.map(tipo => ({
-          ...tipo,
-          cantidad_disponible: tipo.cantidad_maxima
-        }))
-      };
+        hora_evento: newTime
+      });
 
-      await onDuplicate(duplicatedEvent);
-      onClose();
+      console.log('✅ Modal: Duplicación completada exitosamente');
+      setSuccess(true);
+      
+      // Esperar un momento para mostrar el mensaje de éxito
+      setTimeout(() => {
+        console.log('👋 Modal: Cerrando modal...');
+        onClose();
+      }, 1000);
     } catch (error) {
-      console.error('Error duplicating event:', error);
+      console.error('❌ Modal: Error al duplicar evento:', error);
+      setError(error instanceof Error ? error.message : 'Error al duplicar el evento.');
+      setSuccess(false);
     } finally {
       setIsDuplicating(false);
     }
   };
 
-  if (!isOpen) return null;
+  if (!isOpen || !event) return null;
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -185,22 +227,68 @@ export const DuplicateEventModal: React.FC<DuplicateEventModalProps> = ({
               </div>
             </div>
           )}
+
+          {/* Info message */}
+          <div className="flex items-start space-x-2 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+            <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+            <div className="text-sm text-amber-800">
+              <p className="font-medium mb-1">Se duplicará:</p>
+              <ul className="list-disc list-inside space-y-1 text-xs">
+                <li>Todos los detalles del evento</li>
+                <li>Todos los tipos de entrada con sus precios</li>
+                <li>La imagen del evento</li>
+                <li>Los asistentes se reiniciarán a 0</li>
+              </ul>
+            </div>
+          </div>
+
+          {/* Error Message */}
+          {error && (
+            <div className="flex items-start space-x-2 p-3 bg-red-50 border border-red-200 rounded-lg">
+              <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+              <p className="text-sm text-red-800">{error}</p>
+            </div>
+          )}
+
+          {/* Success Message */}
+          {success && (
+            <div className="flex items-center space-x-2 p-3 bg-green-50 border border-green-200 rounded-lg">
+              <Check className="w-5 h-5 text-green-600" />
+              <p className="text-sm text-green-800 font-medium">¡Evento duplicado exitosamente!</p>
+            </div>
+          )}
         </div>
 
         {/* Footer */}
         <div className="flex items-center justify-end space-x-3 p-6 border-t border-gray-200">
           <button
             onClick={onClose}
-            className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+            disabled={isLoading}
+            className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Cancelar
           </button>
           <button
             onClick={handleDuplicate}
-            disabled={!newTitle || !newDate || isDuplicating}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            disabled={!newTitle || !newDate || isLoading || success}
+            className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
-            {isDuplicating ? 'Duplicando...' : 'Duplicar Evento'}
+            {isDuplicating ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                Duplicando...
+              </>
+            ) : success ? (
+              <>
+                <Check className="w-4 h-4 mr-2" />
+                ¡Listo!
+              </>
+            ) : (
+              <>
+                <Copy className="w-4 h-4 mr-2" />
+                Duplicar Evento
+              </>
+            )}
           </button>
         </div>
       </div>

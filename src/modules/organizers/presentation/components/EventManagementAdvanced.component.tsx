@@ -260,7 +260,10 @@ export const EventManagementAdvanced: React.FC<EventManagementAdvancedProps> = (
                     Editar
                   </button>
                   <button
-                    onClick={() => onDuplicateEvent(event.id)}
+                    onClick={() => {
+                      console.log('Click en botón duplicar, eventId:', event.id);
+                      onDuplicateEvent(event.id);
+                    }}
                     className="inline-flex items-center justify-center px-3 py-2 bg-gradient-to-r from-gray-500 to-gray-600 text-white text-xs md:text-sm rounded-xl hover:from-gray-600 hover:to-gray-700 transition-all duration-200"
                     title="Duplicar evento"
                   >

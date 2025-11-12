@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { Upload, X, Image as ImageIcon, Loader2 } from 'lucide-react';
+import { StorageService } from '../../../../shared/lib/services/Storage.service';
 
 interface ImageUploadProps {
   value?: string;
@@ -36,17 +37,20 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
     setIsUploading(true);
 
     try {
-      // In a real app, you would upload to a service like Supabase Storage, AWS S3, etc.
-      // For now, we'll create a data URL
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const result = e.target?.result as string;
-        onChange(result);
-        setIsUploading(false);
-      };
-      reader.readAsDataURL(file);
+      // Subir imagen a Supabase Storage o convertir a Base64
+      const imageUrl = await StorageService.uploadImage(file);
+      onChange(imageUrl);
+      setIsUploading(false);
     } catch (error) {
       console.error('Error uploading image:', error);
+      // Fallback: usar Base64 si falla la subida
+      try {
+        const base64 = await StorageService.fileToBase64(file);
+        onChange(base64);
+      } catch (base64Error) {
+        console.error('Error converting to base64:', base64Error);
+        alert('Error al subir la imagen. Por favor intenta nuevamente.');
+      }
       setIsUploading(false);
     }
   };

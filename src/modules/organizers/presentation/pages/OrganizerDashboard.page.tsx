@@ -33,6 +33,7 @@ import { CreateEventModal, CreateEventFormData } from '../../../events/presentat
 import { CreateTicketModal, CreateTicketFormData } from '../components/CreateTicketModal.component';
 import { CreatePromotionModal, CreatePromotionFormData } from '../components/CreatePromotionModal.component';
 import { UploadImageModal } from '../../../events/presentation/components/UploadImageModal.component';
+import { DuplicateEventModal } from '../../../events/presentation/components/DuplicateEventModal.component';
 import { formatRevenue } from '@shared/lib/utils/Currency.utils';
 import { EventService } from '@shared/lib/api/services/Event.service';
 
@@ -70,6 +71,8 @@ export function OrganizerDashboard() {
   const [isCreatingPromotion, setIsCreatingPromotion] = useState(false);
   const [isUploadImageModalOpen, setIsUploadImageModalOpen] = useState(false);
   const [selectedEventForImage, setSelectedEventForImage] = useState<{ id: string; title: string; currentImage?: string } | null>(null);
+  const [isDuplicateEventModalOpen, setIsDuplicateEventModalOpen] = useState(false);
+  const [selectedEventForDuplication, setSelectedEventForDuplication] = useState<any | null>(null);
 
   const handleLogout = () => {
     logout();
@@ -326,6 +329,85 @@ export function OrganizerDashboard() {
       console.log('Imagen actualizada exitosamente');
     } catch (error) {
       console.error('Error al actualizar imagen del evento:', error);
+    }
+  };
+
+  const handleDuplicateEvent = (eventId: string) => {
+    console.log('Duplicando evento:', eventId);
+    
+    // Validar que no sea un evento mock
+    if (eventId.startsWith('org-')) {
+      console.error('No se puede duplicar eventos mock');
+      alert('No puedes duplicar eventos de ejemplo. Por favor crea un evento real primero.');
+      return;
+    }
+    
+    // Encontrar el evento a duplicar
+    const event = finalEvents.find(e => e.id === eventId);
+    if (event) {
+      console.log('Evento encontrado para duplicar:', event);
+      
+      // Convertir al formato que espera el modal
+      const eventData = {
+        id: event.id,
+        titulo: event.title,
+        descripcion: event.description,
+        url_imagen: event.image,
+        fecha_evento: event.date,
+        hora_evento: event.time,
+        ubicacion: event.location,
+        categoria: event.category,
+        maximo_asistentes: event.maxAttendees,
+        tipos_entrada: (event.ticketTypes || []).map((ticket: any) => ({
+          nombre_tipo: ticket.nombre_tipo || ticket.name || 'Sin nombre',
+          precio: ticket.precio || ticket.price || 0,
+          descripcion: ticket.descripcion || ticket.description || '',
+          cantidad_maxima: ticket.cantidad_maxima || ticket.maxQuantity || 0
+        }))
+      };
+      
+      console.log('Datos del evento para modal:', eventData);
+      setSelectedEventForDuplication(eventData);
+      setIsDuplicateEventModalOpen(true);
+    } else {
+      console.error('Evento no encontrado:', eventId);
+    }
+  };
+
+  const handleDuplicateEventConfirm = async (adjustments: {
+    titulo?: string;
+    fecha_evento?: string;
+    hora_evento?: string;
+  }) => {
+    if (!selectedEventForDuplication) {
+      console.warn('⚠️ No hay evento seleccionado para duplicar');
+      return;
+    }
+
+    try {
+      console.log('🔄 Iniciando duplicación con ajustes:', adjustments);
+      console.log('📋 Evento a duplicar:', selectedEventForDuplication);
+      
+      // Llamar al servicio de duplicación
+      const eventoDuplicado = await EventService.duplicarEvento(
+        selectedEventForDuplication.id,
+        adjustments
+      );
+
+      console.log('✅ Evento duplicado exitosamente:', eventoDuplicado);
+      
+      // Refrescar la lista de eventos
+      console.log('🔄 Refrescando lista de eventos...');
+      await handleRefresh();
+      console.log('✅ Lista de eventos actualizada');
+      
+      // Cerrar modal
+      setIsDuplicateEventModalOpen(false);
+      setSelectedEventForDuplication(null);
+      console.log('✅ Modal cerrado');
+    } catch (error) {
+      console.error('❌ Error al duplicar evento:', error);
+      throw error; // Re-lanzar para que el modal lo maneje
     }
   };
 
@@ -715,7 +797,7 @@ export function OrganizerDashboard() {
                   onEditEvent={(eventId) => console.log('Edit event:', eventId)}
                   onViewEvent={(eventId) => console.log('View event:', eventId)}
                   onDeleteEvent={(eventId) => console.log('Delete event:', eventId)}
-                  onDuplicateEvent={(eventId) => console.log('Duplicate event:', eventId)}
+                  onDuplicateEvent={handleDuplicateEvent}
                   onUploadImage={handleUploadImage}
                   onCustomizeEvent={(eventId) => console.log('Customize event:', eventId)}
                 />
@@ -1166,6 +1248,17 @@ export function OrganizerDashboard() {
         currentImageUrl={selectedEventForImage?.currentImage}
         eventId={selectedEventForImage?.id}
         eventTitle={selectedEventForImage?.title}
+      />
+
+      {/* Modal de Duplicar Evento */}
+      <DuplicateEventModal
+        event={selectedEventForDuplication}
+        isOpen={isDuplicateEventModalOpen}
+        onClose={() => {
+          setIsDuplicateEventModalOpen(false);
+          setSelectedEventForDuplication(null);
+        }}
+        onDuplicate={handleDuplicateEventConfirm}
       />
     </div>
   );

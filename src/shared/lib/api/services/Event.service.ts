@@ -12,6 +12,7 @@ export class EventService {
     busqueda?: string;
     precioMinimo?: number;
     precioMaximo?: number;
+    estado?: string;
   }) {
     let consulta = supabase
       .from('eventos')
@@ -20,8 +21,11 @@ export class EventService {
         tipos_entrada (*),
         analiticas_eventos (*)
       `)
-      .eq('estado', 'proximo')
       .order('fecha_evento', { ascending: true });
+
+    if (filtros?.estado) {
+      consulta = consulta.eq('estado', filtros.estado as any);
+    }
 
     if (filtros?.categoria) {
       consulta = consulta.eq('categoria', filtros.categoria);
@@ -137,6 +141,18 @@ export class EventService {
       .eq('id', id);
 
     if (error) throw error;
+  }
+
+  static async actualizarImagenEvento(id: string, urlImagen: string) {
+    const { data, error } = await supabase
+      .from('eventos')
+      .update({ url_imagen: urlImagen })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
   }
 
   static async obtenerEventosUsuario(idUsuario: string) {

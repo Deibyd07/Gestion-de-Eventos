@@ -252,7 +252,7 @@ export const CreateTicketModal: React.FC<CreateTicketModalProps> = ({
               min="1"
               step="1000"
               value={formData.price || ''}
-              onChange={(e) => handleInputChange('price', parseInt(e.target.value) || 0)}
+              onChange={(e) => handleInputChange('price', Number(e.target.value) || 0)}
               error={errors.price}
               placeholder="Ej: 150000"
               leftIcon={<DollarSign className="w-4 h-4" />}
@@ -266,7 +266,7 @@ export const CreateTicketModal: React.FC<CreateTicketModalProps> = ({
               min="1"
               step="1000"
               value={formData.originalPrice || ''}
-              onChange={(e) => handleInputChange('originalPrice', e.target.value ? parseInt(e.target.value) : undefined)}
+              onChange={(e) => handleInputChange('originalPrice', e.target.value ? Number(e.target.value) : undefined)}
               error={errors.originalPrice}
               placeholder="Ej: 200000 (opcional)"
               leftIcon={<DollarSign className="w-4 h-4" />}
@@ -279,7 +279,7 @@ export const CreateTicketModal: React.FC<CreateTicketModalProps> = ({
               type="number"
               min="1"
               value={formData.available || ''}
-              onChange={(e) => handleInputChange('available', parseInt(e.target.value) || 0)}
+              onChange={(e) => handleInputChange('available', Number(e.target.value) || 0)}
               error={errors.available}
               placeholder="Ej: 100"
               leftIcon={<Ticket className="w-4 h-4" />}
@@ -292,7 +292,7 @@ export const CreateTicketModal: React.FC<CreateTicketModalProps> = ({
               type="number"
               min="1"
               value={formData.maxPerUser || ''}
-              onChange={(e) => handleInputChange('maxPerUser', e.target.value ? parseInt(e.target.value) : undefined)}
+              onChange={(e) => handleInputChange('maxPerUser', e.target.value ? Number(e.target.value) : undefined)}
               error={errors.maxPerUser}
               placeholder="Ej: 5 (opcional)"
               leftIcon={<Users className="w-4 h-4" />}

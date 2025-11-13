@@ -30,11 +30,16 @@ import { AttendeeManagement } from '../components/AttendeeManagement.component';
 import { OrganizerDashboardContent } from '../components/OrganizerDashboardContent.component';
 import { OrganizerProfilePanel } from '../components/OrganizerProfilePanel.component';
 import { CreateEventModal, CreateEventFormData } from '../../../events/presentation/components/CreateEventModal.component';
+import { ViewTicketModal } from '../components/ViewTicketModal.component';
+import { EditTicketModal } from '../components/EditTicketModal.component';
+import { DuplicateTicketModal } from '../components/DuplicateTicketModal.component';
+import { DeleteTicketModal } from '../components/DeleteTicketModal.component';
 import { EditEventModal, EditEventFormData } from '../../../events/presentation/components/EditEventModal.component';
 import { ViewEventModal } from '../../../events/presentation/components/ViewEventModal.component';
 import { DeleteEventConfirmation } from '../../../events/presentation/components/DeleteEventConfirmation.component';
 import { ConfigureEventModal } from '../../../events/presentation/components/ConfigureEventModal.component';
 import { CreateTicketModal, CreateTicketFormData } from '../components/CreateTicketModal.component';
+import { TicketTypeService } from '@shared/lib/api/services/TicketType.service';
 import { CreatePromotionModal, CreatePromotionFormData } from '../components/CreatePromotionModal.component';
 import { UploadImageModal } from '../../../events/presentation/components/UploadImageModal.component';
 import { DuplicateEventModal } from '../../../events/presentation/components/DuplicateEventModal.component';
@@ -99,6 +104,47 @@ export function OrganizerDashboard() {
   const [selectedEventForConfigure, setSelectedEventForConfigure] = useState<any | null>(null);
   const [isLoadingEventDetails, setIsLoadingEventDetails] = useState(false);
   const [isDeletingEvent, setIsDeletingEvent] = useState(false);
+
+    // Estados para los modales CRUD de tipo de entrada
+    const [isViewTicketModalOpen, setIsViewTicketModalOpen] = useState(false);
+    const [isEditTicketModalOpen, setIsEditTicketModalOpen] = useState(false);
+    const [isDuplicateTicketModalOpen, setIsDuplicateTicketModalOpen] = useState(false);
+    const [isDeleteTicketModalOpen, setIsDeleteTicketModalOpen] = useState(false);
+    const [selectedTicket, setSelectedTicket] = useState<any | null>(null);
+
+    // Handlers para CRUD de tipo de entrada
+    const handleViewTicket = (ticketId: string) => {
+      const ticket = selectedEvent?.ticketTypes?.find((t: any) => t.id === ticketId);
+      setSelectedTicket(ticket);
+      setIsViewTicketModalOpen(true);
+    };
+
+    const handleEditTicket = (ticketId: string) => {
+      const ticket = selectedEvent?.ticketTypes?.find((t: any) => t.id === ticketId);
+      setSelectedTicket(ticket);
+      setIsEditTicketModalOpen(true);
+    };
+
+    const handleDuplicateTicket = (ticketId: string) => {
+      const ticket = selectedEvent?.ticketTypes?.find((t: any) => t.id === ticketId);
+      setSelectedTicket(ticket);
+      setIsDuplicateTicketModalOpen(true);
+    };
+
+    const handleDeleteTicket = (ticketId: string) => {
+      const ticket = selectedEvent?.ticketTypes?.find((t: any) => t.id === ticketId);
+      setSelectedTicket(ticket);
+      setIsDeleteTicketModalOpen(true);
+    };
+
+    // Callbacks para cerrar modales
+    const closeTicketModals = () => {
+      setIsViewTicketModalOpen(false);
+      setIsEditTicketModalOpen(false);
+      setIsDuplicateTicketModalOpen(false);
+      setIsDeleteTicketModalOpen(false);
+      setSelectedTicket(null);
+    };
 
   const handleLogout = () => {
     logout();
@@ -303,23 +349,31 @@ export function OrganizerDashboard() {
 
   const handleCreateTicket = async (formData: CreateTicketFormData) => {
     setIsCreatingTicket(true);
-    
     try {
-      // Simular llamada a API
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Aquí iría la lógica real para crear la entrada
-      console.log('Creando tipo de entrada:', formData);
-      
-      // Cerrar modal
-      setIsCreateTicketModalOpen(false);
-      
-      // Mostrar mensaje de éxito (puedes implementar un toast)
-      console.log('Tipo de entrada creado exitosamente');
-      
+      if (!selectedEvent) throw new Error('No hay evento seleccionado');
+
+      // Construir el objeto para la tabla tipos_entrada
+      const datosTipo = {
+        id_evento: selectedEvent.id,
+  nombre_evento: selectedEvent.title,
+        nombre_tipo: formData.name,
+        precio: formData.price,
+        descripcion: formData.description,
+        cantidad_maxima: formData.available,
+        cantidad_disponible: formData.available,
+        // Puedes agregar más campos si la tabla lo permite
+      };
+
+      // Crear tipo de entrada en Supabase
+      await TicketTypeService.crearTipoEntrada(datosTipo);
+
+      // Cerrar modal y mostrar éxito
+  setIsCreateTicketModalOpen(false);
+  console.log('Tipo de entrada creado exitosamente');
+  await handleRefresh();
     } catch (error) {
       console.error('Error al crear tipo de entrada:', error);
-      // Aquí podrías mostrar un mensaje de error
+      // TODO: Implementar un toast de error
     } finally {
       setIsCreatingTicket(false);
     }
@@ -1069,12 +1123,36 @@ export function OrganizerDashboard() {
                     eventId: selectedEvent.id
                   })) || []}
                   onCreateTicket={() => setIsCreateTicketModalOpen(true)}
-                  onEditTicket={(ticketId) => console.log('Edit ticket:', ticketId)}
-                  onDeleteTicket={(ticketId) => console.log('Delete ticket:', ticketId)}
-                  onDuplicateTicket={(ticketId) => console.log('Duplicate ticket:', ticketId)}
-                  onToggleTicket={(ticketId) => console.log('Toggle ticket:', ticketId)}
-                  onViewAnalytics={(ticketId) => console.log('View ticket analytics:', ticketId)}
+                  onEditTicket={handleEditTicket}
+                  onDeleteTicket={handleDeleteTicket}
+                  onDuplicateTicket={handleDuplicateTicket}
+                  onToggleTicket={(ticketId) => {}}
+                  onViewAnalytics={handleViewTicket}
                 />
+      {/* Modales CRUD de tipo de entrada */}
+      <ViewTicketModal
+        isOpen={isViewTicketModalOpen}
+        onClose={closeTicketModals}
+        ticket={selectedTicket}
+      />
+      <EditTicketModal
+        isOpen={isEditTicketModalOpen}
+        onClose={closeTicketModals}
+        ticket={selectedTicket}
+        onSave={async () => { await handleRefresh(); closeTicketModals(); }}
+      />
+      <DuplicateTicketModal
+        isOpen={isDuplicateTicketModalOpen}
+        onClose={closeTicketModals}
+        ticket={selectedTicket}
+        onDuplicate={async () => { await handleRefresh(); closeTicketModals(); }}
+      />
+      <DeleteTicketModal
+        isOpen={isDeleteTicketModalOpen}
+        onClose={closeTicketModals}
+        ticket={selectedTicket}
+        onDelete={async () => { await handleRefresh(); closeTicketModals(); }}
+      />
               </div>
             )}
 

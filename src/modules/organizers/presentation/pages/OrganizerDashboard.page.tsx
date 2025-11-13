@@ -36,6 +36,7 @@ import { UploadImageModal } from '../../../events/presentation/components/Upload
 import { DuplicateEventModal } from '../../../events/presentation/components/DuplicateEventModal.component';
 import { formatRevenue } from '@shared/lib/utils/Currency.utils';
 import { EventService } from '@shared/lib/api/services/Event.service';
+import { AnalyticsService } from '@shared/lib/api/services/Analytics.service';
 
 
 // Event interface removed - using store types
@@ -49,6 +50,15 @@ interface QuickStats {
   avgTicketPrice: number;
   upcomingEvents: number;
   completedEvents: number;
+  ventasHoy?: number;
+  ingresosHoy?: number;
+  comisionHoy?: number;
+  netoHoy?: number;
+  vistasUnicas?: number;
+  abandonoCarrito?: number;
+  eventosEnCurso?: number;
+  asistenciaPromedio?: number;
+  ultimoEscaneoISO?: string | null;
 }
 
 export function OrganizerDashboard() {
@@ -159,18 +169,10 @@ export function OrganizerDashboard() {
     setSelectedEventId(finalEvents[0].id);
   }
   
-  // Calcular estadísticas específicas del evento seleccionado
-  const quickStats: QuickStats = selectedEvent ? {
-    totalEvents: 1, // Solo el evento seleccionado
-    activeEvents: selectedEvent.status === 'upcoming' || selectedEvent.status === 'ongoing' ? 1 : 0,
-    totalRevenue: selectedEvent.price || 0,
-    totalAttendees: selectedEvent.currentAttendees || 0,
-    conversionRate: Math.random() * 15 + 5, // Valor dinámico para demo
-    avgTicketPrice: selectedEvent.price || 0,
-    upcomingEvents: new Date(selectedEvent.date) > new Date() && 
-      (selectedEvent.status === 'upcoming' || selectedEvent.status === 'ongoing') ? 1 : 0,
-    completedEvents: selectedEvent.status === 'completed' ? 1 : 0
-  } : {
+  // Métricas reales agregadas del organizador
+  const [metricsLoading, setMetricsLoading] = useState(false);
+  const [metricsError, setMetricsError] = useState<string | null>(null);
+  const [quickStats, setQuickStats] = useState<QuickStats>({
     totalEvents: 0,
     activeEvents: 0,
     totalRevenue: 0,
@@ -179,7 +181,47 @@ export function OrganizerDashboard() {
     avgTicketPrice: 0,
     upcomingEvents: 0,
     completedEvents: 0
+  });
+
+  const loadMetrics = async () => {
+    if (!user?.id) return;
+    setMetricsLoading(true);
+    setMetricsError(null);
+    try {
+      const data = await AnalyticsService.obtenerMetricasOrganizador(user.id);
+      setQuickStats({
+        totalEvents: data.totalEvents,
+        activeEvents: data.activeEvents,
+        totalRevenue: data.totalRevenue,
+        totalAttendees: data.totalAttendees,
+        conversionRate: Number(data.conversionRate.toFixed(2)),
+        avgTicketPrice: data.avgTicketPrice,
+        upcomingEvents: data.upcomingEvents,
+        completedEvents: data.completedEvents,
+        ventasHoy: data.ventasHoy,
+        ingresosHoy: data.ingresosHoy,
+        comisionHoy: data.comisionHoy,
+        netoHoy: data.netoHoy,
+        vistasUnicas: data.vistasUnicas,
+        abandonoCarrito: Number(data.abandonoCarrito.toFixed(2)),
+        eventosEnCurso: data.eventosEnCurso,
+        asistenciaPromedio: Number(data.asistenciaPromedio.toFixed(2)),
+        ultimoEscaneoISO: data.ultimoEscaneoISO
+      });
+    } catch (err: any) {
+      console.error('Error cargando métricas del organizador:', err);
+      setMetricsError(err.message || 'Error al cargar métricas');
+    } finally {
+      setMetricsLoading(false);
+    }
   };
+
+  useEffect(() => {
+    // Cargar métricas cuando se cargan eventos o cambia usuario
+    if (user?.id) {
+      loadMetrics();
+    }
+  }, [user?.id, finalEvents.length]);
 
   // Status functions removed - not used in current implementation
 
@@ -704,15 +746,33 @@ export function OrganizerDashboard() {
           {/* Content Cards */}
           <div className="space-y-4 w-full max-w-full">
             {activeTab === 'overview' && (
-              <OrganizerDashboardContent
-                stats={quickStats}
-                onCreateEvent={() => {
-                  setActiveTab('events');
-                  setIsCreateEventModalOpen(true);
-                }}
-                onNavigateToTab={setActiveTab}
-                formatRevenue={formatRevenue}
-              />
+              <>
+                {metricsLoading && (
+                  <div className="bg-white rounded-xl p-6 shadow-md border border-gray-200">
+                    <p className="text-sm text-gray-600">Cargando métricas...</p>
+                  </div>
+                )}
+                {metricsError && (
+                  <div className="bg-red-50 rounded-xl p-6 shadow-md border border-red-200">
+                    <p className="text-sm text-red-600">{metricsError}</p>
+                    <button
+                      onClick={loadMetrics}
+                      className="mt-2 inline-flex items-center px-3 py-2 bg-red-600 text-white rounded-md text-xs"
+                    >Reintentar</button>
+                  </div>
+                )}
+                {!metricsLoading && !metricsError && (
+                  <OrganizerDashboardContent
+                    stats={quickStats}
+                    onCreateEvent={() => {
+                      setActiveTab('events');
+                      setIsCreateEventModalOpen(true);
+                    }}
+                    onNavigateToTab={setActiveTab}
+                    formatRevenue={formatRevenue}
+                  />
+                )}
+              </>
             )}
 
             {activeTab === 'events' && (

@@ -111,6 +111,35 @@ export class EventService {
     return data;
   }
 
+  // Obtener detalle completo del evento con todas las relaciones
+  static async obtenerEventoCompleto(id: string) {
+    const { data, error } = await supabase
+      .from('eventos')
+      .select(`
+        *,
+        tipos_entrada (*),
+        analiticas_eventos (*),
+        compras (
+          id,
+          cantidad,
+          total_pagado,
+          estado,
+          fecha_creacion,
+          id_usuario
+        ),
+        asistencia_eventos (
+          id,
+          fecha_asistencia,
+          id_usuario
+        )
+      `)
+      .eq('id', id)
+      .single();
+
+    if (error) throw error;
+    return data;
+  }
+
   static async crearEvento(datosEvento: Tables['eventos']['Insert']) {
     const { data, error } = await supabase
       .from('eventos')
@@ -135,12 +164,87 @@ export class EventService {
   }
 
   static async eliminarEvento(id: string) {
+    // Verificar si hay compras asociadas antes de eliminar
+    const { data: compras, error: comprasError } = await supabase
+      .from('compras')
+      .select('id, estado')
+      .eq('id_evento', id);
+
+    if (comprasError) throw comprasError;
+
+    // Verificar si hay compras completadas
+    const comprasCompletadas = compras?.filter(c => c.estado === 'completada') || [];
+    
+    if (comprasCompletadas.length > 0) {
+      throw new Error(`No se puede eliminar el evento porque tiene ${comprasCompletadas.length} compra(s) completada(s). Considera cancelar el evento en su lugar.`);
+    }
+
+    // Si hay compras pendientes, eliminarlas primero
+    if (compras && compras.length > 0) {
+      const { error: deletePurchasesError } = await supabase
+        .from('compras')
+        .delete()
+        .eq('id_evento', id)
+        .in('estado', ['pendiente', 'cancelada', 'fallida']);
+
+      if (deletePurchasesError) throw deletePurchasesError;
+    }
+
+    // Eliminar registros relacionados
+    // 1. Asistencia
+    await supabase.from('asistencia_eventos').delete().eq('id_evento', id);
+    
+    // 2. Analytics
+    await supabase.from('analiticas_eventos').delete().eq('id_evento', id);
+    
+    // 3. Tipos de entrada
+    await supabase.from('tipos_entrada').delete().eq('id_evento', id);
+
+    // Finalmente, eliminar el evento
     const { error } = await supabase
       .from('eventos')
       .delete()
       .eq('id', id);
 
     if (error) throw error;
+  }
+
+  // Cancelar evento (soft delete - cambiar estado a 'cancelado')
+  static async cancelarEvento(id: string, motivo?: string) {
+    const { data, error } = await supabase
+      .from('eventos')
+      .update({ 
+        estado: 'cancelado',
+        fecha_actualizacion: new Date().toISOString()
+      })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    // Aquí podrías agregar lógica para:
+    // - Notificar a los asistentes
+    // - Procesar reembolsos automáticos
+    // - Registrar el motivo de cancelación
+
+    return data;
+  }
+
+  // Publicar/despublicar evento
+  static async cambiarEstadoEvento(id: string, nuevoEstado: 'borrador' | 'publicado' | 'pausado' | 'cancelado' | 'finalizado') {
+    const { data, error} = await supabase
+      .from('eventos')
+      .update({ 
+        estado: nuevoEstado,
+        fecha_actualizacion: new Date().toISOString()
+      })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
   }
 
   static async actualizarImagenEvento(id: string, urlImagen: string) {

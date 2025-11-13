@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { 
   Calendar, 
@@ -29,18 +29,18 @@ import { PromotionManagement } from '../components/PromotionManagement.component
 import { AttendeeManagement } from '../components/AttendeeManagement.component';
 import { OrganizerDashboardContent } from '../components/OrganizerDashboardContent.component';
 import { OrganizerProfilePanel } from '../components/OrganizerProfilePanel.component';
-import { 
-  CreateEventModal, 
-  CreateEventFormData,
-  EditEventModal,
-  EditEventFormData,
-  ViewEventModal,
-  DeleteEventConfirmation
-} from '../../../events/presentation/components';
+import { CreateEventModal, CreateEventFormData } from '../../../events/presentation/components/CreateEventModal.component';
+import { EditEventModal, EditEventFormData } from '../../../events/presentation/components/EditEventModal.component';
+import { ViewEventModal } from '../../../events/presentation/components/ViewEventModal.component';
+import { DeleteEventConfirmation } from '../../../events/presentation/components/DeleteEventConfirmation.component';
+import { ConfigureEventModal } from '../../../events/presentation/components/ConfigureEventModal.component';
 import { CreateTicketModal, CreateTicketFormData } from '../components/CreateTicketModal.component';
 import { CreatePromotionModal, CreatePromotionFormData } from '../components/CreatePromotionModal.component';
+import { UploadImageModal } from '../../../events/presentation/components/UploadImageModal.component';
+import { DuplicateEventModal } from '../../../events/presentation/components/DuplicateEventModal.component';
 import { formatRevenue } from '@shared/lib/utils/Currency.utils';
 import { EventService } from '@shared/lib/api/services/Event.service';
+import { AnalyticsService } from '@shared/lib/api/services/Analytics.service';
 
 
 // Event interface removed - using store types
@@ -54,6 +54,15 @@ interface QuickStats {
   avgTicketPrice: number;
   upcomingEvents: number;
   completedEvents: number;
+  ventasHoy?: number;
+  ingresosHoy?: number;
+  comisionHoy?: number;
+  netoHoy?: number;
+  vistasUnicas?: number;
+  abandonoCarrito?: number;
+  eventosEnCurso?: number;
+  asistenciaPromedio?: number;
+  ultimoEscaneoISO?: string | null;
 }
 
 export function OrganizerDashboard() {
@@ -74,14 +83,20 @@ export function OrganizerDashboard() {
   const [isCreatingTicket, setIsCreatingTicket] = useState(false);
   const [isCreatePromotionModalOpen, setIsCreatePromotionModalOpen] = useState(false);
   const [isCreatingPromotion, setIsCreatingPromotion] = useState(false);
-  
+  const [isUploadImageModalOpen, setIsUploadImageModalOpen] = useState(false);
+  const [selectedEventForImage, setSelectedEventForImage] = useState<{ id: string; title: string; currentImage?: string } | null>(null);
+  const [isDuplicateEventModalOpen, setIsDuplicateEventModalOpen] = useState(false);
+  const [selectedEventForDuplication, setSelectedEventForDuplication] = useState<any | null>(null);
+
   // Estados para los nuevos modales CRUD
   const [isViewEventModalOpen, setIsViewEventModalOpen] = useState(false);
   const [isEditEventModalOpen, setIsEditEventModalOpen] = useState(false);
   const [isDeleteEventModalOpen, setIsDeleteEventModalOpen] = useState(false);
+  const [isConfigureEventModalOpen, setIsConfigureEventModalOpen] = useState(false);
   const [selectedEventForView, setSelectedEventForView] = useState<any | null>(null);
   const [selectedEventForEdit, setSelectedEventForEdit] = useState<any | null>(null);
   const [selectedEventForDelete, setSelectedEventForDelete] = useState<any | null>(null);
+  const [selectedEventForConfigure, setSelectedEventForConfigure] = useState<any | null>(null);
   const [isLoadingEventDetails, setIsLoadingEventDetails] = useState(false);
   const [isDeletingEvent, setIsDeletingEvent] = useState(false);
 
@@ -91,76 +106,89 @@ export function OrganizerDashboard() {
   };
 
   // Usar datos reales del store
-  const { events: storeEvents } = useEventStore();
+  const { events: storeEvents, setEvents } = useEventStore();
+  const [isLoadingEvents, setIsLoadingEvents] = useState(true);
+  
+  // Cargar eventos reales del organizador desde Supabase
+  useEffect(() => {
+    const loadOrganizerEvents = async () => {
+      if (!user?.id) {
+        console.log('No hay usuario autenticado');
+        return;
+      }
+      
+      console.log('Cargando eventos para usuario:', user.id);
+      setIsLoadingEvents(true);
+      try {
+        const dbEvents = await EventService.obtenerEventosUsuario(user.id);
+        console.log('Eventos obtenidos de la BD:', dbEvents);
+        
+        if (dbEvents && dbEvents.length > 0) {
+          // Convertir eventos de BD al formato del store
+          const convertedEvents = dbEvents.map((dbEvent: any) => ({
+            id: dbEvent.id,
+            title: dbEvent.titulo,
+            description: dbEvent.descripcion,
+            image: dbEvent.url_imagen || 'https://images.pexels.com/photos/2608517/pexels-photo-2608517.jpeg',
+            date: dbEvent.fecha_evento,
+            time: dbEvent.hora_evento,
+            location: dbEvent.ubicacion,
+            category: dbEvent.categoria,
+            price: 0, // Se calcula desde tipos_entrada
+            maxAttendees: dbEvent.maximo_asistentes,
+            currentAttendees: dbEvent.asistentes_actuales || 0,
+            organizerId: dbEvent.id_organizador,
+            organizerName: dbEvent.nombre_organizador || user.name,
+            status: dbEvent.estado || 'upcoming',
+            tags: dbEvent.etiquetas || [],
+            ticketTypes: dbEvent.tipos_entrada || []
+          }));
+          
+          console.log('Eventos convertidos:', convertedEvents);
+          
+          // Actualizar el store global (solo reemplazar los del organizador)
+          const otherEvents = storeEvents.filter(e => e.organizerId !== user.id);
+          setEvents([...otherEvents, ...convertedEvents]);
+        } else {
+          console.log('No se encontraron eventos para este organizador');
+        }
+      } catch (error) {
+        console.error('Error al cargar eventos del organizador:', error);
+      } finally {
+        setIsLoadingEvents(false);
+      }
+    };
+    
+    loadOrganizerEvents();
+  }, [user?.id]);
   
   // Filtrar eventos del organizador actual
   const events = storeEvents.filter(event => event.organizerId === user?.id);
   
-  // Si no hay eventos del organizador, crear algunos eventos de prueba
-  const mockOrganizerEvents = [
-    {
-      id: 'org-1',
-      title: 'Conferencia de Tecnología 2024',
-      description: 'Evento de tecnología para desarrolladores',
-      image: 'https://images.pexels.com/photos/2608517/pexels-photo-2608517.jpeg?auto=compress&cs=tinysrgb&w=800',
-      date: '2024-03-15',
-      time: '09:00',
-      location: 'Bogotá, Colombia',
-      category: 'Tecnología',
-      price: 150000,
-      maxAttendees: 200,
-      currentAttendees: 150,
-      organizerId: user?.id || '1',
-      organizerName: user?.name || 'Organizador',
-      status: 'upcoming' as const,
-      tags: ['tecnología', 'conferencia'],
-      ticketTypes: []
-    },
-    {
-      id: 'org-2',
-      title: 'Workshop de Marketing Digital',
-      description: 'Aprende las mejores estrategias de marketing digital',
-      image: 'https://images.pexels.com/photos/2608517/pexels-photo-2608517.jpeg?auto=compress&cs=tinysrgb&w=800',
-      date: '2024-03-20',
-      time: '14:00',
-      location: 'Medellín, Colombia',
-      category: 'Marketing',
-      price: 80000,
-      maxAttendees: 50,
-      currentAttendees: 25,
-      organizerId: user?.id || '1',
-      organizerName: user?.name || 'Organizador',
-      status: 'ongoing' as const,
-      tags: ['marketing', 'workshop'],
-      ticketTypes: []
-    }
-  ];
+  console.log('Eventos filtrados para el organizador:', events);
   
-  // Usar eventos del organizador o eventos mock si no hay ninguno
-  const finalEvents = events.length > 0 ? events : mockOrganizerEvents;
+  console.log('Eventos filtrados para el organizador:', events);
+  
+  // IMPORTANTE: No usar eventos mock - solo eventos reales de la BD
+  // Si no hay eventos, mostrar mensaje para crear uno
+  const finalEvents = events;
   
   // Seleccionar automáticamente el primer evento si no hay uno seleccionado
   const selectedEvent = selectedEventId 
     ? finalEvents.find(event => event.id === selectedEventId)
     : finalEvents.length > 0 ? finalEvents[0] : null;
   
+  console.log('Evento seleccionado:', selectedEvent);
+  
   // Si no hay evento seleccionado pero hay eventos disponibles, seleccionar el primero
   if (!selectedEventId && finalEvents.length > 0) {
     setSelectedEventId(finalEvents[0].id);
   }
   
-  // Calcular estadísticas específicas del evento seleccionado
-  const quickStats: QuickStats = selectedEvent ? {
-    totalEvents: 1, // Solo el evento seleccionado
-    activeEvents: selectedEvent.status === 'upcoming' || selectedEvent.status === 'ongoing' ? 1 : 0,
-    totalRevenue: selectedEvent.price || 0,
-    totalAttendees: selectedEvent.currentAttendees || 0,
-    conversionRate: Math.random() * 15 + 5, // Valor dinámico para demo
-    avgTicketPrice: selectedEvent.price || 0,
-    upcomingEvents: new Date(selectedEvent.date) > new Date() && 
-      (selectedEvent.status === 'upcoming' || selectedEvent.status === 'ongoing') ? 1 : 0,
-    completedEvents: selectedEvent.status === 'completed' ? 1 : 0
-  } : {
+  // Métricas reales agregadas del organizador
+  const [metricsLoading, setMetricsLoading] = useState(false);
+  const [metricsError, setMetricsError] = useState<string | null>(null);
+  const [quickStats, setQuickStats] = useState<QuickStats>({
     totalEvents: 0,
     activeEvents: 0,
     totalRevenue: 0,
@@ -169,9 +197,277 @@ export function OrganizerDashboard() {
     avgTicketPrice: 0,
     upcomingEvents: 0,
     completedEvents: 0
+  });
+
+  const loadMetrics = async () => {
+    if (!user?.id) return;
+    setMetricsLoading(true);
+    setMetricsError(null);
+    try {
+      const data = await AnalyticsService.obtenerMetricasOrganizador(user.id);
+      setQuickStats({
+        totalEvents: data.totalEvents,
+        activeEvents: data.activeEvents,
+        totalRevenue: data.totalRevenue,
+        totalAttendees: data.totalAttendees,
+        conversionRate: Number(data.conversionRate.toFixed(2)),
+        avgTicketPrice: data.avgTicketPrice,
+        upcomingEvents: data.upcomingEvents,
+        completedEvents: data.completedEvents,
+        ventasHoy: data.ventasHoy,
+        ingresosHoy: data.ingresosHoy,
+        comisionHoy: data.comisionHoy,
+        netoHoy: data.netoHoy,
+        vistasUnicas: data.vistasUnicas,
+        abandonoCarrito: Number(data.abandonoCarrito.toFixed(2)),
+        eventosEnCurso: data.eventosEnCurso,
+        asistenciaPromedio: Number(data.asistenciaPromedio.toFixed(2)),
+        ultimoEscaneoISO: data.ultimoEscaneoISO
+      });
+    } catch (err: any) {
+      console.error('Error cargando métricas del organizador:', err);
+      setMetricsError(err.message || 'Error al cargar métricas');
+    } finally {
+      setMetricsLoading(false);
+    }
   };
 
+  useEffect(() => {
+    // Cargar métricas cuando se cargan eventos o cambia usuario
+    if (user?.id) {
+      loadMetrics();
+    }
+  }, [user?.id, finalEvents.length]);
+
   // Status functions removed - not used in current implementation
+
+  const handleRefresh = async () => {
+    console.log('Actualizando datos...');
+    // Recargar eventos del organizador
+    if (!user?.id) return;
+    
+    try {
+      const dbEvents = await EventService.obtenerEventosUsuario(user.id);
+      
+      if (dbEvents && dbEvents.length > 0) {
+        const convertedEvents = dbEvents.map((dbEvent: any) => ({
+          id: dbEvent.id,
+          title: dbEvent.titulo,
+          description: dbEvent.descripcion,
+          image: dbEvent.url_imagen || 'https://images.pexels.com/photos/2608517/pexels-photo-2608517.jpeg',
+          date: dbEvent.fecha_evento,
+          time: dbEvent.hora_evento,
+          location: dbEvent.ubicacion,
+          category: dbEvent.categoria,
+          price: 0,
+          maxAttendees: dbEvent.maximo_asistentes,
+          currentAttendees: dbEvent.asistentes_actuales || 0,
+          organizerId: dbEvent.id_organizador,
+          organizerName: dbEvent.nombre_organizador || user.name,
+          status: dbEvent.estado || 'upcoming',
+          tags: dbEvent.etiquetas || [],
+          ticketTypes: dbEvent.tipos_entrada || []
+        }));
+        
+        const otherEvents = storeEvents.filter(e => e.organizerId !== user.id);
+        setEvents([...otherEvents, ...convertedEvents]);
+      }
+    } catch (error) {
+      console.error('Error al refrescar eventos:', error);
+    }
+  };
+
+  const handleCreateEvent = async (formData: CreateEventFormData) => {
+    setIsCreatingEvent(true);
+    
+    try {
+      // Simular llamada a API
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // Aquí iría la lógica real para crear el evento
+      console.log('Creando evento:', formData);
+      
+      // Cerrar modal
+      setIsCreateEventModalOpen(false);
+      
+      // Mostrar mensaje de éxito (puedes implementar un toast)
+      console.log('Evento creado exitosamente');
+      
+    } catch (error) {
+      console.error('Error al crear evento:', error);
+      // Aquí podrías mostrar un mensaje de error
+    } finally {
+      setIsCreatingEvent(false);
+    }
+  };
+
+  const handleCreateTicket = async (formData: CreateTicketFormData) => {
+    setIsCreatingTicket(true);
+    
+    try {
+      // Simular llamada a API
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // Aquí iría la lógica real para crear la entrada
+      console.log('Creando tipo de entrada:', formData);
+      
+      // Cerrar modal
+      setIsCreateTicketModalOpen(false);
+      
+      // Mostrar mensaje de éxito (puedes implementar un toast)
+      console.log('Tipo de entrada creado exitosamente');
+      
+    } catch (error) {
+      console.error('Error al crear tipo de entrada:', error);
+      // Aquí podrías mostrar un mensaje de error
+    } finally {
+      setIsCreatingTicket(false);
+    }
+  };
+
+  const handleCreatePromotion = async (formData: CreatePromotionFormData) => {
+    setIsCreatingPromotion(true);
+    
+    try {
+      // Simular llamada a API
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // Aquí iría la lógica real para crear la promoción
+      console.log('Creando código de descuento:', formData);
+      
+      // Cerrar modal
+      setIsCreatePromotionModalOpen(false);
+      
+      // Mostrar mensaje de éxito (puedes implementar un toast)
+      console.log('Código de descuento creado exitosamente');
+      
+    } catch (error) {
+      console.error('Error al crear código de descuento:', error);
+      // Aquí podrías mostrar un mensaje de error
+    } finally {
+      setIsCreatingPromotion(false);
+    }
+  };
+
+  const handleUploadImage = (eventId: string) => {
+    // Validar que no sea un evento mock
+    if (eventId.startsWith('org-')) {
+      console.error('No se puede actualizar imagen de eventos mock. Por favor crea un evento real primero.');
+      alert('No puedes actualizar imágenes de eventos de ejemplo. Por favor crea un evento real desde "Crear Evento".');
+      return;
+    }
+    
+    // Encontrar el evento seleccionado
+    const event = finalEvents.find(e => e.id === eventId);
+    if (event) {
+      console.log('Abriendo modal para subir imagen del evento:', event);
+      setSelectedEventForImage({
+        id: event.id,
+        title: event.title,
+        currentImage: event.image
+      });
+      setIsUploadImageModalOpen(true);
+    }
+  };
+
+  const handleImageUploaded = async (imageUrl: string) => {
+    if (!selectedEventForImage) return;
+
+    try {
+      // Actualizar la imagen del evento en la base de datos
+      await EventService.actualizarImagenEvento(selectedEventForImage.id, imageUrl);
+      
+      // Refrescar la lista de eventos
+      handleRefresh();
+      
+      // Cerrar modal
+      setIsUploadImageModalOpen(false);
+      setSelectedEventForImage(null);
+      
+      console.log('Imagen actualizada exitosamente');
+    } catch (error) {
+      console.error('Error al actualizar imagen del evento:', error);
+    }
+  };
+
+  const handleDuplicateEvent = (eventId: string) => {
+    console.log('Duplicando evento:', eventId);
+    
+    // Validar que no sea un evento mock
+    if (eventId.startsWith('org-')) {
+      console.error('No se puede duplicar eventos mock');
+      alert('No puedes duplicar eventos de ejemplo. Por favor crea un evento real primero.');
+      return;
+    }
+    
+    // Encontrar el evento a duplicar
+    const event = finalEvents.find(e => e.id === eventId);
+    if (event) {
+      console.log('Evento encontrado para duplicar:', event);
+      
+      // Convertir al formato que espera el modal
+      const eventData = {
+        id: event.id,
+        titulo: event.title,
+        descripcion: event.description,
+        url_imagen: event.image,
+        fecha_evento: event.date,
+        hora_evento: event.time,
+        ubicacion: event.location,
+        categoria: event.category,
+        maximo_asistentes: event.maxAttendees,
+        tipos_entrada: (event.ticketTypes || []).map((ticket: any) => ({
+          nombre_tipo: ticket.nombre_tipo || ticket.name || 'Sin nombre',
+          precio: ticket.precio || ticket.price || 0,
+          descripcion: ticket.descripcion || ticket.description || '',
+          cantidad_maxima: ticket.cantidad_maxima || ticket.maxQuantity || 0
+        }))
+      };
+      
+      console.log('Datos del evento para modal:', eventData);
+      setSelectedEventForDuplication(eventData);
+      setIsDuplicateEventModalOpen(true);
+    } else {
+      console.error('Evento no encontrado:', eventId);
+    }
+  };
+
+  const handleDuplicateEventConfirm = async (adjustments: {
+    titulo?: string;
+    fecha_evento?: string;
+    hora_evento?: string;
+  }) => {
+    if (!selectedEventForDuplication) {
+      console.warn('⚠️ No hay evento seleccionado para duplicar');
+      return;
+    }
+
+    try {
+      console.log('🔄 Iniciando duplicación con ajustes:', adjustments);
+      console.log('📋 Evento a duplicar:', selectedEventForDuplication);
+      
+      // Llamar al servicio de duplicación
+      const eventoDuplicado = await EventService.duplicarEvento(
+        selectedEventForDuplication.id,
+        adjustments
+      );
+
+      console.log('✅ Evento duplicado exitosamente:', eventoDuplicado);
+      
+      // Refrescar la lista de eventos
+      console.log('🔄 Refrescando lista de eventos...');
+      await handleRefresh();
+      console.log('✅ Lista de eventos actualizada');
+      
+      // Cerrar modal
+      setIsDuplicateEventModalOpen(false);
+      setSelectedEventForDuplication(null);
+      console.log('✅ Modal cerrado');
+    } catch (error) {
+      console.error('❌ Error al duplicar evento:', error);
+      throw error; // Re-lanzar para que el modal lo maneje
+    }
+  };
 
   // Handlers para CRUD de eventos
   const handleViewEvent = async (eventId: string) => {
@@ -267,79 +563,43 @@ export function OrganizerDashboard() {
     }
   };
 
-  const handleRefresh = async () => {
-    console.log('Actualizando datos...');
-  };
-
-  const handleCreateEvent = async (formData: CreateEventFormData) => {
-    setIsCreatingEvent(true);
-    
+  // Handler para configurar evento (cambiar estado)
+  const handleConfigureEvent = async (eventId: string) => {
     try {
-      // Simular llamada a API
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      setIsLoadingEventDetails(true);
+      const evento = await EventService.obtenerEventoPorId(eventId);
       
-      // Aquí iría la lógica real para crear el evento
-      console.log('Creando evento:', formData);
-      
-      // Cerrar modal
-      setIsCreateEventModalOpen(false);
-      
-      // Mostrar mensaje de éxito (puedes implementar un toast)
-      console.log('Evento creado exitosamente');
-      
-    } catch (error) {
-      console.error('Error al crear evento:', error);
-      // Aquí podrías mostrar un mensaje de error
+      if (!evento) {
+        alert('No se pudo cargar el evento');
+        return;
+      }
+
+      setSelectedEventForConfigure(evento);
+      setIsConfigureEventModalOpen(true);
+    } catch (error: any) {
+      console.error('Error al cargar evento para configurar:', error);
+      alert(error.message || 'Error al cargar el evento');
     } finally {
-      setIsCreatingEvent(false);
+      setIsLoadingEventDetails(false);
     }
   };
 
-  const handleCreateTicket = async (formData: CreateTicketFormData) => {
-    setIsCreatingTicket(true);
-    
-    try {
-      // Simular llamada a API
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Aquí iría la lógica real para crear la entrada
-      console.log('Creando tipo de entrada:', formData);
-      
-      // Cerrar modal
-      setIsCreateTicketModalOpen(false);
-      
-      // Mostrar mensaje de éxito (puedes implementar un toast)
-      console.log('Tipo de entrada creado exitosamente');
-      
-    } catch (error) {
-      console.error('Error al crear tipo de entrada:', error);
-      // Aquí podrías mostrar un mensaje de error
-    } finally {
-      setIsCreatingTicket(false);
-    }
-  };
+  // Handler para guardar configuración de evento (cambiar estado)
+  const handleSaveEventConfiguration = async (newStatus: 'borrador' | 'publicado' | 'pausado' | 'cancelado' | 'finalizado') => {
+    if (!selectedEventForConfigure) return;
 
-  const handleCreatePromotion = async (formData: CreatePromotionFormData) => {
-    setIsCreatingPromotion(true);
-    
     try {
-      // Simular llamada a API
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      await EventService.cambiarEstadoEvento(selectedEventForConfigure.id, newStatus);
       
-      // Aquí iría la lógica real para crear la promoción
-      console.log('Creando código de descuento:', formData);
+      // Recargar eventos
+      await handleRefresh();
       
-      // Cerrar modal
-      setIsCreatePromotionModalOpen(false);
-      
-      // Mostrar mensaje de éxito (puedes implementar un toast)
-      console.log('Código de descuento creado exitosamente');
-      
-    } catch (error) {
-      console.error('Error al crear código de descuento:', error);
-      // Aquí podrías mostrar un mensaje de error
-    } finally {
-      setIsCreatingPromotion(false);
+      alert('Estado del evento actualizado correctamente');
+      setIsConfigureEventModalOpen(false);
+      setSelectedEventForConfigure(null);
+    } catch (error: any) {
+      console.error('Error al cambiar estado del evento:', error);
+      throw error; // Re-lanzar para que el modal maneje el error
     }
   };
 
@@ -636,20 +896,66 @@ export function OrganizerDashboard() {
           {/* Content Cards */}
           <div className="space-y-4 w-full max-w-full">
             {activeTab === 'overview' && (
-              <OrganizerDashboardContent
-                stats={quickStats}
-                onCreateEvent={() => {
-                  setActiveTab('events');
-                  setIsCreateEventModalOpen(true);
-                }}
-                onNavigateToTab={setActiveTab}
-                formatRevenue={formatRevenue}
-              />
+              <>
+                {metricsLoading && (
+                  <div className="bg-white rounded-xl p-6 shadow-md border border-gray-200">
+                    <p className="text-sm text-gray-600">Cargando métricas...</p>
+                  </div>
+                )}
+                {metricsError && (
+                  <div className="bg-red-50 rounded-xl p-6 shadow-md border border-red-200">
+                    <p className="text-sm text-red-600">{metricsError}</p>
+                    <button
+                      onClick={loadMetrics}
+                      className="mt-2 inline-flex items-center px-3 py-2 bg-red-600 text-white rounded-md text-xs"
+                    >Reintentar</button>
+                  </div>
+                )}
+                {!metricsLoading && !metricsError && (
+                  <OrganizerDashboardContent
+                    stats={quickStats}
+                    onCreateEvent={() => {
+                      setActiveTab('events');
+                      setIsCreateEventModalOpen(true);
+                    }}
+                    onNavigateToTab={setActiveTab}
+                    formatRevenue={formatRevenue}
+                  />
+                )}
+              </>
             )}
 
             {activeTab === 'events' && (
               <div className="space-y-6">
-                {/* Event Management Actions */}
+                {/* Mensaje si no hay eventos reales */}
+                {!isLoadingEvents && finalEvents.length === 0 && (
+                  <div className="bg-gradient-to-br from-white to-indigo-100/98 backdrop-blur-lg shadow-xl border border-white/20 rounded-2xl p-8 text-center">
+                    <Calendar className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                    <h3 className="text-xl font-semibold text-gray-900 mb-2">No tienes eventos creados</h3>
+                    <p className="text-gray-600 mb-6">
+                      Comienza creando tu primer evento para gestionar entradas, promociones y asistentes.
+                    </p>
+                    <button
+                      onClick={() => setIsCreateEventModalOpen(true)}
+                      className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-medium rounded-xl hover:from-green-600 hover:to-emerald-700 transition-all duration-200 shadow-sm hover:shadow-md"
+                    >
+                      <Plus className="w-5 h-5 mr-2" />
+                      Crear Primer Evento
+                    </button>
+                  </div>
+                )}
+                
+                {/* Loading state */}
+                {isLoadingEvents && (
+                  <div className="bg-gradient-to-br from-white to-indigo-100/98 backdrop-blur-lg shadow-xl border border-white/20 rounded-2xl p-8 text-center">
+                    <RefreshCw className="w-12 h-12 text-blue-600 mx-auto mb-4 animate-spin" />
+                    <p className="text-gray-600">Cargando eventos...</p>
+                  </div>
+                )}
+                
+                {/* Event Management Actions - Solo mostrar si hay eventos */}
+                {!isLoadingEvents && finalEvents.length > 0 && (
+                  <>
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
                   <div>
                     <h3 className="text-lg font-semibold text-gray-900">Gestión de Eventos</h3>
@@ -680,25 +986,33 @@ export function OrganizerDashboard() {
           </div>
 
                 <EventManagementAdvanced
-                  events={finalEvents.map(event => ({
-                    ...event,
-                    revenue: event.price || 0,
+                  events={selectedEvent ? [{
+                    ...selectedEvent,
+                    revenue: selectedEvent.price || 0,
                     views: Math.floor(Math.random() * 1000),
                     conversionRate: Math.random() * 10,
-                    ticketTypes: [],
-                    status: event.status === 'upcoming' ? 'published' : 
-                           event.status === 'ongoing' ? 'published' : 
-                           event.status === 'completed' ? 'completed' : 
-                           event.status === 'cancelled' ? 'cancelled' : 'draft'
-                  }))}
+                    ticketTypes: (selectedEvent.ticketTypes || []).map((t: any) => ({
+                      id: t.id,
+                      name: t.nombre_tipo || t.name || 'Sin nombre',
+                      price: t.precio || t.price || 0,
+                      available: t.cantidad_disponible || t.available || 0,
+                      sold: (t.cantidad_maxima || t.maxQuantity || 0) - (t.cantidad_disponible || t.available || 0)
+                    })),
+                    status: selectedEvent.status === 'upcoming' ? 'published' : 
+                           selectedEvent.status === 'ongoing' ? 'published' : 
+                           selectedEvent.status === 'completed' ? 'completed' : 
+                           selectedEvent.status === 'cancelled' ? 'cancelled' : 'draft'
+                  }] : []}
                   onCreateEvent={() => setIsCreateEventModalOpen(true)}
                   onEditEvent={handleEditEvent}
                   onViewEvent={handleViewEvent}
                   onDeleteEvent={handleDeleteEvent}
-                  onDuplicateEvent={(eventId) => console.log('Duplicate event:', eventId)}
-                  onUploadImage={(eventId) => console.log('Upload image for event:', eventId)}
-                  onCustomizeEvent={(eventId) => console.log('Customize event:', eventId)}
+                  onDuplicateEvent={handleDuplicateEvent}
+                  onUploadImage={handleUploadImage}
+                  onCustomizeEvent={handleConfigureEvent}
                 />
+                  </>
+                )}
               </div>
             )}
 
@@ -707,7 +1021,14 @@ export function OrganizerDashboard() {
                 {/* Ticket Management Actions */}
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-900">Gestión de Entradas</h3>
+                    <h3 className="text-lg font-semibold text-gray-900">
+                      Gestión de Entradas {selectedEvent && `- ${selectedEvent.title}`}
+                    </h3>
+                    {selectedEvent && (
+                      <p className="text-sm text-gray-600 mt-1">
+                        {selectedEvent.location} • {new Date(selectedEvent.date).toLocaleDateString('es-ES')}
+                      </p>
+                    )}
                   </div>
                   <div className="flex flex-wrap gap-2 w-full sm:w-auto">
                     <button 
@@ -735,46 +1056,18 @@ export function OrganizerDashboard() {
                 </div>
                 
                 <TicketManagement
-                  tickets={[
-                    {
-                      id: '1',
-                      name: 'Entrada General',
-                      description: 'Acceso general al evento',
-                      price: 50000,
-                      available: 150,
-                      sold: 50,
-                      type: 'general',
-                      isActive: true,
-                      features: ['Acceso general', 'WiFi gratuito'],
-                      eventId: 'event-1'
-                    },
-                    {
-                      id: '2',
-                      name: 'Entrada VIP',
-                      description: 'Acceso VIP con beneficios exclusivos',
-                      price: 150000,
-                      originalPrice: 200000,
-                      available: 25,
-                      sold: 25,
-                      type: 'vip',
-                      isActive: true,
-                      features: ['Acceso VIP', 'Catering premium', 'Parking reservado'],
-                      eventId: 'event-1'
-                    },
-                    {
-                      id: '3',
-                      name: 'Early Bird',
-                      description: 'Descuento por compra anticipada',
-                      price: 35000,
-                      originalPrice: 50000,
-                      available: 0,
-                      sold: 100,
-                      type: 'early_bird',
-                      isActive: true,
-                      features: ['Descuento especial', 'Acceso general'],
-                      eventId: 'event-1'
-                    }
-                  ]}
+                  tickets={selectedEvent?.ticketTypes?.map(ticket => ({
+                    id: ticket.id,
+                    name: ticket.nombre_tipo || 'Sin nombre',
+                    description: ticket.descripcion || '',
+                    price: ticket.precio || 0,
+                    available: ticket.cantidad_disponible || 0,
+                    sold: (ticket.cantidad_maxima || 0) - (ticket.cantidad_disponible || 0),
+                    type: 'general' as const,
+                    isActive: true,
+                    features: [],
+                    eventId: selectedEvent.id
+                  })) || []}
                   onCreateTicket={() => setIsCreateTicketModalOpen(true)}
                   onEditTicket={(ticketId) => console.log('Edit ticket:', ticketId)}
                   onDeleteTicket={(ticketId) => console.log('Delete ticket:', ticketId)}
@@ -790,7 +1083,14 @@ export function OrganizerDashboard() {
                 {/* Promotion Management Actions */}
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-900">Gestión de Promociones</h3>
+                    <h3 className="text-lg font-semibold text-gray-900">
+                      Gestión de Promociones {selectedEvent && `- ${selectedEvent.title}`}
+                    </h3>
+                    {selectedEvent && (
+                      <p className="text-sm text-gray-600 mt-1">
+                        Códigos de descuento y promociones para este evento
+                      </p>
+                    )}
                   </div>
                   <div className="flex flex-wrap gap-2 w-full sm:w-auto">
                     <button 
@@ -818,63 +1118,26 @@ export function OrganizerDashboard() {
                 </div>
 
                 <PromotionManagement
-                  promotions={[
+                  promotions={selectedEvent ? [
                     {
                       id: '1',
-                      code: 'DESCUENTO20',
-                      name: 'Descuento del 20%',
-                      description: 'Descuento especial del 20% en todas las entradas',
+                      code: `EARLY${selectedEvent.id.substring(0, 4).toUpperCase()}`,
+                      name: `Early Bird - ${selectedEvent.title}`,
+                      description: 'Descuento por compra anticipada',
                       type: 'percentage',
                       value: 20,
-                      minOrderAmount: 100000,
                       usageLimit: 100,
                       usedCount: 45,
                       isActive: true,
                       startDate: '2024-01-01',
                       endDate: '2024-12-31',
-                      applicableEvents: ['event-1'],
-                      applicableTicketTypes: ['general', 'vip'],
-                      maxUsesPerUser: 2,
-                      isPublic: true,
-                      createdDate: '2024-01-01'
-                    },
-                    {
-                      id: '2',
-                      code: 'EARLYBIRD',
-                      name: 'Early Bird 30%',
-                      description: 'Descuento por compra anticipada',
-                      type: 'early_bird',
-                      value: 30,
-                      usageLimit: 50,
-                      usedCount: 25,
-                      isActive: true,
-                      startDate: '2024-01-01',
-                      endDate: '2025-01-15',
-                      applicableEvents: ['event-1'],
+                      applicableEvents: [selectedEvent.id],
                       applicableTicketTypes: ['general'],
                       maxUsesPerUser: 1,
                       isPublic: true,
-                      createdDate: '2024-01-01'
-                    },
-                    {
-                      id: '3',
-                      code: 'STUDENT50',
-                      name: 'Descuento Estudiante',
-                      description: 'Descuento especial para estudiantes',
-                      type: 'fixed',
-                      value: 25000,
-                      usageLimit: 200,
-                      usedCount: 120,
-                      isActive: true,
-                      startDate: '2024-01-01',
-                      endDate: '2024-12-31',
-                      applicableEvents: ['event-1'],
-                      applicableTicketTypes: ['general'],
-                      maxUsesPerUser: 1,
-                      isPublic: false,
                       createdDate: '2024-01-01'
                     }
-                  ]}
+                  ] : []}
                   onCreatePromotion={() => setIsCreatePromotionModalOpen(true)}
                   onEditPromotion={(promotionId) => console.log('Edit promotion:', promotionId)}
                   onDeletePromotion={(promotionId) => console.log('Delete promotion:', promotionId)}
@@ -1114,7 +1377,14 @@ export function OrganizerDashboard() {
                 {/* Attendee Management Actions */}
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-900">Gestión de Asistentes</h3>
+                    <h3 className="text-lg font-semibold text-gray-900">
+                      Gestión de Asistentes {selectedEvent && `- ${selectedEvent.title}`}
+                    </h3>
+                    {selectedEvent && (
+                      <p className="text-sm text-gray-600 mt-1">
+                        {selectedEvent.currentAttendees}/{selectedEvent.maxAttendees} asistentes registrados
+                      </p>
+                    )}
           </div>
                   <div className="flex flex-wrap gap-2 w-full sm:w-auto">
                     <button 
@@ -1177,6 +1447,30 @@ export function OrganizerDashboard() {
         isLoading={isCreatingPromotion}
       />
 
+      {/* Modal de Subir/Editar Imagen de Evento */}
+      <UploadImageModal
+        isOpen={isUploadImageModalOpen}
+        onClose={() => {
+          setIsUploadImageModalOpen(false);
+          setSelectedEventForImage(null);
+        }}
+        onImageUploaded={handleImageUploaded}
+        currentImageUrl={selectedEventForImage?.currentImage}
+        eventId={selectedEventForImage?.id}
+        eventTitle={selectedEventForImage?.title}
+      />
+
+      {/* Modal de Duplicar Evento */}
+      <DuplicateEventModal
+        event={selectedEventForDuplication}
+        isOpen={isDuplicateEventModalOpen}
+        onClose={() => {
+          setIsDuplicateEventModalOpen(false);
+          setSelectedEventForDuplication(null);
+        }}
+        onDuplicate={handleDuplicateEventConfirm}
+      />
+
       {/* Modal de Ver Detalles del Evento */}
       <ViewEventModal
         isOpen={isViewEventModalOpen}
@@ -1209,6 +1503,18 @@ export function OrganizerDashboard() {
         onConfirm={handleConfirmDeleteEvent}
         event={selectedEventForDelete}
         isDeleting={isDeletingEvent}
+      />
+
+      {/* Modal de Configuración de Evento */}
+      <ConfigureEventModal
+        isOpen={isConfigureEventModalOpen}
+        onClose={() => {
+          setIsConfigureEventModalOpen(false);
+          setSelectedEventForConfigure(null);
+        }}
+        onSave={handleSaveEventConfiguration}
+        event={selectedEventForConfigure}
+        isLoading={isLoadingEventDetails}
       />
     </div>
   );

@@ -46,7 +46,7 @@ const eventSchema = yup.object({
 export function CreateEventPage() {
   const navigate = useNavigate();
   const { user } = useAuthStore();
-  const { addEvent } = useEventStore();
+  const { events, setEvents } = useEventStore();
   const { addNotification } = useNotificationStore();
   const [ticketTypes, setTicketTypes] = useState<TicketTypeForm[]>([
     { name: 'General', price: 0, description: 'Entrada general', maxQuantity: 10 }
@@ -70,7 +70,7 @@ export function CreateEventPage() {
     setValue,
     watch
   } = useForm<EventFormData>({
-    resolver: yupResolver(eventSchema),
+    resolver: yupResolver(eventSchema) as any,
     defaultValues: {
       ticketTypes: ticketTypes
     }
@@ -118,11 +118,16 @@ export function CreateEventPage() {
         hora_evento: data.time,
         ubicacion: data.location,
         categoria: data.category,
-        aforo_maximo: data.maxAttendees,
+        // Ajuste de campo según documentación de BD: maximo_asistentes
+        maximo_asistentes: data.maxAttendees,
         id_organizador: user.id,
-        estado: 'proximo',
-        tags: data.tags,
-        personalizacion: customization
+  // Estado: lo omitimos para usar el valor por defecto de la BD
+        // Convertir tags string a array para columna 'etiquetas' (_text)
+        etiquetas: data.tags
+          ? data.tags.split(',').map(t => t.trim()).filter(t => t.length > 0)
+          : [],
+        // Denormalización opcional si existe en tu esquema
+        nombre_organizador: user.name
       };
 
       const createdEvent = await ServicioEventos.crearEvento(eventData);
@@ -134,21 +139,37 @@ export function CreateEventPage() {
           nombre_tipo: ticketType.name,
           precio: ticketType.price,
           descripcion: ticketType.description,
-          cantidad_maxima: ticketType.maxQuantity
+          cantidad_maxima: ticketType.maxQuantity,
+          cantidad_disponible: ticketType.maxQuantity
         });
       }
 
-      // Agregar al store local
-      addEvent(createdEvent);
+      // Agregar al store local (convertir a formato interno)
+      const newEvent = {
+        id: createdEvent.id,
+        title: createdEvent.titulo,
+        description: createdEvent.descripcion,
+        image: createdEvent.url_imagen,
+        date: createdEvent.fecha_evento,
+        time: createdEvent.hora_evento,
+        location: createdEvent.ubicacion,
+        category: createdEvent.categoria,
+        price: 0,
+        maxAttendees: createdEvent.maximo_asistentes,
+        currentAttendees: createdEvent.asistentes_actuales || 0,
+        organizerId: createdEvent.id_organizador,
+        organizerName: createdEvent.nombre_organizador || user.name,
+        status: createdEvent.estado || 'upcoming',
+        tags: createdEvent.etiquetas || [],
+        ticketTypes: []
+      } as any;
+      setEvents([...events, newEvent]);
 
       // Notificación de éxito
       addNotification({
-        id: Date.now().toString(),
-        titulo: 'Evento Creado',
-        mensaje: 'Tu evento ha sido creado exitosamente',
-        tipo: 'success',
-        fecha_creacion: new Date().toISOString(),
-        leida: false
+        type: 'success',
+        title: 'Evento Creado',
+        message: 'Tu evento ha sido creado exitosamente'
       });
 
       // Navegar al evento creado
@@ -156,12 +177,9 @@ export function CreateEventPage() {
     } catch (error) {
       console.error('Error creating event:', error);
       addNotification({
-        id: Date.now().toString(),
-        titulo: 'Error',
-        mensaje: 'No se pudo crear el evento. Inténtalo de nuevo.',
-        tipo: 'error',
-        fecha_creacion: new Date().toISOString(),
-        leida: false
+        type: 'error',
+        title: 'Error',
+        message: 'No se pudo crear el evento. Inténtalo de nuevo.'
       });
     } finally {
       setIsSubmitting(false);
@@ -184,7 +202,7 @@ export function CreateEventPage() {
           <p className="text-gray-600 mt-2">Completa la información para crear tu evento</p>
         </div>
 
-        <form onSubmit={handleSubmit(onSubmit)}>
+  <form onSubmit={handleSubmit(onSubmit as any)}>
           <CreateEventForm
             activeStep={activeStep}
             setActiveStep={setActiveStep}
@@ -203,7 +221,7 @@ export function CreateEventPage() {
             removeTicketType={removeTicketType}
             updateTicketType={updateTicketType}
             onBack={handleBack}
-            onSubmit={handleSubmit(onSubmit)}
+            onSubmit={handleSubmit(onSubmit as any)}
             onPreview={handlePreview}
           />
         </form>

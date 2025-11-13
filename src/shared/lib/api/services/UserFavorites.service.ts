@@ -408,7 +408,8 @@ export class UserFavoritesService {
         )
       `)
       .eq('visible', true)
-      .eq('eventos.estado', 'proximo');
+      // Evitamos filtrar por estado fijo para compatibilidad con diferentes enums
+      ;
 
     if (error) throw error;
 

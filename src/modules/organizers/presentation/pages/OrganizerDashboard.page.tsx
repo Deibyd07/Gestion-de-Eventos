@@ -34,6 +34,10 @@ import { ViewTicketModal } from '../components/ViewTicketModal.component';
 import { EditTicketModal } from '../components/EditTicketModal.component';
 import { DuplicateTicketModal } from '../components/DuplicateTicketModal.component';
 import { DeleteTicketModal } from '../components/DeleteTicketModal.component';
+import { ViewPromotionModal } from '../components/ViewPromotionModal.component';
+import { EditPromotionModal } from '../components/EditPromotionModal.component';
+import { DuplicatePromotionModal } from '../components/DuplicatePromotionModal.component';
+import { DeletePromotionModal } from '../components/DeletePromotionModal.component';
 import { EditEventModal, EditEventFormData } from '../../../events/presentation/components/EditEventModal.component';
 import { ViewEventModal } from '../../../events/presentation/components/ViewEventModal.component';
 import { DeleteEventConfirmation } from '../../../events/presentation/components/DeleteEventConfirmation.component';
@@ -144,6 +148,61 @@ export function OrganizerDashboard() {
       setIsDuplicateTicketModalOpen(false);
       setIsDeleteTicketModalOpen(false);
       setSelectedTicket(null);
+    };
+
+    // Estados para los modales CRUD de promociones
+    const [isViewPromotionModalOpen, setIsViewPromotionModalOpen] = useState(false);
+    const [isEditPromotionModalOpen, setIsEditPromotionModalOpen] = useState(false);
+    const [isDuplicatePromotionModalOpen, setIsDuplicatePromotionModalOpen] = useState(false);
+    const [isDeletePromotionModalOpen, setIsDeletePromotionModalOpen] = useState(false);
+    const [selectedPromotion, setSelectedPromotion] = useState<any | null>(null);
+    const [promotions, setPromotions] = useState<any[]>([]);
+
+    // Handlers para CRUD de promociones
+    const handleViewPromotion = (promotionId: string) => {
+      const promotion = promotions.find((p: any) => p.id === promotionId);
+      setSelectedPromotion(promotion);
+      setIsViewPromotionModalOpen(true);
+    };
+
+    const handleEditPromotion = (promotionId: string) => {
+      const promotion = promotions.find((p: any) => p.id === promotionId);
+      setSelectedPromotion(promotion);
+      setIsEditPromotionModalOpen(true);
+    };
+
+    const handleDuplicatePromotion = (promotionId: string) => {
+      const promotion = promotions.find((p: any) => p.id === promotionId);
+      setSelectedPromotion(promotion);
+      setIsDuplicatePromotionModalOpen(true);
+    };
+
+    const handleDeletePromotion = (promotionId: string) => {
+      const promotion = promotions.find((p: any) => p.id === promotionId);
+      setSelectedPromotion(promotion);
+      setIsDeletePromotionModalOpen(true);
+    };
+
+    // Callbacks para cerrar modales de promociones
+    const closePromotionModals = () => {
+      setIsViewPromotionModalOpen(false);
+      setIsEditPromotionModalOpen(false);
+      setIsDuplicatePromotionModalOpen(false);
+      setIsDeletePromotionModalOpen(false);
+      setSelectedPromotion(null);
+    };
+
+    // Función para cargar promociones
+    const loadPromotions = async () => {
+      try {
+        if (user?.id) {
+          const PromotionService = (await import('@shared/lib/api/services/Promotion.service')).PromotionService;
+          const data = await PromotionService.obtenerPromocionesOrganizador(user.id);
+          setPromotions(data || []);
+        }
+      } catch (error) {
+        console.error('Error al cargar promociones:', error);
+      }
     };
 
   const handleLogout = () => {
@@ -282,6 +341,7 @@ export function OrganizerDashboard() {
     // Cargar métricas cuando se cargan eventos o cambia usuario
     if (user?.id) {
       loadMetrics();
+      loadPromotions();
     }
   }, [user?.id, finalEvents.length]);
 
@@ -379,28 +439,8 @@ export function OrganizerDashboard() {
     }
   };
 
-  const handleCreatePromotion = async (formData: CreatePromotionFormData) => {
-    setIsCreatingPromotion(true);
-    
-    try {
-      // Simular llamada a API
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Aquí iría la lógica real para crear la promoción
-      console.log('Creando código de descuento:', formData);
-      
-      // Cerrar modal
-      setIsCreatePromotionModalOpen(false);
-      
-      // Mostrar mensaje de éxito (puedes implementar un toast)
-      console.log('Código de descuento creado exitosamente');
-      
-    } catch (error) {
-      console.error('Error al crear código de descuento:', error);
-      // Aquí podrías mostrar un mensaje de error
-    } finally {
-      setIsCreatingPromotion(false);
-    }
+  const handleCreatePromotion = async () => {
+    await loadPromotions();
   };
 
   const handleUploadImage = (eventId: string) => {
@@ -1196,32 +1236,30 @@ export function OrganizerDashboard() {
                 </div>
 
                 <PromotionManagement
-                  promotions={selectedEvent ? [
-                    {
-                      id: '1',
-                      code: `EARLY${selectedEvent.id.substring(0, 4).toUpperCase()}`,
-                      name: `Early Bird - ${selectedEvent.title}`,
-                      description: 'Descuento por compra anticipada',
-                      type: 'percentage',
-                      value: 20,
-                      usageLimit: 100,
-                      usedCount: 45,
-                      isActive: true,
-                      startDate: '2024-01-01',
-                      endDate: '2024-12-31',
-                      applicableEvents: [selectedEvent.id],
-                      applicableTicketTypes: ['general'],
-                      maxUsesPerUser: 1,
-                      isPublic: true,
-                      createdDate: '2024-01-01'
-                    }
-                  ] : []}
+                  promotions={promotions.map((promo: any) => ({
+                    id: promo.id,
+                    code: promo.codigo,
+                    name: promo.codigo, // Usar código como nombre por ahora
+                    description: promo.descripcion,
+                    type: promo.tipo_descuento === 'porcentaje' ? 'percentage' : 'fixed',
+                    value: promo.valor_descuento,
+                    usageLimit: promo.uso_maximo,
+                    usedCount: promo.usos_actuales,
+                    isActive: promo.activo,
+                    startDate: promo.fecha_inicio,
+                    endDate: promo.fecha_fin,
+                    applicableEvents: promo.id_evento ? [promo.id_evento] : [],
+                    applicableTicketTypes: [],
+                    maxUsesPerUser: 1,
+                    isPublic: true,
+                    createdDate: promo.created_at
+                  }))}
                   onCreatePromotion={() => setIsCreatePromotionModalOpen(true)}
-                  onEditPromotion={(promotionId) => console.log('Edit promotion:', promotionId)}
-                  onDeletePromotion={(promotionId) => console.log('Delete promotion:', promotionId)}
-                  onDuplicatePromotion={(promotionId) => console.log('Duplicate promotion:', promotionId)}
+                  onEditPromotion={handleEditPromotion}
+                  onDeletePromotion={handleDeletePromotion}
+                  onDuplicatePromotion={handleDuplicatePromotion}
                   onTogglePromotion={(promotionId) => console.log('Toggle promotion:', promotionId)}
-                  onViewAnalytics={(promotionId) => console.log('View promotion analytics:', promotionId)}
+                  onViewAnalytics={handleViewPromotion}
                 />
                     </div>
             )}
@@ -1521,8 +1559,11 @@ export function OrganizerDashboard() {
       <CreatePromotionModal
         isOpen={isCreatePromotionModalOpen}
         onClose={() => setIsCreatePromotionModalOpen(false)}
-        onSave={handleCreatePromotion}
-        isLoading={isCreatingPromotion}
+        onSave={() => {
+          loadPromotions();
+        }}
+        eventId={selectedEvent?.id}
+        organizerId={user?.id || ''}
       />
 
       {/* Modal de Subir/Editar Imagen de Evento */}
@@ -1593,6 +1634,43 @@ export function OrganizerDashboard() {
         onSave={handleSaveEventConfiguration}
         event={selectedEventForConfigure}
         isLoading={isLoadingEventDetails}
+      />
+
+      {/* Modales CRUD de Promociones */}
+      <ViewPromotionModal
+        isOpen={isViewPromotionModalOpen}
+        onClose={closePromotionModals}
+        promotion={selectedPromotion}
+      />
+
+      <EditPromotionModal
+        isOpen={isEditPromotionModalOpen}
+        onClose={closePromotionModals}
+        promotion={selectedPromotion}
+        onSave={() => {
+          loadPromotions();
+          closePromotionModals();
+        }}
+      />
+
+      <DuplicatePromotionModal
+        isOpen={isDuplicatePromotionModalOpen}
+        onClose={closePromotionModals}
+        promotion={selectedPromotion}
+        onDuplicate={() => {
+          loadPromotions();
+          closePromotionModals();
+        }}
+      />
+
+      <DeletePromotionModal
+        isOpen={isDeletePromotionModalOpen}
+        onClose={closePromotionModals}
+        promotion={selectedPromotion}
+        onDelete={() => {
+          loadPromotions();
+          closePromotionModals();
+        }}
       />
     </div>
   );

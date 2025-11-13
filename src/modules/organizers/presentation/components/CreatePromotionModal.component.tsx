@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { X, Percent, DollarSign, Clock, Calendar, Shield, Users, AlertCircle } from 'lucide-react';
+import { PromotionService } from '@shared/lib/api/services/Promotion.service';
 
 export interface CreatePromotionFormData {
   code: string;
@@ -22,11 +23,12 @@ export interface CreatePromotionFormData {
 interface CreatePromotionModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (formData: CreatePromotionFormData) => Promise<void>;
-  isLoading?: boolean;
+  onSave: () => void;
+  eventId?: string;
+  organizerId: string;
 }
 
-export function CreatePromotionModal({ isOpen, onClose, onSave, isLoading = false }: CreatePromotionModalProps) {
+export function CreatePromotionModal({ isOpen, onClose, onSave, eventId, organizerId }: CreatePromotionModalProps) {
   const [formData, setFormData] = useState<CreatePromotionFormData>({
     code: '',
     name: '',
@@ -42,13 +44,22 @@ export function CreatePromotionModal({ isOpen, onClose, onSave, isLoading = fals
     maxUsesPerUser: 2,
     isPublic: true,
   });
-
+  const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Partial<Record<keyof CreatePromotionFormData, string>>>({});
 
   if (!isOpen) return null;
 
+  console.log('🎨 CreatePromotionModal props:', { isOpen, eventId, organizerId });
+
   const handleChange = (field: keyof CreatePromotionFormData, value: any) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData(prev => {
+      const updated = { ...prev, [field]: value };
+      // Si el campo es 'code' y 'name' está vacío, auto-llenar 'name' con el código
+      if (field === 'code' && !prev.name) {
+        updated.name = value;
+      }
+      return updated;
+    });
     // Limpiar error del campo cuando se modifica
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: undefined }));
@@ -58,6 +69,8 @@ export function CreatePromotionModal({ isOpen, onClose, onSave, isLoading = fals
   const validate = (): boolean => {
     const newErrors: Partial<Record<keyof CreatePromotionFormData, string>> = {};
 
+    console.log('🔍 Validando formulario:', formData);
+
     if (!formData.code.trim()) {
       newErrors.code = 'El código es requerido';
     } else if (formData.code.length < 3) {
@@ -66,6 +79,7 @@ export function CreatePromotionModal({ isOpen, onClose, onSave, isLoading = fals
 
     if (!formData.name.trim()) {
       newErrors.name = 'El nombre es requerido';
+      console.log('❌ Error: nombre vacío');
     }
 
     if (!formData.description.trim()) {
@@ -77,6 +91,10 @@ export function CreatePromotionModal({ isOpen, onClose, onSave, isLoading = fals
     }
 
     if (formData.type === 'percentage' && formData.value > 100) {
+      newErrors.value = 'El porcentaje no puede ser mayor a 100';
+    }
+
+    if (formData.type === 'early_bird' && formData.value > 100) {
       newErrors.value = 'El porcentaje no puede ser mayor a 100';
     }
 
@@ -92,6 +110,7 @@ export function CreatePromotionModal({ isOpen, onClose, onSave, isLoading = fals
       newErrors.endDate = 'La fecha de fin debe ser posterior a la fecha de inicio';
     }
 
+    console.log('📋 Errores de validación:', newErrors);
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -100,11 +119,54 @@ export function CreatePromotionModal({ isOpen, onClose, onSave, isLoading = fals
     e.preventDefault();
     
     if (!validate()) {
+      console.log('⚠️ Validación fallida - revisa los errores arriba');
+      // Mostrar alerta con los campos que faltan
+      const errorFields = Object.keys(errors).join(', ');
+      alert(`Por favor completa los siguientes campos requeridos:\n\n${Object.entries(errors).map(([field, msg]) => `• ${msg}`).join('\n')}`);
       return;
     }
 
+    if (!organizerId) {
+      console.error('❌ organizerId no está definido');
+      alert('Error: No se pudo identificar al organizador. Por favor recarga la página.');
+      return;
+    }
+
+    setLoading(true);
     try {
-      await onSave(formData);
+      // Convertir el tipo de descuento del frontend al formato de la BD
+      let tipoDescuentoDB = 'porcentaje';
+      if (formData.type === 'fixed') {
+        tipoDescuentoDB = 'monto_fijo';
+      } else if (formData.type === 'early_bird') {
+        tipoDescuentoDB = 'porcentaje'; // Early bird es un porcentaje
+      }
+
+      const promotionData = {
+        codigo: formData.code,
+        descripcion: formData.description,
+        tipo_descuento: tipoDescuentoDB,
+        valor_descuento: Number(formData.value),
+        fecha_inicio: new Date(formData.startDate).toISOString(),
+        fecha_fin: new Date(formData.endDate).toISOString(),
+        uso_maximo: formData.usageLimit || 999999,
+        usos_actuales: 0,
+        id_evento: eventId || null,
+        id_organizador: organizerId,
+        activo: formData.isActive,
+      };
+      
+      console.log('📝 Creando promoción:', promotionData);
+      console.log('🔑 Organizer ID:', organizerId);
+      console.log('🎟️ Event ID:', eventId);
+      console.log('💰 Tipo frontend:', formData.type);
+      console.log('💾 Tipo DB:', tipoDescuentoDB);
+      console.log('💵 Valor:', formData.value, '→', Number(formData.value));
+      
+      const result = await PromotionService.crearPromocion(promotionData);
+      
+      console.log('✅ Promoción creada exitosamente:', result);
+      
       // Resetear formulario
       setFormData({
         code: '',
@@ -122,13 +184,30 @@ export function CreatePromotionModal({ isOpen, onClose, onSave, isLoading = fals
         isPublic: true,
       });
       setErrors({});
-    } catch (error) {
-      console.error('Error al crear promoción:', error);
+      onSave();
+      onClose();
+    } catch (error: any) {
+      console.error('❌ Error al crear promoción:', error);
+      console.error('📋 Detalles del error:', error.message, error);
+      
+      // Mensajes de error específicos
+      let errorMessage = 'Error al crear la promoción';
+      if (error.message?.includes('chk_porcentaje')) {
+        errorMessage = 'Error: El valor del descuento no es válido.\n\n' +
+                      'Para descuentos de PORCENTAJE o EARLY BIRD, el valor debe estar entre 0 y 100.\n' +
+                      'Para descuentos de MONTO FIJO, no debe exceder el límite permitido.';
+      } else if (error.code === '23514') {
+        errorMessage = 'Error: Violación de restricción en la base de datos.\n\n' + error.message;
+      }
+      
+      alert(errorMessage);
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleClose = () => {
-    if (!isLoading) {
+    if (!loading) {
       setErrors({});
       onClose();
     }
@@ -167,7 +246,7 @@ export function CreatePromotionModal({ isOpen, onClose, onSave, isLoading = fals
           </div>
           <button
             onClick={handleClose}
-            disabled={isLoading}
+            disabled={loading}
             className="p-2 hover:bg-white/20 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <X className="w-6 h-6" />
@@ -196,7 +275,7 @@ export function CreatePromotionModal({ isOpen, onClose, onSave, isLoading = fals
                   className={`w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
                     errors.code ? 'border-red-500' : 'border-gray-300'
                   }`}
-                  disabled={isLoading}
+                  disabled={loading}
                 />
                 {errors.code && <p className="text-red-500 text-xs mt-1">{errors.code}</p>}
               </div>
@@ -213,7 +292,7 @@ export function CreatePromotionModal({ isOpen, onClose, onSave, isLoading = fals
                   className={`w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
                     errors.name ? 'border-red-500' : 'border-gray-300'
                   }`}
-                  disabled={isLoading}
+                  disabled={loading}
                 />
                 {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
               </div>
@@ -231,7 +310,7 @@ export function CreatePromotionModal({ isOpen, onClose, onSave, isLoading = fals
                 className={`w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
                   errors.description ? 'border-red-500' : 'border-gray-300'
                 }`}
-                disabled={isLoading}
+                disabled={loading}
               />
               {errors.description && <p className="text-red-500 text-xs mt-1">{errors.description}</p>}
             </div>
@@ -256,7 +335,7 @@ export function CreatePromotionModal({ isOpen, onClose, onSave, isLoading = fals
                     ? 'border-blue-500 bg-blue-50'
                     : 'border-gray-300 hover:border-blue-300'
                 }`}
-                disabled={isLoading}
+                disabled={loading}
               >
                 <Percent className={`w-8 h-8 mx-auto mb-2 ${
                   formData.type === 'percentage' ? 'text-blue-600' : 'text-gray-400'
@@ -273,7 +352,7 @@ export function CreatePromotionModal({ isOpen, onClose, onSave, isLoading = fals
                     ? 'border-green-500 bg-green-50'
                     : 'border-gray-300 hover:border-green-300'
                 }`}
-                disabled={isLoading}
+                disabled={loading}
               >
                 <DollarSign className={`w-8 h-8 mx-auto mb-2 ${
                   formData.type === 'fixed' ? 'text-green-600' : 'text-gray-400'
@@ -290,7 +369,7 @@ export function CreatePromotionModal({ isOpen, onClose, onSave, isLoading = fals
                     ? 'border-orange-500 bg-orange-50'
                     : 'border-gray-300 hover:border-orange-300'
                 }`}
-                disabled={isLoading}
+                disabled={loading}
               >
                 <Clock className={`w-8 h-8 mx-auto mb-2 ${
                   formData.type === 'early_bird' ? 'text-orange-600' : 'text-gray-400'
@@ -311,15 +390,15 @@ export function CreatePromotionModal({ isOpen, onClose, onSave, isLoading = fals
                     value={formData.value}
                     onChange={(e) => handleChange('value', Number(e.target.value))}
                     min="0"
-                    max={formData.type === 'percentage' ? "100" : undefined}
-                    step={formData.type === 'percentage' ? "1" : "1000"}
+                    max={formData.type === 'percentage' || formData.type === 'early_bird' ? "100" : undefined}
+                    step={formData.type === 'percentage' || formData.type === 'early_bird' ? "1" : "1000"}
                     className={`w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
                       errors.value ? 'border-red-500' : 'border-gray-300'
                     }`}
-                    disabled={isLoading}
+                    disabled={loading}
                   />
                   <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">
-                    {formData.type === 'percentage' ? '%' : 'COP'}
+                    {formData.type === 'percentage' || formData.type === 'early_bird' ? '%' : 'COP'}
                   </span>
                 </div>
                 {errors.value && <p className="text-red-500 text-xs mt-1">{errors.value}</p>}
@@ -337,7 +416,7 @@ export function CreatePromotionModal({ isOpen, onClose, onSave, isLoading = fals
                   min="0"
                   step="1000"
                   className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  disabled={isLoading}
+                  disabled={loading}
                 />
               </div>
             </div>
@@ -362,7 +441,7 @@ export function CreatePromotionModal({ isOpen, onClose, onSave, isLoading = fals
                   className={`w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
                     errors.startDate ? 'border-red-500' : 'border-gray-300'
                   }`}
-                  disabled={isLoading}
+                  disabled={loading}
                 />
                 {errors.startDate && <p className="text-red-500 text-xs mt-1">{errors.startDate}</p>}
               </div>
@@ -378,7 +457,7 @@ export function CreatePromotionModal({ isOpen, onClose, onSave, isLoading = fals
                   className={`w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
                     errors.endDate ? 'border-red-500' : 'border-gray-300'
                   }`}
-                  disabled={isLoading}
+                  disabled={loading}
                 />
                 {errors.endDate && <p className="text-red-500 text-xs mt-1">{errors.endDate}</p>}
               </div>
@@ -404,7 +483,7 @@ export function CreatePromotionModal({ isOpen, onClose, onSave, isLoading = fals
                   placeholder="Ilimitado"
                   min="1"
                   className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  disabled={isLoading}
+                  disabled={loading}
                 />
               </div>
 
@@ -419,7 +498,7 @@ export function CreatePromotionModal({ isOpen, onClose, onSave, isLoading = fals
                   placeholder="Ilimitado"
                   min="1"
                   className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  disabled={isLoading}
+                  disabled={loading}
                 />
               </div>
             </div>
@@ -439,7 +518,7 @@ export function CreatePromotionModal({ isOpen, onClose, onSave, isLoading = fals
                   checked={formData.isActive}
                   onChange={(e) => handleChange('isActive', e.target.checked)}
                   className="w-5 h-5 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
-                  disabled={isLoading}
+                  disabled={loading}
                 />
                 <div>
                   <p className="font-medium text-gray-900">Activar promoción inmediatamente</p>
@@ -453,7 +532,7 @@ export function CreatePromotionModal({ isOpen, onClose, onSave, isLoading = fals
                   checked={formData.isPublic}
                   onChange={(e) => handleChange('isPublic', e.target.checked)}
                   className="w-5 h-5 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
-                  disabled={isLoading}
+                  disabled={loading}
                 />
                 <div>
                   <p className="font-medium text-gray-900">Descuento público</p>
@@ -490,17 +569,17 @@ export function CreatePromotionModal({ isOpen, onClose, onSave, isLoading = fals
             <button
               type="button"
               onClick={handleClose}
-              disabled={isLoading}
+              disabled={loading}
               className="px-6 py-2.5 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-all duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Cancelar
             </button>
             <button
               type="submit"
-              disabled={isLoading}
+              disabled={loading}
               className="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all duration-200 font-medium shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
             >
-              {isLoading ? (
+              {loading ? (
                 <>
                   <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
                   <span>Creando...</span>

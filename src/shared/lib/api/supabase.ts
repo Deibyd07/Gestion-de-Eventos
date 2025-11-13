@@ -115,6 +115,50 @@ export interface Database {
           cantidad_disponible?: number;
         };
       };
+      codigos_promocionales: {
+        Row: {
+          id: string;
+          codigo: string;
+          descripcion: string;
+          tipo_descuento: string;
+          valor_descuento: number;
+          fecha_inicio: string;
+          fecha_fin: string;
+          uso_maximo: number;
+          usos_actuales: number;
+          id_evento: string | null;
+          id_organizador: string;
+          activo: boolean;
+          fecha_creacion: string;
+          fecha_actualizacion: string;
+        };
+        Insert: {
+          id?: string;
+          codigo: string;
+          descripcion: string;
+          tipo_descuento: string;
+          valor_descuento: number;
+          fecha_inicio: string;
+          fecha_fin: string;
+          uso_maximo?: number;
+          usos_actuales?: number;
+          id_evento?: string | null;
+          id_organizador: string;
+          activo?: boolean;
+        };
+        Update: {
+          codigo?: string;
+          descripcion?: string;
+          tipo_descuento?: string;
+          valor_descuento?: number;
+          fecha_inicio?: string;
+          fecha_fin?: string;
+          uso_maximo?: number;
+          usos_actuales?: number;
+          id_evento?: string | null;
+          activo?: boolean;
+        };
+      };
       compras: {
         Row: {
           id: string;

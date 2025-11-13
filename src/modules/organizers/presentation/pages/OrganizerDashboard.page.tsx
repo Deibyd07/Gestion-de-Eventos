@@ -29,10 +29,18 @@ import { PromotionManagement } from '../components/PromotionManagement.component
 import { AttendeeManagement } from '../components/AttendeeManagement.component';
 import { OrganizerDashboardContent } from '../components/OrganizerDashboardContent.component';
 import { OrganizerProfilePanel } from '../components/OrganizerProfilePanel.component';
-import { CreateEventModal, CreateEventFormData } from '../../../events/presentation/components/CreateEventModal.component';
+import { 
+  CreateEventModal, 
+  CreateEventFormData,
+  EditEventModal,
+  EditEventFormData,
+  ViewEventModal,
+  DeleteEventConfirmation
+} from '../../../events/presentation/components';
 import { CreateTicketModal, CreateTicketFormData } from '../components/CreateTicketModal.component';
 import { CreatePromotionModal, CreatePromotionFormData } from '../components/CreatePromotionModal.component';
 import { formatRevenue } from '@shared/lib/utils/Currency.utils';
+import { EventService } from '@shared/lib/api/services/Event.service';
 
 
 // Event interface removed - using store types
@@ -66,6 +74,16 @@ export function OrganizerDashboard() {
   const [isCreatingTicket, setIsCreatingTicket] = useState(false);
   const [isCreatePromotionModalOpen, setIsCreatePromotionModalOpen] = useState(false);
   const [isCreatingPromotion, setIsCreatingPromotion] = useState(false);
+  
+  // Estados para los nuevos modales CRUD
+  const [isViewEventModalOpen, setIsViewEventModalOpen] = useState(false);
+  const [isEditEventModalOpen, setIsEditEventModalOpen] = useState(false);
+  const [isDeleteEventModalOpen, setIsDeleteEventModalOpen] = useState(false);
+  const [selectedEventForView, setSelectedEventForView] = useState<any | null>(null);
+  const [selectedEventForEdit, setSelectedEventForEdit] = useState<any | null>(null);
+  const [selectedEventForDelete, setSelectedEventForDelete] = useState<any | null>(null);
+  const [isLoadingEventDetails, setIsLoadingEventDetails] = useState(false);
+  const [isDeletingEvent, setIsDeletingEvent] = useState(false);
 
   const handleLogout = () => {
     logout();
@@ -154,6 +172,100 @@ export function OrganizerDashboard() {
   };
 
   // Status functions removed - not used in current implementation
+
+  // Handlers para CRUD de eventos
+  const handleViewEvent = async (eventId: string) => {
+    console.log('Ver evento:', eventId);
+    setIsLoadingEventDetails(true);
+    try {
+      const eventDetails = await EventService.obtenerEventoCompleto(eventId);
+      console.log('Detalles del evento:', eventDetails);
+      setSelectedEventForView(eventDetails);
+      setIsViewEventModalOpen(true);
+    } catch (error) {
+      console.error('Error al cargar detalles del evento:', error);
+      alert('Error al cargar los detalles del evento');
+    } finally {
+      setIsLoadingEventDetails(false);
+    }
+  };
+
+  const handleEditEvent = async (eventId: string) => {
+    console.log('Editar evento:', eventId);
+    setIsLoadingEventDetails(true);
+    try {
+      const eventDetails = await EventService.obtenerEventoPorId(eventId);
+      console.log('Evento para editar:', eventDetails);
+      setSelectedEventForEdit(eventDetails);
+      setIsEditEventModalOpen(true);
+    } catch (error) {
+      console.error('Error al cargar evento para editar:', error);
+      alert('Error al cargar el evento');
+    } finally {
+      setIsLoadingEventDetails(false);
+    }
+  };
+
+  const handleSaveEventChanges = async (formData: EditEventFormData) => {
+    if (!selectedEventForEdit) return;
+    
+    try {
+      console.log('Guardando cambios:', formData);
+      await EventService.actualizarEvento(selectedEventForEdit.id, formData);
+      console.log('Evento actualizado exitosamente');
+      await handleRefresh();
+      setIsEditEventModalOpen(false);
+      setSelectedEventForEdit(null);
+    } catch (error) {
+      console.error('Error al actualizar evento:', error);
+      throw error;
+    }
+  };
+
+  const handleDeleteEvent = async (eventId: string) => {
+    console.log('Eliminar evento:', eventId);
+    setIsLoadingEventDetails(true);
+    try {
+      const eventDetails = await EventService.obtenerEventoCompleto(eventId);
+      const comprasCompletadas = eventDetails.compras?.filter((c: any) => c.estado === 'completada') || [];
+      const totalVentas = comprasCompletadas.reduce((sum: number, c: any) => sum + Number(c.total_pagado || 0), 0);
+      
+      setSelectedEventForDelete({
+        id: eventDetails.id,
+        titulo: eventDetails.titulo,
+        fecha_evento: eventDetails.fecha_evento,
+        asistentes_actuales: eventDetails.asistentes_actuales || 0,
+        comprasCompletadas: comprasCompletadas.length,
+        totalVentas: totalVentas
+      });
+      
+      setIsDeleteEventModalOpen(true);
+    } catch (error) {
+      console.error('Error al preparar eliminación:', error);
+      alert('Error al cargar información del evento');
+    } finally {
+      setIsLoadingEventDetails(false);
+    }
+  };
+
+  const handleConfirmDeleteEvent = async () => {
+    if (!selectedEventForDelete) return;
+    
+    setIsDeletingEvent(true);
+    try {
+      console.log('Confirmando eliminación del evento:', selectedEventForDelete.id);
+      await EventService.eliminarEvento(selectedEventForDelete.id);
+      console.log('Evento eliminado exitosamente');
+      await handleRefresh();
+      setIsDeleteEventModalOpen(false);
+      setSelectedEventForDelete(null);
+    } catch (error: any) {
+      console.error('Error al eliminar evento:', error);
+      alert(error.message || 'Error al eliminar el evento');
+    } finally {
+      setIsDeletingEvent(false);
+    }
+  };
 
   const handleRefresh = async () => {
     console.log('Actualizando datos...');
@@ -580,9 +692,9 @@ export function OrganizerDashboard() {
                            event.status === 'cancelled' ? 'cancelled' : 'draft'
                   }))}
                   onCreateEvent={() => setIsCreateEventModalOpen(true)}
-                  onEditEvent={(eventId) => console.log('Edit event:', eventId)}
-                  onViewEvent={(eventId) => console.log('View event:', eventId)}
-                  onDeleteEvent={(eventId) => console.log('Delete event:', eventId)}
+                  onEditEvent={handleEditEvent}
+                  onViewEvent={handleViewEvent}
+                  onDeleteEvent={handleDeleteEvent}
                   onDuplicateEvent={(eventId) => console.log('Duplicate event:', eventId)}
                   onUploadImage={(eventId) => console.log('Upload image for event:', eventId)}
                   onCustomizeEvent={(eventId) => console.log('Customize event:', eventId)}
@@ -1063,6 +1175,40 @@ export function OrganizerDashboard() {
         onClose={() => setIsCreatePromotionModalOpen(false)}
         onSave={handleCreatePromotion}
         isLoading={isCreatingPromotion}
+      />
+
+      {/* Modal de Ver Detalles del Evento */}
+      <ViewEventModal
+        isOpen={isViewEventModalOpen}
+        onClose={() => {
+          setIsViewEventModalOpen(false);
+          setSelectedEventForView(null);
+        }}
+        event={selectedEventForView}
+      />
+
+      {/* Modal de Editar Evento */}
+      <EditEventModal
+        isOpen={isEditEventModalOpen}
+        onClose={() => {
+          setIsEditEventModalOpen(false);
+          setSelectedEventForEdit(null);
+        }}
+        onSave={handleSaveEventChanges}
+        event={selectedEventForEdit}
+        isLoading={isLoadingEventDetails}
+      />
+
+      {/* Modal de Confirmación de Eliminación */}
+      <DeleteEventConfirmation
+        isOpen={isDeleteEventModalOpen}
+        onClose={() => {
+          setIsDeleteEventModalOpen(false);
+          setSelectedEventForDelete(null);
+        }}
+        onConfirm={handleConfirmDeleteEvent}
+        event={selectedEventForDelete}
+        isDeleting={isDeletingEvent}
       />
     </div>
   );

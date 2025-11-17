@@ -70,7 +70,7 @@ export function CreatePaymentMethodModal({ isOpen, onClose, onSave, isLoading = 
     }));
   };
 
-  const validate = (): boolean => {
+  const validateStep1 = (): boolean => {
     const newErrors: Partial<Record<keyof CreatePaymentMethodFormData, string>> = {};
 
     if (!formData.name.trim()) {
@@ -97,8 +97,25 @@ export function CreatePaymentMethodModal({ isOpen, onClose, onSave, isLoading = 
     return Object.keys(newErrors).length === 0;
   };
 
+  const validate = (): boolean => {
+    return validateStep1();
+  };
+
+  const handleNextStep = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (validateStep1()) {
+      setActiveStep(2);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Solo procesar el submit si estamos en el paso 2
+    if (activeStep !== 2) {
+      return;
+    }
     
     if (!validate()) {
       return;
@@ -629,7 +646,7 @@ export function CreatePaymentMethodModal({ isOpen, onClose, onSave, isLoading = 
               {activeStep === 1 ? (
                 <button
                   type="button"
-                  onClick={() => setActiveStep(2)}
+                  onClick={handleNextStep}
                   disabled={isLoading}
                   className="px-6 py-2.5 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl hover:from-green-700 hover:to-emerald-700 transition-all duration-200 font-medium shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
                 >

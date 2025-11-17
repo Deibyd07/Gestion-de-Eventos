@@ -338,6 +338,10 @@ export class QRCodeService {
 
       if (error) {
         console.error('❌ Error de Supabase:', error);
+        console.error('❌ Error completo:', JSON.stringify(error, null, 2));
+        console.error('❌ Código error:', error.code);
+        console.error('❌ Mensaje error:', error.message);
+        console.error('❌ Detalles error:', error.details);
         throw error;
       }
 

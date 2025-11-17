@@ -175,6 +175,39 @@ export interface Database {
           // No hay campos editables salvo potencial soft delete futuro
         };
       };
+      codigos_qr_entradas: {
+        Row: {
+          id: string;
+          id_compra: string;
+          id_evento: string;
+          id_usuario: string;
+          codigo_qr: string;
+          datos_qr: any; // JSONB
+          fecha_generacion: string;
+          fecha_escaneado: string | null;
+          escaneado_por: string | null;
+          estado: 'activo' | 'usado' | 'cancelado' | 'expirado';
+          numero_entrada: number;
+        };
+        Insert: {
+          id?: string;
+          id_compra: string;
+          id_evento: string;
+          id_usuario: string;
+          codigo_qr: string;
+          datos_qr: any;
+          fecha_generacion?: string;
+          fecha_escaneado?: string | null;
+          escaneado_por?: string | null;
+          estado?: 'activo' | 'usado' | 'cancelado' | 'expirado';
+          numero_entrada: number;
+        };
+        Update: {
+          estado?: 'activo' | 'usado' | 'cancelado' | 'expirado';
+          fecha_escaneado?: string | null;
+          escaneado_por?: string | null;
+        };
+      };
       compras: {
         Row: {
           id: string;
@@ -185,7 +218,7 @@ export interface Database {
           precio_unitario: number;
           total_pagado: number;
           estado: 'pendiente' | 'completada' | 'cancelada' | 'reembolsada';
-          codigo_qr: string;
+          codigo_qr: string | null;
           numero_orden: string;
           fecha_creacion: string;
           fecha_actualizacion: string;
@@ -199,7 +232,7 @@ export interface Database {
           precio_unitario: number;
           total_pagado: number;
           estado?: 'pendiente' | 'completada' | 'cancelada' | 'reembolsada';
-          codigo_qr: string;
+          codigo_qr?: string | null;
           numero_orden: string;
         };
         Update: {
@@ -255,6 +288,41 @@ export interface Database {
           contenido?: string;
           tipo?: 'bienvenida' | 'recordatorio_evento' | 'confirmacion_entrada' | 'evento_cancelado' | 'encuesta';
         };
+      };
+      vista_compras_usuario_actual: {
+        Row: {
+          id: string;
+          id_usuario: string;
+          id_evento: string;
+          id_tipo_entrada: string;
+          cantidad: number;
+          precio_unitario: number;
+          total_pagado: number;
+          estado: 'pendiente' | 'completada' | 'cancelada' | 'reembolsada';
+          codigo_qr: string | null;
+          numero_orden: string;
+          fecha_creacion: string;
+          fecha_actualizacion: string;
+        };
+        Insert: never;
+        Update: never;
+      };
+      vista_qr_usuario_actual: {
+        Row: {
+          id: string;
+          id_compra: string;
+          id_evento: string;
+          id_usuario: string;
+          codigo_qr: string;
+          datos_qr: any;
+          fecha_generacion: string;
+          fecha_escaneado: string | null;
+          escaneado_por: string | null;
+          estado: 'activo' | 'usado' | 'cancelado' | 'expirado';
+          numero_entrada: number;
+        };
+        Insert: never;
+        Update: never;
       };
       analiticas_eventos: {
         Row: {

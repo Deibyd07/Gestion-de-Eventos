@@ -42,6 +42,9 @@ import { AdminPage } from './modules/administration/presentation/pages/Admin.pag
 // Pages - Notifications
 import { NotificationsPage } from './modules/notifications/presentation/pages/Notifications.page';
 
+// Pages - Tickets
+import { TicketConsultPage } from './modules/tickets/presentation/pages/TicketConsult.page';
+
 function App() {
   const { isAuthenticated, user } = useAuthStore();
 
@@ -119,6 +122,12 @@ function App() {
                 </Layout>
               </AdminRedirect>
             }
+          />
+
+          {/* Ticket Consultation (Public) */}
+          <Route
+            path="/consultar-entrada"
+            element={<TicketConsultPage />}
           />
           
           {/* ========== Protected Routes ========== */}

@@ -25,6 +25,8 @@ export * from './components/Alert/Alert.component';
 export * from './components/Toast/Toast.component';
 export * from './components/FollowOrganizerButton/FollowOrganizerButton.component';
 export * from './components/FollowedOrganizersFeed/FollowedOrganizersFeed.component';
+export * from './components/QRTicketDisplay/QRTicketDisplay.component';
+export * from './components/TicketViewer/TicketViewerModal.component';
 
 // Utils
 export * from './utils/cn';

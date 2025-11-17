@@ -1,5 +1,5 @@
-import React from 'react';
-import { Download, Calendar, MapPin, Clock, User, Ticket, CheckCircle2, XCircle, AlertCircle } from 'lucide-react';
+import React, { useState } from 'react';
+import { Download, Calendar, MapPin, Clock, User, Ticket, CheckCircle2, XCircle, AlertCircle, Copy, Check } from 'lucide-react';
 
 interface QRTicketDisplayProps {
   ticket: {
@@ -27,6 +27,17 @@ interface QRTicketDisplayProps {
 
 export const QRTicketDisplay: React.FC<QRTicketDisplayProps> = ({ ticket, compact = false }) => {
   const { datos_qr, estado, numero_entrada, fecha_escaneado, escaneado_por_nombre } = ticket;
+  const [copied, setCopied] = useState(false);
+
+  const handleCopyCode = async () => {
+    try {
+      await navigator.clipboard.writeText(ticket.codigo_qr);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error('Error al copiar:', err);
+    }
+  };
 
   const getStatusConfig = (status: string) => {
     switch (status) {
@@ -245,13 +256,30 @@ export const QRTicketDisplay: React.FC<QRTicketDisplayProps> = ({ ticket, compac
             )}
 
             <div className="pt-4 border-t border-gray-200">
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-gray-500 mb-2">
                 <span className="font-semibold">Código de verificación:</span>
-                <br />
-                <code className="text-xs bg-gray-100 px-2 py-1 rounded mt-1 inline-block break-all">
+              </p>
+              <div className="flex items-center gap-2">
+                <code className="flex-1 text-xs bg-gray-100 px-3 py-2 rounded break-all">
                   {ticket.codigo_qr}
                 </code>
-              </p>
+                <button
+                  onClick={handleCopyCode}
+                  className="flex-shrink-0 p-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg hover:from-purple-600 hover:to-pink-600 transition-all duration-200 shadow-md hover:shadow-lg"
+                  title="Copiar código"
+                >
+                  {copied ? (
+                    <Check className="w-4 h-4" />
+                  ) : (
+                    <Copy className="w-4 h-4" />
+                  )}
+                </button>
+              </div>
+              {copied && (
+                <p className="text-xs text-green-600 mt-1 font-medium">
+                  ✓ Código copiado
+                </p>
+              )}
             </div>
           </div>
         </div>

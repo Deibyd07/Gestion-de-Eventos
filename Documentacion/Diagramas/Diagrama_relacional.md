@@ -22,7 +22,7 @@ erDiagram
         timestamptz fecha_actualizacion
         text contraseña
     }
-    
+
     EVENTOS {
         uuid id PK
         text titulo
@@ -41,7 +41,7 @@ erDiagram
         timestamptz fecha_creacion
         timestamptz fecha_actualizacion
     }
-    
+
     TIPOS_ENTRADA {
         uuid id PK
         uuid id_evento FK
@@ -54,7 +54,7 @@ erDiagram
         timestamptz fecha_actualizacion
         text nombre_evento
     }
-    
+
     COMPRAS {
         uuid id PK
         uuid id_usuario FK
@@ -69,7 +69,7 @@ erDiagram
         timestamptz fecha_creacion
         timestamptz fecha_actualizacion
     }
-    
+
     NOTIFICACIONES {
         uuid id PK
         uuid id_usuario FK
@@ -81,7 +81,7 @@ erDiagram
         text texto_accion
         timestamptz fecha_creacion
     }
-    
+
     PLANTILLAS_EMAIL {
         uuid id PK
         text nombre_plantilla
@@ -91,7 +91,7 @@ erDiagram
         timestamptz fecha_creacion
         timestamptz fecha_actualizacion
     }
-    
+
     ANALITICAS_EVENTOS {
         uuid id PK
         uuid id_evento FK
@@ -107,7 +107,7 @@ erDiagram
         timestamptz fecha_creacion
         timestamptz fecha_actualizacion
     }
-    
+
     CODIGOS_PROMOCIONALES {
         uuid id PK
         varchar codigo UK
@@ -124,7 +124,7 @@ erDiagram
         timestamptz fecha_creacion
         timestamptz fecha_actualizacion
     }
-    
+
     ASISTENCIA_EVENTOS {
         uuid id PK
         uuid id_compra FK
@@ -140,7 +140,7 @@ erDiagram
         timestamptz fecha_creacion
         timestamptz fecha_actualizacion
     }
-    
+
     FAVORITOS_USUARIOS {
         uuid id PK
         uuid id_usuario FK
@@ -154,7 +154,7 @@ erDiagram
         timestamptz fecha_creacion
         timestamptz fecha_actualizacion
     }
-    
+
     CALIFICACIONES_EVENTOS {
         uuid id PK
         uuid id_evento FK
@@ -172,7 +172,7 @@ erDiagram
         timestamptz fecha_creacion
         timestamptz fecha_actualizacion
     }
-    
+
     CONFIGURACIONES_SISTEMA {
         uuid id PK
         varchar clave UK
@@ -187,7 +187,48 @@ erDiagram
         timestamptz fecha_actualizacion
         uuid actualizado_por FK
     }
-    
+
+    CODIGOS_QR_ENTRADAS {
+        uuid id PK
+        uuid id_compra FK
+        uuid id_evento FK
+        uuid id_usuario FK
+        text codigo_qr UK
+        jsonb datos_qr
+        timestamptz fecha_generacion
+        timestamptz fecha_escaneado
+        uuid escaneado_por FK
+        varchar estado
+        int4 numero_entrada
+    }
+
+    SEGUIDORES_ORGANIZADORES {
+        uuid id PK
+        uuid id_usuario_seguidor FK
+        uuid id_organizador FK
+        timestamptz fecha_creacion
+    }
+
+    METODOS_PAGO {
+        uuid id PK
+        text nombre
+        varchar tipo
+        text proveedor
+        text descripcion
+        bool activo
+        numeric comision_porcentaje
+        numeric comision_fija
+        numeric monto_minimo
+        numeric monto_maximo
+        text_array monedas_soportadas
+        bool requiere_verificacion
+        text tiempo_procesamiento
+        jsonb configuracion
+        uuid id_organizador FK
+        timestamptz fecha_creacion
+        timestamptz fecha_actualizacion
+    }
+
     %% Relaciones principales
     USUARIOS ||--o{ EVENTOS : "organiza"
     USUARIOS ||--o{ COMPRAS : "compra"
@@ -198,7 +239,7 @@ erDiagram
     USUARIOS ||--o{ FAVORITOS_USUARIOS : "marca"
     USUARIOS ||--o{ CALIFICACIONES_EVENTOS : "califica"
     USUARIOS ||--o{ CONFIGURACIONES_SISTEMA : "actualiza"
-    
+
     EVENTOS ||--o{ TIPOS_ENTRADA : "tiene"
     EVENTOS ||--o{ COMPRAS : "vende"
     EVENTOS ||--o{ ANALITICAS_EVENTOS : "genera"
@@ -206,12 +247,18 @@ erDiagram
     EVENTOS ||--o{ ASISTENCIA_EVENTOS : "registra"
     EVENTOS ||--o{ FAVORITOS_USUARIOS : "es_favorito"
     EVENTOS ||--o{ CALIFICACIONES_EVENTOS : "es_calificado"
-    
+
     TIPOS_ENTRADA ||--o{ COMPRAS : "se_compra"
     COMPRAS ||--o{ ASISTENCIA_EVENTOS : "valida"
-```
 
----
+    %% Relaciones QR
+    COMPRAS ||--o{ CODIGOS_QR_ENTRADAS : "genera_qr"
+    EVENTOS ||--o{ CODIGOS_QR_ENTRADAS : "asociado_a"
+    USUARIOS ||--o{ CODIGOS_QR_ENTRADAS : "posee_qr"
+    USUARIOS ||--o{ SEGUIDORES_ORGANIZADORES : "sigue"
+    USUARIOS ||--o{ SEGUIDORES_ORGANIZADORES : "es_seguido"
+    USUARIOS ||--o{ METODOS_PAGO : "define_metodo"
+```
 
 ## 🔗 **Relaciones Detalladas del Sistema**
 
@@ -220,31 +267,31 @@ erDiagram
 #### **1. USUARIOS (Tabla Central)**
 - **Clave Primaria:** `id` (UUID)
 - **Clave Única:** `correo_electronico`
-- **Relaciones Salientes:** 9 relaciones
+- **Relaciones Salientes:** 12
 - **Función:** Gestión completa de usuarios del sistema
 
 #### **2. EVENTOS (Tabla Central)**
 - **Clave Primaria:** `id` (UUID)
 - **Clave Foránea:** `id_organizador` → USUARIOS.id
-- **Relaciones Salientes:** 7 relaciones
+- **Relaciones Salientes:** 8
 - **Función:** Catálogo central de eventos
 
 #### **3. TIPOS_ENTRADA (Tabla de Soporte)**
 - **Clave Primaria:** `id` (UUID)
 - **Clave Foránea:** `id_evento` → EVENTOS.id
-- **Relaciones Salientes:** 1 relación
+- **Relaciones Salientes:** 1
 - **Función:** Tipos de entradas por evento
 
 #### **4. COMPRAS (Tabla de Transacciones)**
 - **Clave Primaria:** `id` (UUID)
 - **Claves Foráneas:** 
-  - `id_usuario` → USUARIOS.id
-  - `id_evento` → EVENTOS.id
-  - `id_tipo_entrada` → TIPOS_ENTRADA.id
-- **Relaciones Salientes:** 1 relación
+    - `id_usuario` → USUARIOS.id
+    - `id_evento` → EVENTOS.id
+    - `id_tipo_entrada` → TIPOS_ENTRADA.id
+- **Relaciones Salientes:** 2 (ASISTENCIA_EVENTOS, CODIGOS_QR_ENTRADAS)
 - **Función:** Registro de transacciones
 
-### **Tablas de Soporte (8)**
+### **Tablas de Soporte (11)**
 
 #### **5. NOTIFICACIONES**
 - **Clave Primaria:** `id` (UUID)
@@ -264,31 +311,31 @@ erDiagram
 #### **8. CODIGOS_PROMOCIONALES**
 - **Clave Primaria:** `id` (UUID)
 - **Claves Foráneas:**
-  - `id_evento` → EVENTOS.id
-  - `id_organizador` → USUARIOS.id
+    - `id_evento` → EVENTOS.id
+    - `id_organizador` → USUARIOS.id
 - **Función:** Sistema de descuentos
 
 #### **9. ASISTENCIA_EVENTOS**
 - **Clave Primaria:** `id` (UUID)
 - **Claves Foráneas:**
-  - `id_compra` → COMPRAS.id
-  - `id_evento` → EVENTOS.id
-  - `id_usuario` → USUARIOS.id
-  - `validado_por` → USUARIOS.id
+    - `id_compra` → COMPRAS.id
+    - `id_evento` → EVENTOS.id
+    - `id_usuario` → USUARIOS.id
+    - `validado_por` → USUARIOS.id
 - **Función:** Control de asistencia
 
 #### **10. FAVORITOS_USUARIOS**
 - **Clave Primaria:** `id` (UUID)
 - **Claves Foráneas:**
-  - `id_usuario` → USUARIOS.id
-  - `id_evento` → EVENTOS.id
+    - `id_usuario` → USUARIOS.id
+    - `id_evento` → EVENTOS.id
 - **Función:** Sistema de favoritos
 
 #### **11. CALIFICACIONES_EVENTOS**
 - **Clave Primaria:** `id` (UUID)
 - **Claves Foráneas:**
-  - `id_evento` → EVENTOS.id
-  - `id_usuario` → USUARIOS.id
+    - `id_evento` → EVENTOS.id
+    - `id_usuario` → USUARIOS.id
 - **Función:** Sistema de calificaciones
 
 #### **12. CONFIGURACIONES_SISTEMA**
@@ -296,20 +343,40 @@ erDiagram
 - **Clave Foránea:** `actualizado_por` → USUARIOS.id
 - **Función:** Configuraciones del sistema
 
+#### **13. CODIGOS_QR_ENTRADAS**
+- **Clave Primaria:** `id` (UUID)
+- **Claves Foráneas:**
+    - `id_compra` → COMPRAS.id
+    - `id_evento` → EVENTOS.id
+    - `id_usuario` → USUARIOS.id
+    - `escaneado_por` → USUARIOS.id
+- **Campos Clave:** `codigo_qr` (UK), `estado`, `numero_entrada`
+- **Función:** Almacena QR por entrada con metadatos y estado
+
+#### **14. SEGUIDORES_ORGANIZADORES**
+- **Clave Primaria:** `id` (UUID)
+- **Claves Foráneas:**
+    - `id_usuario_seguidor` → USUARIOS.id
+    - `id_organizador` → USUARIOS.id
+- **Función:** Vínculo seguidor ↔ organizador para funcionalidades sociales.
+
+#### **15. METODOS_PAGO**
+- **Clave Primaria:** `id` (UUID)
+- **Clave Foránea:** `id_organizador` → USUARIOS.id
+- **Función:** Catálogo de métodos/pasarelas de pago configurados por cada organizador.
+
 ---
+- **Total de tablas:** 15
+- **Tablas principales:** 4
+- **Tablas de soporte:** 11 
 
-## 📊 **Estadísticas del Diagrama Relacional**
-
-### **Resumen de Tablas**
-- **Total de tablas:** 12
-- **Tablas principales:** 4 (USUARIOS, EVENTOS, TIPOS_ENTRADA, COMPRAS)
-- **Tablas de soporte:** 8 (NOTIFICACIONES, PLANTILLAS_EMAIL, etc.)
 
 ### **Resumen de Relaciones**
-- **Total de relaciones:** 18
-- **Relaciones de USUARIOS:** 9 (como entidad central)
-- **Relaciones de EVENTOS:** 7 (como entidad central)
+- **Total de relaciones:** 24
+- **Relaciones de USUARIOS:** 13 (central: eventos, compras, notificaciones, asiste, valida, códigos, favoritos, calificaciones, configuraciones, QR, sigue, es_seguido, métodos_pago)
+- **Relaciones de EVENTOS:** 8 (incluye relación con CODIGOS_QR_ENTRADAS)
 - **Relaciones de flujo:** 2 (TIPOS_ENTRADA → COMPRAS, COMPRAS → ASISTENCIA)
+- **Relaciones QR:** 3 (COMPRAS → CODIGOS_QR_ENTRADAS, EVENTOS → CODIGOS_QR_ENTRADAS, USUARIOS → CODIGOS_QR_ENTRADAS)
 
 ### **Tipos de Datos Utilizados**
 - **UUID:** Claves primarias y foráneas
@@ -324,9 +391,18 @@ erDiagram
 - **TEXT_ARRAY:** Arrays de texto
 
 ### **Claves y Restricciones**
-- **Claves Primarias:** 12 (una por tabla)
-- **Claves Foráneas:** 18 (relaciones entre tablas)
-- **Claves Únicas:** 4 (correo_electronico, codigo_qr, numero_orden, clave)
+- **Claves Primarias:** 15 (una por tabla)
+- **Claves Foráneas:** 24 (relaciones entre tablas)
+- **Claves Únicas:** 9
+    - `usuarios.correo_electronico`
+    - `compras.numero_orden`
+    - `compras.codigo_qr`
+    - `codigos_promocionales.codigo`
+    - `configuraciones_sistema.clave`
+    - `codigos_qr_entradas.codigo_qr`
+    - `codigos_qr_entradas (id_compra, numero_entrada)`
+    - `favoritos_usuarios (id_usuario, id_evento)`
+    - `seguidores_organizadores (id_usuario_seguidor, id_organizador)`
 - **Restricciones de Integridad:** Implementadas en todas las relaciones
 
 ---

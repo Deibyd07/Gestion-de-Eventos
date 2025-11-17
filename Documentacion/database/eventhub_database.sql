@@ -243,6 +243,51 @@ CREATE TABLE calificaciones_eventos (
     UNIQUE(id_evento, id_usuario)
 );
 
+CREATE TABLE codigos_qr_entradas (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id_compra UUID NOT NULL REFERENCES compras(id) ON DELETE CASCADE,
+    id_evento UUID NOT NULL REFERENCES eventos(id) ON DELETE CASCADE,
+    id_usuario UUID NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
+    codigo_qr TEXT NOT NULL UNIQUE,
+    datos_qr JSONB NOT NULL,
+    fecha_generacion TIMESTAMPTZ DEFAULT NOW(),
+    fecha_escaneado TIMESTAMPTZ,
+    escaneado_por UUID REFERENCES usuarios(id),
+    estado VARCHAR(20) DEFAULT 'activo' CHECK (estado IN ('activo', 'usado', 'cancelado', 'expirado')),
+    numero_entrada INTEGER NOT NULL,
+    UNIQUE(id_compra, numero_entrada)
+);
+
+-- Tabla de seguidores de organizadores
+CREATE TABLE seguidores_organizadores (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id_usuario_seguidor UUID NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
+    id_organizador UUID NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
+    fecha_creacion TIMESTAMPTZ DEFAULT NOW(),
+    UNIQUE(id_usuario_seguidor, id_organizador)
+);
+
+-- Tabla de métodos de pago
+CREATE TABLE metodos_pago (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    nombre TEXT NOT NULL,
+    tipo VARCHAR(30) NOT NULL,
+    proveedor TEXT,
+    descripcion TEXT,
+    activo BOOLEAN NOT NULL DEFAULT TRUE,
+    comision_porcentaje NUMERIC(5,2) DEFAULT 0,
+    comision_fija NUMERIC(10,2) DEFAULT 0,
+    monto_minimo NUMERIC(10,2) DEFAULT 0,
+    monto_maximo NUMERIC(10,2),
+    monedas_soportadas TEXT[] DEFAULT '{}',
+    requiere_verificacion BOOLEAN NOT NULL DEFAULT FALSE,
+    tiempo_procesamiento TEXT,
+    configuracion JSONB DEFAULT '{}',
+    id_organizador UUID NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
+    fecha_creacion TIMESTAMPTZ DEFAULT NOW(),
+    fecha_actualizacion TIMESTAMPTZ DEFAULT NOW()
+);
+
 -- Tabla de configuraciones del sistema
 CREATE TABLE configuraciones_sistema (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -325,6 +370,24 @@ CREATE INDEX idx_calificaciones_visible ON calificaciones_eventos(visible);
 -- Índices para configuraciones
 CREATE INDEX idx_configuraciones_clave ON configuraciones_sistema(clave);
 CREATE INDEX idx_configuraciones_categoria ON configuraciones_sistema(categoria);
+
+CREATE INDEX idx_cod_qr_compra ON codigos_qr_entradas(id_compra);
+CREATE INDEX idx_cod_qr_evento ON codigos_qr_entradas(id_evento);
+CREATE INDEX idx_cod_qr_usuario ON codigos_qr_entradas(id_usuario);
+CREATE INDEX idx_cod_qr_codigo ON codigos_qr_entradas(codigo_qr);
+CREATE INDEX idx_cod_qr_estado ON codigos_qr_entradas(estado);
+
+-- Índices para seguidores_organizadores
+CREATE INDEX idx_seguidores_seguidor ON seguidores_organizadores(id_usuario_seguidor);
+CREATE INDEX idx_seguidores_organizador ON seguidores_organizadores(id_organizador);
+CREATE INDEX idx_seguidores_fecha ON seguidores_organizadores(fecha_creacion);
+
+-- Índices para metodos_pago
+CREATE INDEX idx_metodo_pago_organizador ON metodos_pago(id_organizador);
+CREATE INDEX idx_metodo_pago_tipo ON metodos_pago(tipo);
+CREATE INDEX idx_metodo_pago_activo ON metodos_pago(activo);
+CREATE INDEX idx_metodo_pago_nombre ON metodos_pago(nombre);
+CREATE INDEX idx_metodo_pago_fecha_creacion ON metodos_pago(fecha_creacion);
 
 -- =====================================================
 -- 5. TRIGGERS PARA ACTUALIZACIÓN AUTOMÁTICA
@@ -433,6 +496,140 @@ CREATE TRIGGER trigger_actualizar_asistentes
     AFTER INSERT OR UPDATE OR DELETE ON compras
     FOR EACH ROW EXECUTE FUNCTION actualizar_asistentes_evento();
 
+-- =====================================================
+-- 6.1. FUNCIONES QR (Consulta pública y Validación)
+-- =====================================================
+
+-- Vista de apoyo: tickets QR con información completa
+CREATE OR REPLACE VIEW vista_tickets_qr AS
+SELECT 
+        qr.id,
+        qr.codigo_qr,
+        qr.estado,
+        qr.fecha_generacion,
+        qr.fecha_escaneado,
+        qr.numero_entrada,
+        qr.datos_qr,
+        c.id AS compra_id,
+        c.cantidad,
+        c.total_pagado,
+        e.id AS evento_id,
+        e.titulo AS evento_titulo,
+        e.fecha_evento,
+        e.hora_evento,
+        e.ubicacion AS evento_ubicacion,
+        u.id AS usuario_id,
+        u.nombre_completo AS usuario_nombre,
+        u.correo_electronico AS usuario_email
+FROM codigos_qr_entradas qr
+JOIN compras c ON qr.id_compra = c.id
+JOIN eventos e ON qr.id_evento = e.id
+JOIN usuarios u ON qr.id_usuario = u.id;
+
+-- Consulta pública de tickets (no marca asistencia)
+CREATE OR REPLACE FUNCTION consultar_ticket_qr(p_codigo_qr TEXT)
+RETURNS TABLE(
+    existe BOOLEAN,
+    mensaje TEXT,
+    ticket_info JSONB
+) AS $$
+DECLARE
+    v_ticket RECORD;
+    v_info JSONB;
+BEGIN
+    SELECT 
+        qr.*,
+        e.titulo AS evento_titulo,
+        e.fecha_evento,
+        e.hora_evento,
+        e.ubicacion AS evento_ubicacion,
+        u.nombre_completo AS usuario_nombre,
+        u.correo_electronico AS usuario_email,
+        c.total_pagado,
+        c.fecha_creacion AS fecha_compra,
+        te.nombre_tipo AS tipo_entrada,
+        te.precio
+    INTO v_ticket
+    FROM codigos_qr_entradas qr
+    JOIN eventos e ON qr.id_evento = e.id
+    JOIN usuarios u ON qr.id_usuario = u.id
+    JOIN compras c ON qr.id_compra = c.id
+    LEFT JOIN tipos_entrada te ON c.id_tipo_entrada = te.id
+    WHERE qr.codigo_qr = p_codigo_qr;
+
+    IF v_ticket IS NULL THEN
+        RETURN QUERY SELECT FALSE, 'Código QR no válido'::TEXT, NULL::JSONB;
+        RETURN;
+    END IF;
+
+    v_info := jsonb_build_object(
+        'event_title', v_ticket.evento_titulo,
+        'event_date', v_ticket.fecha_evento,
+        'event_time', v_ticket.hora_evento,
+        'event_location', v_ticket.evento_ubicacion,
+        'user_name', v_ticket.usuario_nombre,
+        'user_email', v_ticket.usuario_email,
+        'ticket_type', COALESCE(v_ticket.tipo_entrada, 'Entrada General'),
+        'price', COALESCE(v_ticket.precio, v_ticket.total_pagado),
+        'purchase_date', v_ticket.fecha_compra,
+        'ticket_number', v_ticket.numero_entrada,
+        'status', v_ticket.estado,
+        'qr_code', v_ticket.codigo_qr,
+        'generated_date', v_ticket.fecha_generacion,
+        'scanned_date', v_ticket.fecha_escaneado
+    );
+
+    RETURN QUERY SELECT TRUE, 'Información del ticket'::TEXT, v_info;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Validación de tickets (marca asistencia para organizador)
+CREATE OR REPLACE FUNCTION validar_ticket_qr(
+    p_codigo_qr TEXT,
+    p_id_organizador UUID
+)
+RETURNS TABLE(
+    valido BOOLEAN,
+    mensaje TEXT,
+    ticket_info JSONB
+) AS $$
+DECLARE
+    v_ticket RECORD;
+    v_es_organizador BOOLEAN;
+BEGIN
+    SELECT qr.*, e.id_organizador INTO v_ticket
+    FROM codigos_qr_entradas qr
+    JOIN eventos e ON qr.id_evento = e.id
+    WHERE qr.codigo_qr = p_codigo_qr;
+
+    IF v_ticket IS NULL THEN
+        RETURN QUERY SELECT FALSE, 'Código QR no válido o no encontrado'::TEXT, NULL::JSONB;
+        RETURN;
+    END IF;
+
+    v_es_organizador := (v_ticket.id_organizador = p_id_organizador);
+    IF NOT v_es_organizador THEN
+        RETURN QUERY SELECT FALSE, 'No tienes permisos para validar este ticket'::TEXT, NULL::JSONB;
+        RETURN;
+    END IF;
+
+    IF v_ticket.estado = 'usado' THEN
+        RETURN QUERY SELECT FALSE, 'Este ticket ya fue utilizado'::TEXT, v_ticket.datos_qr;
+        RETURN;
+    END IF;
+
+    IF v_ticket.estado IN ('cancelado','expirado') THEN
+        RETURN QUERY SELECT FALSE, 'Este ticket no es válido'::TEXT, v_ticket.datos_qr;
+        RETURN;
+    END IF;
+
+    UPDATE codigos_qr_entradas
+    SET estado = 'usado', fecha_escaneado = NOW(), escaneado_por = p_id_organizador
+    WHERE id = v_ticket.id;
+
+    RETURN QUERY SELECT TRUE, 'Ticket validado correctamente'::TEXT, v_ticket.datos_qr;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
 -- =====================================================
 -- 7. DATOS INICIALES DEL SISTEMA
 -- =====================================================
@@ -546,6 +743,8 @@ SELECT
 FROM eventos e
 LEFT JOIN analiticas_eventos ae ON e.id = ae.id_evento;
 
+-- Vista ya creada en 6.1: vista_tickets_qr
+
 -- =====================================================
 -- 9. PERMISOS Y SEGURIDAD
 -- =====================================================
@@ -567,11 +766,14 @@ GRANT SELECT ON ALL SEQUENCES IN SCHEMA public TO eventhub_readonly;
 -- 10. COMENTARIOS Y DOCUMENTACIÓN
 -- =====================================================
 
--- Comentarios en tablas principales
 COMMENT ON TABLE usuarios IS 'Tabla principal para la gestión de usuarios del sistema';
 COMMENT ON TABLE eventos IS 'Tabla principal para la gestión de eventos';
 COMMENT ON TABLE tipos_entrada IS 'Tipos de entradas disponibles para cada evento';
 COMMENT ON TABLE compras IS 'Registro de todas las compras realizadas en el sistema';
+COMMENT ON TABLE codigos_qr_entradas IS 'Códigos QR generados por cada compra/entrada, con estado y metadatos';
+
+COMMENT ON TABLE seguidores_organizadores IS 'Relación de seguimiento entre usuarios y organizadores para funcionalidades sociales y notificaciones.';
+COMMENT ON TABLE metodos_pago IS 'Catálogo de métodos de pago configurados por cada organizador (pasarelas externas, condiciones y tarifas).';
 
 -- Comentarios en columnas importantes
 COMMENT ON COLUMN usuarios.rol IS 'Rol del usuario: asistente, organizador o administrador';
@@ -591,11 +793,11 @@ BEGIN
     RAISE NOTICE 'Versión: 1.0';
     RAISE NOTICE 'Fecha: Octubre 2025';
     RAISE NOTICE '=====================================================';
-    RAISE NOTICE 'Tablas creadas: 12';
-    RAISE NOTICE 'Índices creados: 25+';
+    RAISE NOTICE 'Tablas creadas: 15';
+    RAISE NOTICE 'Índices creados: 30+';
     RAISE NOTICE 'Triggers creados: 10';
-    RAISE NOTICE 'Funciones creadas: 3';
-    RAISE NOTICE 'Vistas creadas: 3';
+    RAISE NOTICE 'Funciones creadas: 5';
+    RAISE NOTICE 'Vistas creadas: 4';
     RAISE NOTICE 'Datos iniciales insertados';
     RAISE NOTICE '=====================================================';
 END $$;

@@ -49,6 +49,9 @@ Tabla EVENTOS:
 10. [favoritos_usuarios](#favoritos_usuarios)
 11. [calificaciones_eventos](#calificaciones_eventos)
 12. [configuraciones_sistema](#configuraciones_sistema)
+13. [codigos_qr_entradas](#codigos_qr_entradas)
+14. [seguidores_organizadores](#seguidores_organizadores)
+15. [metodos_pago](#metodos_pago)
 
 ---
 
@@ -80,6 +83,11 @@ Tabla EVENTOS:
   - `asistencia_eventos.id_usuario` (como usuario que asiste)
   - `asistencia_eventos.validado_por` (como validador de asistencia)
   - `configuraciones_sistema.actualizado_por` (como usuario que actualiza configuraciones)
+  - `codigos_qr_entradas.id_usuario` (como propietario de QR)
+  - `codigos_qr_entradas.escaneado_por` (como último validador QR)
+  - `seguidores_organizadores.id_usuario_seguidor` (como seguidor)
+  - `seguidores_organizadores.id_organizador` (como organizador seguido)
+  - `metodos_pago.id_organizador` (como organizador que define métodos)
 
 ---
 
@@ -108,6 +116,7 @@ Tabla EVENTOS:
 **Relaciones:**
 - Referenciada por: `tipos_entrada.id_evento`, `compras.id_evento`, `analiticas_eventos.id_evento`, `codigos_promocionales.id_evento`, `asistencia_eventos.id_evento`, `favoritos_usuarios.id_evento`, `calificaciones_eventos.id_evento`
 - Referencia a: `usuarios.id` (a través de `id_organizador`)
+ - Referenciada adicionalmente por: `codigos_qr_entradas.id_evento`
 
 ---
 
@@ -157,6 +166,7 @@ Tabla EVENTOS:
   - `usuarios.id` (a través de `id_usuario`)
   - `eventos.id` (a través de `id_evento`)
   - `tipos_entrada.id` (a través de `id_tipo_entrada`)
+ - Referenciada adicionalmente por: `codigos_qr_entradas.id_compra`
 
 ---
 
@@ -359,6 +369,80 @@ Tabla EVENTOS:
 
 ---
 
+### codigos_qr_entradas
+**Descripción:** Almacena cada código QR generado por una entrada comprada, con su estado y metadatos de validación.
+
+| Campo | Tipo | Descripción |
+|-------|------|-------------|
+| `id` | `uuid` | **PK** - Identificador único del código QR |
+| `id_compra` | `uuid` | **FK** - ID de la compra origen |
+| `id_evento` | `uuid` | **FK** - ID del evento asociado |
+| `id_usuario` | `uuid` | **FK** - Usuario propietario (comprador) |
+| `codigo_qr` | `text` | **UNIQUE** - Código hash incorporado en la imagen QR |
+| `datos_qr` | `jsonb` | Payload embebido (tipo_entrada, firma, etc.) |
+| `fecha_generacion` | `timestamptz` | Fecha/hora de creación del QR |
+| `fecha_escaneado` | `timestamptz` | Última fecha/hora de escaneo (nullable) |
+| `escaneado_por` | `uuid` | **FK** - Usuario que realizó el último escaneo válido |
+| `estado` | `varchar` | Estado del ticket (generado, escaneado, invalidado, expirado) |
+| `numero_entrada` | `int4` | Número correlativo dentro de la compra |
+
+**Relaciones:**
+- Referenciada por: Ninguna
+- Referencia a:
+  - `compras.id` (a través de `id_compra`)
+  - `eventos.id` (a través de `id_evento`)
+  - `usuarios.id` (a través de `id_usuario`)
+  - `usuarios.id` (a través de `escaneado_por`)
+
+---
+
+### seguidores_organizadores
+**Descripción:** Representa el vínculo de seguimiento entre usuarios y organizadores (social/fidelización).
+
+| Campo | Tipo | Descripción |
+|-------|------|-------------|
+| `id` | `uuid` | **PK** - Identificador del registro de seguimiento |
+| `id_usuario_seguidor` | `uuid` | **FK** - Usuario que sigue al organizador |
+| `id_organizador` | `uuid` | **FK** - Organizador seguido |
+| `fecha_creacion` | `timestamptz` | Fecha de creación del vínculo |
+
+**Relaciones:**
+- Referenciada por: Ninguna
+- Referencia a:
+  - `usuarios.id` (a través de `id_usuario_seguidor`)
+  - `usuarios.id` (a través de `id_organizador`)
+
+---
+
+### metodos_pago
+**Descripción:** Catálogo de métodos/pasarelas de pago que cada organizador habilita, con estructura flexible.
+
+| Campo | Tipo | Descripción |
+|-------|------|-------------|
+| `id` | `uuid` | **PK** - Identificador del método de pago |
+| `nombre` | `text` | Nombre distintivo del método |
+| `tipo` | `varchar` | Tipo (pasarela, transferencia, manual, etc.) |
+| `proveedor` | `text` | Proveedor (Stripe, PayPal, Banco, etc.) |
+| `descripcion` | `text` | Descripción interna |
+| `activo` | `bool` | Si está habilitado para nuevas compras |
+| `comision_porcentaje` | `numeric` | Comisión variable en porcentaje |
+| `comision_fija` | `numeric` | Comisión fija |
+| `monto_minimo` | `numeric` | Monto mínimo aceptado |
+| `monto_maximo` | `numeric` | Monto máximo aceptado |
+| `monedas_soportadas` | `_text` | Lista de códigos de moneda soportados |
+| `requiere_verificacion` | `bool` | Indica si requiere paso adicional de verificación |
+| `tiempo_procesamiento` | `text` | Texto estimado de procesamiento |
+| `configuracion` | `jsonb` | Parámetros específicos (API keys, modos, flags) |
+| `id_organizador` | `uuid` | **FK** - Organizador propietario |
+| `fecha_creacion` | `timestamptz` | Fecha de creación |
+| `fecha_actualizacion` | `timestamptz` | Fecha de última actualización |
+
+**Relaciones:**
+- Referenciada por: Ninguna
+- Referencia a: `usuarios.id` (a través de `id_organizador`)
+
+---
+
 ## 🔗 **Diagrama de Relaciones**
 
 ```
@@ -371,6 +455,11 @@ usuarios (1) ──→ (N) codigos_promocionales (como organizador)
 usuarios (1) ──→ (N) asistencia_eventos (como asistente)
 usuarios (1) ──→ (N) asistencia_eventos (como validador)
 usuarios (1) ──→ (N) configuraciones_sistema (como actualizador)
+usuarios (1) ──→ (N) codigos_qr_entradas (como propietario)
+usuarios (1) ──→ (N) codigos_qr_entradas (como escaneador)
+usuarios (1) ──→ (N) seguidores_organizadores (como seguidor)
+usuarios (1) ──→ (N) seguidores_organizadores (como organizador_seguido)
+usuarios (1) ──→ (N) metodos_pago (como organizador)
 
 eventos (1) ──→ (N) tipos_entrada
 eventos (1) ──→ (N) compras
@@ -379,23 +468,28 @@ eventos (1) ──→ (N) codigos_promocionales
 eventos (1) ──→ (N) asistencia_eventos
 eventos (1) ──→ (N) favoritos_usuarios
 eventos (1) ──→ (N) calificaciones_eventos
+eventos (1) ──→ (N) codigos_qr_entradas
 
 tipos_entrada (1) ──→ (N) compras
 
 compras (1) ──→ (N) asistencia_eventos
+compras (1) ──→ (N) codigos_qr_entradas
 
 plantillas_email (independiente - sin relaciones)
+seguidores_organizadores (intermedia usuarios↔usuarios)
+codigos_qr_entradas (intermedia compras/eventos/usuarios)
+metodos_pago (dependiente de usuarios)
 ```
 
 ---
 
 ## 📈 **Estadísticas de la Base de Datos**
 
-- **Total de tablas:** 12
+- **Total de tablas:** 15
 - **Tablas principales:** 4 (usuarios, eventos, tipos_entrada, compras)
-- **Tablas de soporte:** 8 (notificaciones, plantillas_email, analiticas_eventos, etc.)
-- **Relaciones implementadas:** 15+
-- **Tipos de datos utilizados:** 8 (uuid, text, numeric, int4, bool, timestamptz, date, time)
+- **Tablas de soporte:** 11 (notificaciones, plantillas_email, analiticas_eventos, codigos_qr_entradas, seguidores_organizadores, metodos_pago, etc.)
+- **Relaciones implementadas:** 24+
+- **Tipos de datos utilizados:** 10 (uuid, text, numeric, int4, bool, timestamptz, date, time, jsonb, _text)
 
 ---
 

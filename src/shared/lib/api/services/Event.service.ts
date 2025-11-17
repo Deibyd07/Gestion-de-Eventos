@@ -148,6 +148,31 @@ export class EventService {
       .single();
 
     if (error) throw error;
+
+    // Notificar seguidores del organizador sobre el nuevo evento
+    try {
+      const { data: seguidores } = await supabase
+        .from('seguidores_organizadores')
+        .select('id_usuario_seguidor')
+        .eq('id_organizador', datosEvento.id_organizador);
+
+      if (seguidores && seguidores.length > 0) {
+        const tituloNotificacion = `Nuevo evento de ${datosEvento.nombre_organizador}`;
+        const mensajeNotificacion = `Se ha publicado el evento: ${datosEvento.titulo}`;
+        const inserts = seguidores.map(seg => ({
+          id_usuario: seg.id_usuario_seguidor,
+          tipo: 'informativa',
+          titulo: tituloNotificacion,
+          mensaje: mensajeNotificacion,
+          url_accion: `/eventos/${data.id}`,
+          texto_accion: 'Ver evento'
+        }));
+        await supabase.from('notificaciones').insert(inserts);
+      }
+    } catch (e) {
+      console.error('Error creando notificaciones para seguidores:', e);
+    }
+
     return data;
   }
 

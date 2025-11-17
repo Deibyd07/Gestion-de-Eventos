@@ -159,6 +159,22 @@ export interface Database {
           activo?: boolean;
         };
       };
+      seguidores_organizadores: {
+        Row: {
+          id: string;
+          id_usuario_seguidor: string;
+          id_organizador: string;
+          fecha_creacion: string;
+        };
+        Insert: {
+          id?: string;
+          id_usuario_seguidor: string;
+          id_organizador: string;
+        };
+        Update: {
+          // No hay campos editables salvo potencial soft delete futuro
+        };
+      };
       compras: {
         Row: {
           id: string;

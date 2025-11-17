@@ -149,6 +149,15 @@ export function Header() {
                       </Link>
                       
                       <Link
+                        to="/followed-organizers"
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50/80 backdrop-blur-sm transition-all duration-200 flex items-center space-x-2"
+                        onClick={() => setIsProfileMenuOpen(false)}
+                      >
+                        <User className="w-4 h-4" />
+                        <span>Organizadores Seguidos</span>
+                      </Link>
+                      
+                      <Link
                         to="/tickets"
                         className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50/80 backdrop-blur-sm transition-all duration-200 flex items-center space-x-2"
                         onClick={() => setIsProfileMenuOpen(false)}

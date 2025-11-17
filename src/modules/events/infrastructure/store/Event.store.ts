@@ -196,7 +196,7 @@ const convertSupabaseEventToEvent = (supabaseEvent: any): Event => {
     price: precioPorDefecto, // Usar el precio de la entrada general
     maxAttendees: supabaseEvent.capacidad_maxima || 100,
     currentAttendees: supabaseEvent.asistentes_actuales || 0,
-    organizerId: supabaseEvent.organizador_id,
+    organizerId: supabaseEvent.id_organizador,
     organizerName: supabaseEvent.nombre_organizador || 'Organizador',
     status: supabaseEvent.estado || 'upcoming',
     tags: supabaseEvent.tags || [],

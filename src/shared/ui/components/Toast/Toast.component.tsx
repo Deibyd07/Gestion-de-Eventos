@@ -20,24 +20,36 @@ export interface ToastProps {
 
 const toastVariants = {
   success: {
-    icon: 'text-green-500',
-    title: 'text-gray-900',
-    content: 'text-gray-500',
+    bg: 'bg-green-50',
+    border: 'border-green-200',
+    icon: 'text-green-600',
+    title: 'text-green-800',
+    content: 'text-green-700',
+    closeButton: 'text-green-600 hover:text-green-800',
   },
   error: {
-    icon: 'text-red-500',
-    title: 'text-gray-900',
-    content: 'text-gray-500',
+    bg: 'bg-red-50',
+    border: 'border-red-200',
+    icon: 'text-red-600',
+    title: 'text-red-800',
+    content: 'text-red-700',
+    closeButton: 'text-red-600 hover:text-red-800',
   },
   warning: {
-    icon: 'text-yellow-500',
-    title: 'text-gray-900',
-    content: 'text-gray-500',
+    bg: 'bg-yellow-50',
+    border: 'border-yellow-200',
+    icon: 'text-yellow-600',
+    title: 'text-yellow-800',
+    content: 'text-yellow-700',
+    closeButton: 'text-yellow-600 hover:text-yellow-800',
   },
   info: {
-    icon: 'text-blue-500',
-    title: 'text-gray-900',
-    content: 'text-gray-500',
+    bg: 'bg-blue-50',
+    border: 'border-blue-200',
+    icon: 'text-blue-600',
+    title: 'text-blue-800',
+    content: 'text-blue-700',
+    closeButton: 'text-blue-600 hover:text-blue-800',
   },
 } as const;
 
@@ -93,20 +105,22 @@ export const Toast: React.FC<ToastProps> = ({
   return (
     <div
       className={cn(
-        'bg-white rounded-xl shadow-2xl border border-gray-200 p-4 max-w-sm w-full mx-4 animate-slide-in',
+        'rounded-lg shadow-lg border p-4 max-w-sm w-full mx-4 animate-slide-in',
+        variantStyles.bg,
+        variantStyles.border,
         toastPositions[position],
         className
       )}
     >
       <div className="flex items-start">
-        <Icon className={cn('w-5 h-5 mt-0.5', variantStyles.icon)} />
+        <Icon className={cn('w-5 h-5 mt-0.5 flex-shrink-0', variantStyles.icon)} />
         <div className="ml-3 flex-1">
           {title && (
-            <p className={cn('text-sm font-medium', variantStyles.title)}>
+            <p className={cn('text-sm font-semibold', variantStyles.title)}>
               {title}
             </p>
           )}
-          <p className={cn('text-sm mt-1', variantStyles.content)}>
+          <p className={cn('text-sm', title ? 'mt-1' : '', variantStyles.content)}>
             {children}
           </p>
         </div>
@@ -118,7 +132,7 @@ export const Toast: React.FC<ToastProps> = ({
                 setTimeout(onClose, 300);
               }
             }}
-            className="ml-4 text-gray-400 hover:text-gray-600 transition-colors duration-200"
+            className={cn('ml-4 flex-shrink-0 transition-colors duration-200', variantStyles.closeButton)}
           >
             <X className="w-4 h-4" />
           </button>

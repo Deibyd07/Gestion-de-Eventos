@@ -59,6 +59,7 @@ import { formatRevenue } from '@shared/lib/utils/Currency.utils';
 import { EventService } from '@shared/lib/api/services/Event.service';
 import { QRScannerModal } from '../components/QRScannerModal.component';
 import { AnalyticsService } from '@shared/lib/api/services/Analytics.service';
+import { Toast } from '@shared/ui/components/Toast/Toast.component';
 
 
 // Event interface removed - using store types
@@ -124,6 +125,11 @@ export function OrganizerDashboard() {
   
   // Estado para el modal de escáner QR
   const [isQRScannerOpen, setIsQRScannerOpen] = useState(false);
+
+  // Estados para el Toast de notificaciones
+  const [showSuccessToast, setShowSuccessToast] = useState(false);
+  const [showErrorToast, setShowErrorToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
 
     // Estados para los modales CRUD de tipo de entrada
     const [isViewTicketModalOpen, setIsViewTicketModalOpen] = useState(false);
@@ -354,10 +360,12 @@ export function OrganizerDashboard() {
       await loadPaymentMethods();
       setIsDeletePaymentMethodModalOpen(false);
       setSelectedPaymentMethod(null);
-      alert('Método de pago eliminado exitosamente');
+      setToastMessage('Método de pago eliminado exitosamente');
+      setShowSuccessToast(true);
     } catch (error: any) {
       console.error('Error al eliminar método de pago:', error);
-      alert(error.message || 'Error al eliminar el método de pago');
+      setToastMessage(error.message || 'Error al eliminar el método de pago');
+      setShowErrorToast(true);
     } finally {
       setIsDeletingPaymentMethod(false);
     }
@@ -646,8 +654,6 @@ export function OrganizerDashboard() {
         throw new Error('No hay usuario autenticado');
       }
 
-      console.log('🚀 INICIO - Creando método de pago:', formData);
-
       // Convertir los datos del formulario al formato de la base de datos
       const datosMetodoPago = {
         nombre: formData.name,
@@ -673,12 +679,8 @@ export function OrganizerDashboard() {
         id_organizador: user.id,
       };
       
-      console.log('📋 Datos convertidos:', datosMetodoPago);
-      
       // Crear el método de pago usando el servicio real de Supabase
-      console.log('⏳ Creando método de pago en Supabase...');
       const metodoPagoCreado = await PaymentMethodService.crearMetodoPago(datosMetodoPago);
-      console.log('✅ Método de pago creado exitosamente:', metodoPagoCreado);
       
       // Cerrar modal
       setIsCreatePaymentMethodModalOpen(false);
@@ -687,7 +689,8 @@ export function OrganizerDashboard() {
       await handleRefresh();
       
       // Mostrar mensaje de éxito
-      alert('✅ Método de pago creado exitosamente');
+      setToastMessage('Método de pago creado exitosamente');
+      setShowSuccessToast(true);
       
     } catch (error: any) {
       console.error('❌ Error al crear método de pago:', error);
@@ -2100,6 +2103,34 @@ export function OrganizerDashboard() {
         onClose={() => setIsQRScannerOpen(false)}
         eventId={selectedEventId || undefined}
       />
+
+      {/* Toast de éxito */}
+      {showSuccessToast && (
+        <Toast
+          variant="success"
+          title="¡Éxito!"
+          position="top-right"
+          duration={4000}
+          show={showSuccessToast}
+          onClose={() => setShowSuccessToast(false)}
+        >
+          {toastMessage}
+        </Toast>
+      )}
+
+      {/* Toast de error */}
+      {showErrorToast && (
+        <Toast
+          variant="error"
+          title="Error"
+          position="top-right"
+          duration={5000}
+          show={showErrorToast}
+          onClose={() => setShowErrorToast(false)}
+        >
+          {toastMessage}
+        </Toast>
+      )}
     </div>
   );
 }

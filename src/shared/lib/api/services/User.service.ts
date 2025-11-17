@@ -122,10 +122,10 @@ export class UserService {
         .from('usuarios')
         .select('*')
         .eq('id', id)
-        .single();
+        .maybeSingle(); // Cambiar a maybeSingle() para que no falle si no existe
 
       if (error) throw error;
-      return data;
+      return data; // Retorna null si no existe, en vez de lanzar error
     } catch (error) {
       console.error('Error getting user by id:', error);
       return null;

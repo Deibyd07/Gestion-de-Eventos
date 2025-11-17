@@ -27,24 +27,29 @@ export const useCartStore = create<CartState>()(
       total: 0,
 
       addItem: (item) => {
+        console.log('🛒 CartStore.addItem llamado:', item);
         const { items } = get();
         const existingItem = items.find(
           i => i.eventId === item.eventId && i.ticketTypeId === item.ticketTypeId
         );
 
         if (existingItem) {
+          console.log('✏️ Item ya existe, actualizando cantidad');
           get().updateQuantity(
             item.eventId, 
             item.ticketTypeId, 
             existingItem.quantity + (item.quantity || 1)
           );
         } else {
+          console.log('➕ Agregando nuevo item al carrito');
           set({
             items: [...items, { ...item, quantity: item.quantity || 1 }]
           });
         }
         
         get().calculateTotal();
+        console.log('📊 Items después de agregar:', get().items);
+        console.log('💰 Total después de agregar:', get().total);
       },
 
       removeItem: (eventId, ticketTypeId) => {

@@ -9,15 +9,6 @@ interface QuickStats {
   avgTicketPrice: number;
   upcomingEvents: number;
   completedEvents: number;
-  ventasHoy?: number;
-  ingresosHoy?: number;
-  comisionHoy?: number;
-  netoHoy?: number;
-  vistasUnicas?: number;
-  abandonoCarrito?: number;
-  eventosEnCurso?: number;
-  asistenciaPromedio?: number;
-  ultimoEscaneoISO?: string | null;
 }
 
 interface OrganizerMetricsProps {
@@ -26,18 +17,6 @@ interface OrganizerMetricsProps {
 }
 
 export function OrganizerMetrics({ stats, formatRevenue }: OrganizerMetricsProps) {
-  const formatPercent = (value?: number) => `${Number(value ?? 0).toFixed(1)}%`;
-  const timeAgo = (iso?: string | null) => {
-    if (!iso) return '—';
-    const then = new Date(iso).getTime();
-    const now = Date.now();
-    const diffMs = Math.max(0, now - then);
-    const mins = Math.floor(diffMs / 60000);
-    if (mins < 1) return 'Hace segundos';
-    if (mins < 60) return `Hace ${mins} min`;
-    const hours = Math.floor(mins / 60);
-    return `Hace ${hours} h`;
-  };
   return (
     <div className="space-y-4 md:space-y-6">
       {/* Real-time Metrics Dashboard - HU23 */}
@@ -98,7 +77,7 @@ export function OrganizerMetrics({ stats, formatRevenue }: OrganizerMetricsProps
           <div className="flex items-start sm:items-center justify-between gap-2">
             <div className="flex-1 min-w-0">
               <p className="text-xs md:text-sm font-medium text-gray-600">Ventas Hoy</p>
-              <p className="text-xl md:text-2xl font-bold text-gray-900">{stats.ventasHoy ?? 0}</p>
+              <p className="text-xl md:text-2xl font-bold text-gray-900">47</p>
               <p className="text-xs md:text-sm text-orange-600 flex items-center mt-1">
                 <Activity className="w-3 h-3 md:w-4 md:h-4 mr-1" />
                 <span className="truncate">+23% vs ayer</span>
@@ -119,15 +98,15 @@ export function OrganizerMetrics({ stats, formatRevenue }: OrganizerMetricsProps
           <div className="space-y-3 md:space-y-4">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
               <span className="text-xs md:text-sm text-gray-600">Tasa de Conversión</span>
-              <span className="font-semibold text-green-600 text-sm md:text-base">{formatPercent(stats.conversionRate)}</span>
+              <span className="font-semibold text-green-600 text-sm md:text-base">3.2%</span>
             </div>
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
               <span className="text-xs md:text-sm text-gray-600">Vistas Únicas</span>
-              <span className="font-semibold text-blue-600 text-sm md:text-base">{(stats.vistasUnicas ?? 0).toLocaleString('es-CO')}</span>
+              <span className="font-semibold text-blue-600 text-sm md:text-base">1,247</span>
             </div>
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
               <span className="text-xs md:text-sm text-gray-600">Abandono de Carrito</span>
-              <span className="font-semibold text-red-600 text-sm md:text-base">{formatPercent(stats.abandonoCarrito)}</span>
+              <span className="font-semibold text-red-600 text-sm md:text-base">68%</span>
             </div>
           </div>
         </div>
@@ -138,15 +117,15 @@ export function OrganizerMetrics({ stats, formatRevenue }: OrganizerMetricsProps
           <div className="space-y-3 md:space-y-4">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
               <span className="text-xs md:text-sm text-gray-600">Eventos en Curso</span>
-              <span className="font-semibold text-green-600 text-sm md:text-base">{stats.eventosEnCurso ?? 0}</span>
+              <span className="font-semibold text-green-600 text-sm md:text-base">2</span>
             </div>
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
               <span className="text-xs md:text-sm text-gray-600">Asistencia Promedio</span>
-              <span className="font-semibold text-blue-600 text-sm md:text-base">{formatPercent(stats.asistenciaPromedio)}</span>
+              <span className="font-semibold text-blue-600 text-sm md:text-base">87%</span>
             </div>
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
               <span className="text-xs md:text-sm text-gray-600">Último Escaneo</span>
-              <span className="font-semibold text-gray-600 text-sm md:text-base">{timeAgo(stats.ultimoEscaneoISO)}</span>
+              <span className="font-semibold text-gray-600 text-sm md:text-base">Hace 2 min</span>
             </div>
           </div>
         </div>
@@ -157,15 +136,15 @@ export function OrganizerMetrics({ stats, formatRevenue }: OrganizerMetricsProps
           <div className="space-y-3 md:space-y-4">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
               <span className="text-xs md:text-sm text-gray-600">Ingresos Hoy</span>
-              <span className="font-semibold text-green-600 text-sm md:text-base">{formatRevenue(stats.ingresosHoy ?? 0)}</span>
+              <span className="font-semibold text-green-600 text-sm md:text-base">$2,350,000</span>
             </div>
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
               <span className="text-xs md:text-sm text-gray-600">Comisiones</span>
-              <span className="font-semibold text-red-600 text-sm md:text-base">{formatRevenue(stats.comisionHoy ?? 0)}</span>
+              <span className="font-semibold text-red-600 text-sm md:text-base">$117,500</span>
             </div>
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
               <span className="text-xs md:text-sm text-gray-600">Neto</span>
-              <span className="font-semibold text-blue-600 text-sm md:text-base">{formatRevenue(stats.netoHoy ?? 0)}</span>
+              <span className="font-semibold text-blue-600 text-sm md:text-base">$2,232,500</span>
             </div>
           </div>
         </div>

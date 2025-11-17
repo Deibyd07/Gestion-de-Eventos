@@ -34,6 +34,9 @@ graph TD
     FU[FAVORITOS_USUARIOS]
     CE[CALIFICACIONES_EVENTOS]
     CS[CONFIGURACIONES_SISTEMA]
+    QRE[CODIGOS_QR_ENTRADAS]
+    S[SEGUIDORES_ORGANIZADORES]
+    MP[METODOS_PAGO]
     
     %% Atributos de USUARIOS (en óvalos)
     U_ID(("ID"))
@@ -81,6 +84,44 @@ graph TD
     C_EST(("ESTADO"))
     C_QR(("CODIGO_QR"))
     C_ORDEN(("NUMERO_ORDEN"))
+
+    %% Atributos de CODIGOS_QR_ENTRADAS (en óvalos)
+    QRE_ID(("ID"))
+    QRE_COMPRA(("ID_COMPRA"))
+    QRE_EVENTO(("ID_EVENTO"))
+    QRE_USUARIO(("ID_USUARIO"))
+    QRE_COD(("CODIGO_QR"))
+    QRE_DATOS(("DATOS_QR"))
+    QRE_GEN(("FECHA_GENERACION"))
+    QRE_ESC(("FECHA_ESCANEADO"))
+    QRE_POR(("ESCANEADO_POR"))
+    QRE_EST(("ESTADO"))
+    QRE_NUM(("NUMERO_ENTRADA"))
+    
+    %% Atributos de SEGUIDORES_ORGANIZADORES
+    S_ID(("ID"))
+    S_SEGUIDOR(("ID_USUARIO_SEGUIDOR"))
+    S_ORG(("ID_ORGANIZADOR"))
+    S_FECHA(("FECHA_CREACION"))
+
+    %% Atributos de METODOS_PAGO
+    MP_ID(("ID"))
+    MP_NOM(("NOMBRE"))
+    MP_TIPO(("TIPO"))
+    MP_PROV(("PROVEEDOR"))
+    MP_DESC(("DESCRIPCION"))
+    MP_ACT(("ACTIVO"))
+    MP_PERC(("COMISION_PORCENTAJE"))
+    MP_FIJA(("COMISION_FIJA"))
+    MP_MIN(("MONTO_MINIMO"))
+    MP_MAX(("MONTO_MAXIMO"))
+    MP_MONEDAS(("MONEDAS_SOPORTADAS"))
+    MP_REQ(("REQUIERE_VERIFICACION"))
+    MP_TIEMPO(("TIEMPO_PROCESAMIENTO"))
+    MP_CONF(("CONFIGURACION"))
+    MP_ORG(("ID_ORGANIZADOR"))
+    MP_CRE(("FECHA_CREACION"))
+    MP_ACTU(("FECHA_ACTUALIZACION"))
     
     %% Atributos de ASISTENCIA_EVENTOS (en óvalos)
     A_ID(("ID"))
@@ -220,6 +261,41 @@ graph TD
     C --- C_EST
     C --- C_QR
     C --- C_ORDEN
+
+    QRE --- QRE_ID
+    QRE --- QRE_COMPRA
+    QRE --- QRE_EVENTO
+    QRE --- QRE_USUARIO
+    QRE --- QRE_COD
+    QRE --- QRE_DATOS
+    QRE --- QRE_GEN
+    QRE --- QRE_ESC
+    QRE --- QRE_POR
+    QRE --- QRE_EST
+    QRE --- QRE_NUM
+    
+    S --- S_ID
+    S --- S_SEGUIDOR
+    S --- S_ORG
+    S --- S_FECHA
+
+    MP --- MP_ID
+    MP --- MP_NOM
+    MP --- MP_TIPO
+    MP --- MP_PROV
+    MP --- MP_DESC
+    MP --- MP_ACT
+    MP --- MP_PERC
+    MP --- MP_FIJA
+    MP --- MP_MIN
+    MP --- MP_MAX
+    MP --- MP_MONEDAS
+    MP --- MP_REQ
+    MP --- MP_TIEMPO
+    MP --- MP_CONF
+    MP --- MP_ORG
+    MP --- MP_CRE
+    MP --- MP_ACTU
     
     A --- A_ID
     A --- A_COMPRA
@@ -327,6 +403,12 @@ graph TD
     R16{ES_CALIFICADO}
     R17{ACTUALIZA_CONFIG}
     R18{VALIDA_ASISTENCIA}
+    R19{GENERA_QR}
+    R20{ASOCIADO_A}
+    R21{POSEE_QR}
+    R22{SIGUE}
+    R23{ES_SEGUIDO}
+    R24{DEFINE_METODO}
     
     %% Conexiones de entidades a relaciones con cardinalidades
     U ---|1,N| R1
@@ -365,15 +447,27 @@ graph TD
     R17 ---|1,1| CS
     U ---|1,N| R18
     R18 ---|1,N| A
+    C ---|1,1| R19
+    R19 ---|1,N| QRE
+    E ---|1,1| R20
+    R20 ---|1,N| QRE
+    U ---|1,1| R21
+    R21 ---|1,N| QRE
+    U ---|1,N| R22
+    R22 ---|1,1| S
+    U ---|1,N| R23
+    R23 ---|1,1| S
+    U ---|1,N| R24
+    R24 ---|1,1| MP
     
     %% Estilos para diferenciar elementos
     classDef entidad fill:#e1f5fe,stroke:#01579b,stroke-width:2px
     classDef atributo fill:#f3e5f5,stroke:#4a148c,stroke-width:1px
     classDef relacion fill:#fff3e0,stroke:#e65100,stroke-width:2px
     
-    class U,E,TE,C,A,N,PE,AE,CP,FU,CE,CS entidad
-    class U_ID,U_EMAIL,U_NOM,U_ROL,U_AVATAR,U_PREF,U_PASS,E_ID,E_TIT,E_DESC,E_IMG,E_FECHA,E_HORA,E_UBI,E_CAT,E_MAX,E_ACT,E_ORG,E_NOM_ORG,E_EST,E_ETIQ,TE_ID,TE_EVENTO,TE_NOM,TE_PREC,TE_DESC,TE_MAX,TE_DISP,TE_NOM_EVENTO,C_ID,C_USUARIO,C_EVENTO,C_TIPO,C_CANT,C_PRECIO,C_TOTAL,C_EST,C_QR,C_ORDEN,A_ID,A_COMPRA,A_EVENTO,A_USUARIO,A_FECHA,A_VALIDADOR,A_METODO,A_OBS,A_EST,A_UBI,A_DISP,N_ID,N_USUARIO,N_TIPO,N_TIT,N_MSG,N_LEIDA,N_URL,N_TEXTO,PE_ID,PE_NOM,PE_ASUNTO,PE_CONT,PE_TIPO,AE_ID,AE_EVENTO,AE_VIS,AE_VENTAS,AE_ING,AE_CONV,AE_PRECIO,AE_TIPO,AE_ASIST,AE_REEM,AE_MONTO,CP_ID,CP_CODIGO,CP_DESC,CP_TIPO,CP_VALOR,CP_INICIO,CP_FIN,CP_MAX,CP_ACT,CP_EVENTO,CP_ORG,CP_ACTIVO,FU_ID,FU_USUARIO,FU_EVENTO,FU_CAT,FU_NOTAS,FU_REC,FU_FECHA,FU_PRIOR,FU_VIS,CE_ID,CE_EVENTO,CE_USUARIO,CE_CAL,CE_COM,CE_POS,CE_NEG,CE_REC,CE_CAT,CE_FECHA,CE_ANON,CE_MOD,CE_VIS,CS_ID,CS_CLAVE,CS_VALOR,CS_TIPO,CS_DESC,CS_CAT,CS_SENS,CS_READ,CS_DEF,CS_ACT atributo
-    class R1,R2,R3,R4,R5,R6,R7,R8,R9,R10,R11,R12,R13,R14,R15,R16,R17,R18 relacion
+    class U,E,TE,C,A,N,PE,AE,CP,FU,CE,CS,QRE,S,MP entidad
+    class U_ID,U_EMAIL,U_NOM,U_ROL,U_AVATAR,U_PREF,U_PASS,E_ID,E_TIT,E_DESC,E_IMG,E_FECHA,E_HORA,E_UBI,E_CAT,E_MAX,E_ACT,E_ORG,E_NOM_ORG,E_EST,E_ETIQ,TE_ID,TE_EVENTO,TE_NOM,TE_PREC,TE_DESC,TE_MAX,TE_DISP,TE_NOM_EVENTO,C_ID,C_USUARIO,C_EVENTO,C_TIPO,C_CANT,C_PRECIO,C_TOTAL,C_EST,C_QR,C_ORDEN,QRE_ID,QRE_COMPRA,QRE_EVENTO,QRE_USUARIO,QRE_COD,QRE_DATOS,QRE_GEN,QRE_ESC,QRE_POR,QRE_EST,QRE_NUM,S_ID,S_SEGUIDOR,S_ORG,S_FECHA,MP_ID,MP_NOM,MP_TIPO,MP_PROV,MP_DESC,MP_ACT,MP_PERC,MP_FIJA,MP_MIN,MP_MAX,MP_MONEDAS,MP_REQ,MP_TIEMPO,MP_CONF,MP_ORG,MP_CRE,MP_ACTU,A_ID,A_COMPRA,A_EVENTO,A_USUARIO,A_FECHA,A_VALIDADOR,A_METODO,A_OBS,A_EST,A_UBI,A_DISP,N_ID,N_USUARIO,N_TIPO,N_TIT,N_MSG,N_LEIDA,N_URL,N_TEXTO,PE_ID,PE_NOM,PE_ASUNTO,PE_CONT,PE_TIPO,AE_ID,AE_EVENTO,AE_VIS,AE_VENTAS,AE_ING,AE_CONV,AE_PRECIO,AE_TIPO,AE_ASIST,AE_REEM,AE_MONTO,CP_ID,CP_CODIGO,CP_DESC,CP_TIPO,CP_VALOR,CP_INICIO,CP_FIN,CP_MAX,CP_ACT,CP_EVENTO,CP_ORG,CP_ACTIVO,FU_ID,FU_USUARIO,FU_EVENTO,FU_CAT,FU_NOTAS,FU_REC,FU_FECHA,FU_PRIOR,FU_VIS,CE_ID,CE_EVENTO,CE_USUARIO,CE_CAL,CE_COM,CE_POS,CE_NEG,CE_REC,CE_CAT,CE_FECHA,CE_ANON,CE_MOD,CE_VIS,CS_ID,CS_CLAVE,CS_VALOR,CS_TIPO,CS_DESC,CS_CAT,CS_SENS,CS_READ,CS_DEF,CS_ACT atributo
+    class R1,R2,R3,R4,R5,R6,R7,R8,R9,R10,R11,R12,R13,R14,R15,R16,R17,R18,R19,R20,R21,R22,R23,R24 relacion
 ```
 
 ### 🔗 **Relaciones Completas del Sistema**
@@ -488,7 +582,7 @@ graph TD
 
 ## 📋 **Resumen Completo del Sistema**
 
-### 🗄️ **Todas las Tablas del Sistema (12 Entidades)**
+### 🗄️ **Todas las Tablas del Sistema (15 Entidades)**
 
 1. **USUARIOS** - Gestión de usuarios del sistema
 2. **EVENTOS** - Catálogo de eventos
@@ -502,10 +596,13 @@ graph TD
 10. **FAVORITOS_USUARIOS** - Sistema de favoritos
 11. **CALIFICACIONES_EVENTOS** - Sistema de calificaciones
 12. **CONFIGURACIONES_SISTEMA** - Configuraciones del sistema
+13. **CODIGOS_QR_ENTRADAS** - Códigos QR por compra/entrada
+14. **SEGUIDORES_ORGANIZADORES** - Vínculo seguidor ↔ organizador
+15. **METODOS_PAGO** - Configuración de métodos/pasarelas de pago
 
-### 🔗 **Resumen de Relaciones (18 Relaciones Principales)**
+### 🔗 **Resumen de Relaciones (24 Relaciones Principales)**
 
-#### **USUARIOS como Entidad Central (9 relaciones)**
+#### **USUARIOS como Entidad Central (12 relaciones)**
 1. **USUARIOS → EVENTOS** (1:N) - "organiza"
 2. **USUARIOS → COMPRAS** (1:N) - "compra"
 3. **USUARIOS → NOTIFICACIONES** (1:N) - "recibe"
@@ -515,8 +612,11 @@ graph TD
 7. **USUARIOS → FAVORITOS_USUARIOS** (1:N) - "marca_favorito"
 8. **USUARIOS → CALIFICACIONES_EVENTOS** (1:N) - "califica"
 9. **USUARIOS → CONFIGURACIONES_SISTEMA** (1:N) - "actualiza_config"
+10. **USUARIOS → SEGUIDORES_ORGANIZADORES** (1:N) - "sigue"
+11. **USUARIOS → SEGUIDORES_ORGANIZADORES** (1:N) - "es_seguido" (rol organizador)
+12. **USUARIOS → METODOS_PAGO** (1:N) - "define_metodo"
 
-#### **EVENTOS como Entidad Central (7 relaciones)**
+#### **EVENTOS como Entidad Central (8 relaciones)**
 10. **EVENTOS → TIPOS_ENTRADA** (1:N) - "tiene"
 11. **EVENTOS → COMPRAS** (1:N) - "vendido_en"
 12. **EVENTOS → ASISTENCIA_EVENTOS** (1:N) - "registra_asistencia"
@@ -524,18 +624,20 @@ graph TD
 14. **EVENTOS → CODIGOS_PROMOCIONALES** (1:N) - "tiene_codigos"
 15. **EVENTOS → FAVORITOS_USUARIOS** (1:N) - "es_favorito"
 16. **EVENTOS → CALIFICACIONES_EVENTOS** (1:N) - "es_calificado"
+17. **EVENTOS → CODIGOS_QR_ENTRADAS** (1:N) - "tiene_qr"
 
-#### **Relaciones de Flujo de Negocio (2 relaciones)**
-17. **TIPOS_ENTRADA → COMPRAS** (1:N) - "se_compra"
-18. **COMPRAS → ASISTENCIA_EVENTOS** (1:N) - "valida"
+#### **Relaciones de Flujo de Negocio (3 relaciones)**
+18. **TIPOS_ENTRADA → COMPRAS** (1:N) - "se_compra"
+19. **COMPRAS → ASISTENCIA_EVENTOS** (1:N) - "valida"
+20. **COMPRAS → CODIGOS_QR_ENTRADAS** (1:N) - "genera_qr"
 
 ## 🔄 **Flujos de Negocio Principales**
 
-### 📈 **Flujo de Venta de Entradas**
+### 📈 **Flujo de Venta de Entradas y QR**
 1. **USUARIOS** organiza **EVENTOS**
 2. **EVENTOS** tiene **TIPOS_ENTRADA**
 3. **USUARIOS** realiza **COMPRAS** de **TIPOS_ENTRADA**
-4. **COMPRAS** genera **ASISTENCIA_EVENTOS** (validación)
+4. **COMPRAS** genera **CODIGOS_QR_ENTRADAS** (tickets) y luego **ASISTENCIA_EVENTOS** (validación)
 
 ### 📊 **Flujo de Analytics y Métricas**
 1. **EVENTOS** genera **ANALITICAS_EVENTOS**

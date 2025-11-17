@@ -1,9 +1,11 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://your-project.supabase.co';
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'your-anon-key';
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+if (!supabaseUrl || !supabaseAnonKey) {
+  throw new Error('VITE_SUPABASE_URL y VITE_SUPABASE_ANON_KEY deben estar definidas en las variables de entorno');
+}
 
 // Tipos de base de datos en español
 export interface Database {
@@ -289,40 +291,79 @@ export interface Database {
           tipo?: 'bienvenida' | 'recordatorio_evento' | 'confirmacion_entrada' | 'evento_cancelado' | 'encuesta';
         };
       };
-      vista_compras_usuario_actual: {
+      metodos_pago: {
         Row: {
           id: string;
-          id_usuario: string;
-          id_evento: string;
-          id_tipo_entrada: string;
-          cantidad: number;
-          precio_unitario: number;
-          total_pagado: number;
-          estado: 'pendiente' | 'completada' | 'cancelada' | 'reembolsada';
-          codigo_qr: string | null;
-          numero_orden: string;
+          nombre: string;
+          tipo: 'credit_card' | 'debit_card' | 'digital_wallet' | 'bank_transfer' | 'cash' | 'crypto';
+          proveedor: string;
+          descripcion: string;
+          activo: boolean;
+          comision_porcentaje: number;
+          comision_fija?: number;
+          monto_minimo?: number;
+          monto_maximo?: number;
+          monedas_soportadas: string[];
+          requiere_verificacion: boolean;
+          tiempo_procesamiento: string;
+          configuracion: {
+            apiKey?: string;
+            merchantId?: string;
+            publicKey?: string;
+            secretKey?: string;
+            webhookUrl?: string;
+            sandboxMode: boolean;
+          };
+          id_organizador: string;
           fecha_creacion: string;
           fecha_actualizacion: string;
         };
-        Insert: never;
-        Update: never;
-      };
-      vista_qr_usuario_actual: {
-        Row: {
-          id: string;
-          id_compra: string;
-          id_evento: string;
-          id_usuario: string;
-          codigo_qr: string;
-          datos_qr: any;
-          fecha_generacion: string;
-          fecha_escaneado: string | null;
-          escaneado_por: string | null;
-          estado: 'activo' | 'usado' | 'cancelado' | 'expirado';
-          numero_entrada: number;
+        Insert: {
+          id?: string;
+          nombre: string;
+          tipo: 'credit_card' | 'debit_card' | 'digital_wallet' | 'bank_transfer' | 'cash' | 'crypto';
+          proveedor: string;
+          descripcion: string;
+          activo?: boolean;
+          comision_porcentaje: number;
+          comision_fija?: number;
+          monto_minimo?: number;
+          monto_maximo?: number;
+          monedas_soportadas?: string[];
+          requiere_verificacion?: boolean;
+          tiempo_procesamiento: string;
+          configuracion?: {
+            apiKey?: string;
+            merchantId?: string;
+            publicKey?: string;
+            secretKey?: string;
+            webhookUrl?: string;
+            sandboxMode?: boolean;
+          };
+          id_organizador: string;
         };
-        Insert: never;
-        Update: never;
+        Update: {
+          nombre?: string;
+          tipo?: 'credit_card' | 'debit_card' | 'digital_wallet' | 'bank_transfer' | 'cash' | 'crypto';
+          proveedor?: string;
+          descripcion?: string;
+          activo?: boolean;
+          comision_porcentaje?: number;
+          comision_fija?: number;
+          monto_minimo?: number;
+          monto_maximo?: number;
+          monedas_soportadas?: string[];
+          requiere_verificacion?: boolean;
+          tiempo_procesamiento?: string;
+          configuracion?: {
+            apiKey?: string;
+            merchantId?: string;
+            publicKey?: string;
+            secretKey?: string;
+            webhookUrl?: string;
+            sandboxMode?: boolean;
+          };
+        };
       };
       analiticas_eventos: {
         Row: {
@@ -377,3 +418,11 @@ export interface Database {
     };
   };
 }
+
+// Crear cliente Supabase tipado
+export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey);
+
+// Tipos helper para facilitar el uso
+export type Tables<T extends keyof Database['public']['Tables']> = Database['public']['Tables'][T];
+export type TablesInsert<T extends keyof Database['public']['Tables']> = Database['public']['Tables'][T]['Insert'];
+export type TablesUpdate<T extends keyof Database['public']['Tables']> = Database['public']['Tables'][T]['Update'];

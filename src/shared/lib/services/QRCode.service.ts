@@ -327,14 +327,22 @@ export class QRCodeService {
     ticketInfo: any;
   }> {
     try {
+      console.log('🔍 Consultando ticket público:', qrCode);
+      
       // Llamar a la función de PostgreSQL
       const { data, error } = await supabase.rpc('consultar_ticket_qr', {
         p_codigo_qr: qrCode
       });
 
-      if (error) throw error;
+      console.log('📥 Respuesta consultar_ticket_qr:', { data, error });
+
+      if (error) {
+        console.error('❌ Error de Supabase:', error);
+        throw error;
+      }
 
       if (!data || data.length === 0) {
+        console.warn('⚠️ Sin datos retornados de consultar_ticket_qr');
         return {
           exists: false,
           message: 'No se pudo consultar el ticket',
@@ -343,13 +351,15 @@ export class QRCodeService {
       }
 
       const result = data[0];
+      console.log('✅ Resultado consulta:', result);
+      
       return {
         exists: result.existe,
         message: result.mensaje,
         ticketInfo: result.ticket_info
       };
     } catch (error) {
-      console.error('Error consultando ticket:', error);
+      console.error('💥 Error consultando ticket:', error);
       return {
         exists: false,
         message: 'Error al consultar el código QR',

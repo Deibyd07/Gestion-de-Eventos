@@ -22,16 +22,6 @@ export function CheckoutPage() {
   console.log('💰 Total:', total);
   console.log('👤 Usuario autenticado:', user);
 
-  // Debug visible al montar la página
-  useEffect(() => {
-    addNotification({
-      type: 'info',
-      title: 'Checkout listo',
-      message: `Renderizado con ${items.length} item(s). Usuario: ${user?.id ?? 'sin-user'}`,
-      duration: 3000
-    });
-  }, []);
-
   const handleQuantityChange = (eventId: string, ticketTypeId: string, newQuantity: number) => {
     updateQuantity(eventId, ticketTypeId, newQuantity);
   };
@@ -55,13 +45,6 @@ export function CheckoutPage() {
 
     setIsProcessing(true);
     try {
-      // Debug visible: notificación para confirmar inicio de flujo
-      addNotification({
-        type: 'info',
-        title: 'Iniciando checkout',
-        message: `Items: ${items.length} | Usuario: ${user.id}`,
-        duration: 4000
-      });
       console.log('🛒 Iniciando checkout...');
       console.log('👤 Usuario:', user);
       console.log('🎫 Items del carrito:', items);
@@ -103,9 +86,6 @@ export function CheckoutPage() {
 
       const results = await Promise.all(purchasePromises);
       console.log('✅ Todas las compras completadas:', results);
-
-      // DEBUG: Mostrar alerta con los resultados
-      alert(`✅ Compras creadas exitosamente!\n\nTotal de compras: ${results.length}\n\nPrimera compra ID: ${results[0]?.id}\n\nAhora ve a la pestaña "Mis Entradas" para ver tus QR codes.`);
 
       // Vaciar carrito y notificar
       clearCart();

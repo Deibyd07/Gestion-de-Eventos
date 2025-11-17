@@ -112,6 +112,26 @@ export class UserService {
     }
   }
 
+  static async obtenerUsuarioPorId(id: string) {
+    try {
+      if (!id || id === 'undefined') {
+        return null;
+      }
+      
+      const { data, error } = await supabase
+        .from('usuarios')
+        .select('*')
+        .eq('id', id)
+        .maybeSingle(); // Cambiar a maybeSingle() para que no falle si no existe
+
+      if (error) throw error;
+      return data; // Retorna null si no existe, en vez de lanzar error
+    } catch (error) {
+      console.error('Error getting user by id:', error);
+      return null;
+    }
+  }
+
   static async registrarse(email: string, password: string, datosUsuario: { nombre: string; rol?: string }) {
     const { data, error } = await supabase.auth.signUp({
       email,

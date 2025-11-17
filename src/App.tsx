@@ -30,15 +30,20 @@ import { TicketsPage } from './modules/payments/presentation/pages/Tickets.page'
 
 // Pages - Users
 import { ProfilePage } from './modules/users/presentation/pages/Profile.page';
+import { FollowedOrganizersPage } from './modules/users/presentation/pages/FollowedOrganizers.page';
 
 // Pages - Organizers
 import { OrganizerDashboard } from './modules/organizers/presentation/pages/OrganizerDashboard.page';
+import { OrganizerPublicPage } from './modules/organizers/presentation/pages/OrganizerPublic.page';
 
 // Pages - Administration
 import { AdminPage } from './modules/administration/presentation/pages/Admin.page';
 
 // Pages - Notifications
 import { NotificationsPage } from './modules/notifications/presentation/pages/Notifications.page';
+
+// Pages - Tickets
+import { TicketConsultPage } from './modules/tickets/presentation/pages/TicketConsult.page';
 
 function App() {
   const { isAuthenticated, user } = useAuthStore();
@@ -106,6 +111,24 @@ function App() {
               </AdminRedirect>
             } 
           />
+
+          {/* Organizer public profile */}
+          <Route
+            path="/organizers/:id"
+            element={
+              <AdminRedirect>
+                <Layout>
+                  <OrganizerPublicPage />
+                </Layout>
+              </AdminRedirect>
+            }
+          />
+
+          {/* Ticket Consultation (Public) */}
+          <Route
+            path="/consultar-entrada"
+            element={<TicketConsultPage />}
+          />
           
           {/* ========== Protected Routes ========== */}
           
@@ -117,6 +140,20 @@ function App() {
                 <AdminRedirect>
                   <Layout>
                     <ProfilePage />
+                  </Layout>
+                </AdminRedirect>
+              </ProtectedRoute>
+            } 
+          />
+
+          {/* Followed Organizers */}
+          <Route 
+            path="/followed-organizers" 
+            element={
+              <ProtectedRoute>
+                <AdminRedirect>
+                  <Layout>
+                    <FollowedOrganizersPage />
                   </Layout>
                 </AdminRedirect>
               </ProtectedRoute>

@@ -1,10 +1,12 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Trash2, Plus, Minus, CreditCard, Shield, ArrowLeft, Lock, CheckCircle, Loader2 } from 'lucide-react';
 import { useCartStore } from '../../../payments/infrastructure/store/Cart.store';
 import { useNotificationStore } from '../../../notifications/infrastructure/store/Notification.store';
 // import { apiService } from '@shared/lib/api/api';
 import { formatPriceDisplay, formatPrice } from '@shared/lib/utils/Currency.utils';
+import { useAuthStore } from '../../../authentication/infrastructure/store/Auth.store';
+import { PurchaseService } from '@shared/lib/api/services/Purchase.service';
 
 export function CheckoutPage() {
   const { items, total, updateQuantity, removeItem, clearCart } = useCartStore();
@@ -12,6 +14,13 @@ export function CheckoutPage() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState('card');
   const navigate = useNavigate();
+  const { user } = useAuthStore();
+
+  // Debug: Log inicial
+  console.log('🛒 CheckoutPage renderizado');
+  console.log('📦 Items en carrito:', items);
+  console.log('💰 Total:', total);
+  console.log('👤 Usuario autenticado:', user);
 
   const handleQuantityChange = (eventId: string, ticketTypeId: string, newQuantity: number) => {
     updateQuantity(eventId, ticketTypeId, newQuantity);
@@ -23,28 +32,85 @@ export function CheckoutPage() {
 
   const handleCheckout = async () => {
     if (items.length === 0) return;
+    if (!user) {
+      addNotification({
+        type: 'error',
+        title: 'Inicia sesión',
+        message: 'Debes iniciar sesión para completar la compra.',
+        duration: 5000
+      });
+      navigate('/login');
+      return;
+    }
 
     setIsProcessing(true);
     try {
-      // Simulate payment processing
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Clear cart and show success notification
+      console.log('🛒 Iniciando checkout...');
+      console.log('👤 Usuario:', user);
+      console.log('🎫 Items del carrito:', items);
+
+      // Simular procesamiento de pago
+      await new Promise(resolve => setTimeout(resolve, 1200));
+
+      // Crear compras en la BD (una por cada item del carrito)
+      const createOrderId = () => `ORD_${new Date().toISOString().replace(/[-:.TZ]/g, '')}_${Math.random().toString(36).slice(2, 10)}`;
+      const createPurchaseQRCode = () => `PURCHASE_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
+
+      const purchasePromises = items.map(async (item, index) => {
+        const numero_orden = createOrderId();
+        const insert = {
+          id_usuario: user.id,
+          id_evento: item.eventId,
+          id_tipo_entrada: item.ticketTypeId,
+          cantidad: item.quantity,
+          precio_unitario: Number(item.price),
+          total_pagado: Number(item.price * item.quantity),
+          estado: 'completada' as const,
+          numero_orden,
+          // Algunas bases de datos tienen NOT NULL en codigo_qr; generamos uno único a nivel de compra
+          codigo_qr: createPurchaseQRCode()
+          // codigo_qr se genera automáticamente o se deja null
+        };
+        
+        console.log(`📝 Insertando compra ${index + 1}/${items.length}:`, insert);
+        
+        try {
+          const result = await PurchaseService.crearCompra(insert);
+          console.log(`✅ Compra ${index + 1} creada:`, result);
+          return result;
+        } catch (err) {
+          console.error(`❌ Error en compra ${index + 1}:`, err);
+          throw err;
+        }
+      });
+
+      const results = await Promise.all(purchasePromises);
+      console.log('✅ Todas las compras completadas:', results);
+
+      // Vaciar carrito y notificar
       clearCart();
       addNotification({
         type: 'success',
         title: '¡Compra exitosa!',
-        message: 'Tu compra se realizó correctamente. Recibirás tus entradas por email.',
-        duration: 6000
+        message: `${results.length} compra(s) registrada(s). Ve a "Mis Entradas" para ver tus códigos QR.`,
+        duration: 7000
       });
-      navigate('/events');
-    } catch (error) {
-      console.error('Error processing payment:', error);
+      navigate('/tickets', { state: { message: 'Compra realizada. Tus QR están listos.' } });
+    } catch (error: any) {
+      console.error('❌ Error processing payment:', error);
+      console.error('❌ Error details:', {
+        message: error?.message,
+        code: error?.code,
+        details: error?.details,
+        hint: error?.hint,
+        full: error
+      });
+      
       addNotification({
         type: 'error',
         title: 'Error en el pago',
-        message: 'Hubo un problema procesando tu pago. Inténtalo de nuevo.',
-        duration: 5000
+        message: error?.message || 'Hubo un problema registrando la compra. Inténtalo de nuevo.',
+        duration: 8000
       });
     } finally {
       setIsProcessing(false);

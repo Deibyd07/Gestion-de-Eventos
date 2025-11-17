@@ -57,6 +57,7 @@ import {
 } from '../components';
 import { formatRevenue } from '@shared/lib/utils/Currency.utils';
 import { EventService } from '@shared/lib/api/services/Event.service';
+import { QRScannerModal } from '../components/QRScannerModal.component';
 import { AnalyticsService } from '@shared/lib/api/services/Analytics.service';
 
 
@@ -120,6 +121,9 @@ export function OrganizerDashboard() {
   const [selectedEventForConfigure, setSelectedEventForConfigure] = useState<any | null>(null);
   const [isLoadingEventDetails, setIsLoadingEventDetails] = useState(false);
   const [isDeletingEvent, setIsDeletingEvent] = useState(false);
+  
+  // Estado para el modal de escáner QR
+  const [isQRScannerOpen, setIsQRScannerOpen] = useState(false);
 
     // Estados para los modales CRUD de tipo de entrada
     const [isViewTicketModalOpen, setIsViewTicketModalOpen] = useState(false);
@@ -1790,7 +1794,10 @@ export function OrganizerDashboard() {
                         <p className="text-sm text-gray-600 mb-3">
                           Escanea códigos QR de las entradas para registrar asistencia en tiempo real
                         </p>
-                        <button className="w-full px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-xl hover:from-blue-600 hover:to-purple-700 transition-all duration-200">
+                        <button 
+                          onClick={() => setIsQRScannerOpen(true)}
+                          className="w-full px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-xl hover:from-blue-600 hover:to-purple-700 transition-all duration-200 flex items-center justify-center"
+                        >
                           <QrCode className="w-4 h-4 mr-2" />
                           Activar Cámara
                       </button>
@@ -2085,6 +2092,13 @@ export function OrganizerDashboard() {
         onClose={closePaymentMethodModals}
         paymentMethod={selectedPaymentMethod}
         onDelete={handleConfirmDeletePaymentMethod}
+      />
+
+      {/* Modal de Escáner QR */}
+      <QRScannerModal
+        isOpen={isQRScannerOpen}
+        onClose={() => setIsQRScannerOpen(false)}
+        eventId={selectedEventId || undefined}
       />
     </div>
   );

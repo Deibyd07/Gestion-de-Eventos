@@ -4,6 +4,8 @@ import { Event } from '../../../events/infrastructure/store/Event.store';
 import { useCartStore } from '../../../payments/infrastructure/store/Cart.store';
 import { useNotificationStore } from '../../../notifications/infrastructure/store/Notification.store';
 import { formatPriceDisplay } from '@shared/lib/utils/Currency.utils';
+import { useAuthStore } from '../../../authentication/infrastructure/store/Auth.store';
+import { FollowOrganizerButton } from '@shared/ui/components/FollowOrganizerButton/FollowOrganizerButton.component';
 
 interface EventCardProps {
   event: Event;
@@ -15,6 +17,7 @@ interface EventCardProps {
 export function EventCard({ event, viewMode = 'grid', isFavorite = false, onToggleFavorite }: EventCardProps) {
   const { addItem } = useCartStore();
   const { addNotification } = useNotificationStore();
+  const { user } = useAuthStore();
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('es-ES', {
@@ -90,7 +93,7 @@ export function EventCard({ event, viewMode = 'grid', isFavorite = false, onTogg
         addNotification({
           type: 'success',
           title: '¡Agregado al carrito!',
-          message: `${availableTicket.name} de ${event.title} se agregó correctamente`,
+          message: `${availableTicket.nombre_tipo} de ${event.title} se agregó correctamente`,
           duration: 4000
         });
       } else {
@@ -169,6 +172,18 @@ export function EventCard({ event, viewMode = 'grid', isFavorite = false, onTogg
                 <p className="text-gray-600 text-sm line-clamp-2 mb-2">
                   {event.description}
                 </p>
+                <div className="flex items-center space-x-2 mb-2">
+                  <span className="text-xs font-medium text-gray-500">
+                    Organizado por <Link to={`/organizers/${event.organizerId}`} className="text-blue-600 hover:underline font-semibold">{event.organizerName}</Link>
+                  </span>
+                  <FollowOrganizerButton
+                    organizerId={event.organizerId}
+                    organizerName={event.organizerName}
+                    currentUserId={user?.id || ''}
+                    variant="compact"
+                    showName={false}
+                  />
+                </div>
               </div>
               <div className="text-right">
                 <span className="text-lg font-bold text-gray-900">
@@ -227,7 +242,7 @@ export function EventCard({ event, viewMode = 'grid', isFavorite = false, onTogg
   }
 
   return (
-    <div className="bg-white rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 border border-gray-200 overflow-hidden group">
+    <div className="bg-white rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 border border-gray-200 overflow-hidden group h-full flex flex-col">
       <div className="relative h-48 overflow-hidden">
         <img
           src={event.image}
@@ -278,7 +293,7 @@ export function EventCard({ event, viewMode = 'grid', isFavorite = false, onTogg
         </div>
       </div>
 
-      <div className="p-6">
+      <div className="p-6 flex-1 flex flex-col">
         <div className="mb-4">
           <h3 className="text-xl font-bold text-gray-900 mb-2 line-clamp-2 group-hover:text-blue-600 transition-colors duration-200">
             {event.title}
@@ -286,6 +301,18 @@ export function EventCard({ event, viewMode = 'grid', isFavorite = false, onTogg
           <p className="text-gray-600 text-sm line-clamp-2 leading-relaxed">
             {event.description}
           </p>
+          <div className="flex items-center space-x-2 mt-2">
+            <span className="text-xs font-medium text-gray-500">
+              Organizado por <Link to={`/organizers/${event.organizerId}`} className="text-blue-600 hover:underline font-semibold">{event.organizerName}</Link>
+            </span>
+            <FollowOrganizerButton
+              organizerId={event.organizerId}
+              organizerName={event.organizerName}
+              currentUserId={user?.id || ''}
+              variant="compact"
+              showName={false}
+            />
+          </div>
         </div>
 
         <div className="space-y-2 mb-4">
@@ -331,7 +358,7 @@ export function EventCard({ event, viewMode = 'grid', isFavorite = false, onTogg
           </div>
         )}
 
-        <div className="flex justify-between items-center pt-3 border-t border-gray-100">
+        <div className="flex justify-between items-center pt-3 border-t border-gray-100 mt-auto">
           <div className="flex-1">
             <div className="flex items-baseline space-x-2">
               <span className="text-xl font-bold text-gray-900">

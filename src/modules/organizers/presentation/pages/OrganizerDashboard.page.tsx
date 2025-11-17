@@ -44,9 +44,17 @@ import { DeleteEventConfirmation } from '../../../events/presentation/components
 import { ConfigureEventModal } from '../../../events/presentation/components/ConfigureEventModal.component';
 import { CreateTicketModal, CreateTicketFormData } from '../components/CreateTicketModal.component';
 import { TicketTypeService } from '@shared/lib/api/services/TicketType.service';
+import { PaymentMethodService } from '@shared/lib/api/services/PaymentMethod.service';
 import { CreatePromotionModal, CreatePromotionFormData } from '../components/CreatePromotionModal.component';
 import { UploadImageModal } from '../../../events/presentation/components/UploadImageModal.component';
 import { DuplicateEventModal } from '../../../events/presentation/components/DuplicateEventModal.component';
+import { 
+  CreatePaymentMethodModal, 
+  CreatePaymentMethodFormData,
+  ViewPaymentMethodModal,
+  EditPaymentMethodModal,
+  DeletePaymentMethodModal
+} from '../components';
 import { formatRevenue } from '@shared/lib/utils/Currency.utils';
 import { EventService } from '@shared/lib/api/services/Event.service';
 import { AnalyticsService } from '@shared/lib/api/services/Analytics.service';
@@ -96,6 +104,10 @@ export function OrganizerDashboard() {
   const [selectedEventForImage, setSelectedEventForImage] = useState<{ id: string; title: string; currentImage?: string } | null>(null);
   const [isDuplicateEventModalOpen, setIsDuplicateEventModalOpen] = useState(false);
   const [selectedEventForDuplication, setSelectedEventForDuplication] = useState<any | null>(null);
+
+  // Estados para el modal de crear método de pago
+  const [isCreatePaymentMethodModalOpen, setIsCreatePaymentMethodModalOpen] = useState(false);
+  const [isCreatingPaymentMethod, setIsCreatingPaymentMethod] = useState(false);
 
   // Estados para los nuevos modales CRUD
   const [isViewEventModalOpen, setIsViewEventModalOpen] = useState(false);
@@ -158,6 +170,19 @@ export function OrganizerDashboard() {
     const [selectedPromotion, setSelectedPromotion] = useState<any | null>(null);
     const [promotions, setPromotions] = useState<any[]>([]);
 
+  // Estados para métodos de pago
+  const [paymentMethods, setPaymentMethods] = useState<any[]>([]);
+  const [isLoadingPaymentMethods, setIsLoadingPaymentMethods] = useState(false);
+
+  // Estados para modales CRUD de métodos de pago
+  const [isViewPaymentMethodModalOpen, setIsViewPaymentMethodModalOpen] = useState(false);
+  const [isEditPaymentMethodModalOpen, setIsEditPaymentMethodModalOpen] = useState(false);
+  const [isDeletePaymentMethodModalOpen, setIsDeletePaymentMethodModalOpen] = useState(false);
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<any | null>(null);
+  const [isLoadingPaymentMethodDetails, setIsLoadingPaymentMethodDetails] = useState(false);
+  const [isDeletingPaymentMethod, setIsDeletingPaymentMethod] = useState(false);
+  const [openPaymentMethodDropdown, setOpenPaymentMethodDropdown] = useState<string | null>(null);
+
     // Handlers para CRUD de promociones
     const handleViewPromotion = (promotionId: string) => {
       const promotion = promotions.find((p: any) => p.id === promotionId);
@@ -204,6 +229,143 @@ export function OrganizerDashboard() {
         console.error('Error al cargar promociones:', error);
       }
     };
+
+    // Función para cargar métodos de pago
+    const loadPaymentMethods = async () => {
+      if (!user?.id) return;
+      
+      setIsLoadingPaymentMethods(true);
+      try {
+        console.log('🔄 Cargando métodos de pago para organizador:', user.id);
+        const data = await PaymentMethodService.obtenerMetodosPagoOrganizador(user.id);
+        console.log('📦 Métodos de pago cargados:', data);
+        setPaymentMethods(data || []);
+      } catch (error) {
+        console.error('❌ Error al cargar métodos de pago:', error);
+        setPaymentMethods([]);
+      } finally {
+        setIsLoadingPaymentMethods(false);
+      }
+    };
+
+  // Handlers para CRUD de métodos de pago
+  const handleViewPaymentMethod = async (paymentMethodId: string) => {
+    console.log('Ver método de pago:', paymentMethodId);
+    setIsLoadingPaymentMethodDetails(true);
+    try {
+      const paymentMethod = await PaymentMethodService.obtenerMetodoPagoPorId(paymentMethodId);
+      setSelectedPaymentMethod(paymentMethod);
+      setIsViewPaymentMethodModalOpen(true);
+    } catch (error) {
+      console.error('Error al cargar método de pago:', error);
+      alert('Error al cargar los detalles del método de pago');
+    } finally {
+      setIsLoadingPaymentMethodDetails(false);
+    }
+  };
+
+  const handleEditPaymentMethod = async (paymentMethodId: string) => {
+    console.log('Editar método de pago:', paymentMethodId);
+    setIsLoadingPaymentMethodDetails(true);
+    try {
+      const paymentMethod = await PaymentMethodService.obtenerMetodoPagoPorId(paymentMethodId);
+      setSelectedPaymentMethod(paymentMethod);
+      setIsEditPaymentMethodModalOpen(true);
+    } catch (error) {
+      console.error('Error al cargar método de pago para editar:', error);
+      alert('Error al cargar el método de pago');
+    } finally {
+      setIsLoadingPaymentMethodDetails(false);
+    }
+  };
+
+  const handleSavePaymentMethodChanges = async (formData: any) => {
+    if (!selectedPaymentMethod) return;
+    
+    try {
+      console.log('Guardando cambios en método de pago:', formData);
+      await PaymentMethodService.actualizarMetodoPago(selectedPaymentMethod.id, {
+        nombre: formData.name,
+        tipo: formData.type,
+        proveedor: formData.provider,
+        descripcion: formData.description,
+        activo: formData.isActive,
+        comision_porcentaje: formData.processingFee,
+        comision_fija: formData.fixedFee,
+        monto_minimo: formData.minAmount,
+        monto_maximo: formData.maxAmount,
+        monedas_soportadas: formData.supportedCurrencies,
+        requiere_verificacion: formData.requiresVerification,
+        tiempo_procesamiento: formData.processingTime,
+        configuracion: {
+          apiKey: formData.configuration.apiKey,
+          merchantId: formData.configuration.merchantId,
+          publicKey: formData.configuration.publicKey,
+          secretKey: formData.configuration.secretKey,
+          webhookUrl: formData.configuration.webhookUrl,
+          sandboxMode: formData.configuration.sandboxMode
+        }
+      });
+      console.log('Método de pago actualizado exitosamente');
+      await loadPaymentMethods();
+      setIsEditPaymentMethodModalOpen(false);
+      setSelectedPaymentMethod(null);
+      alert('Método de pago actualizado exitosamente');
+    } catch (error) {
+      console.error('Error al actualizar método de pago:', error);
+      throw error;
+    }
+  };
+
+
+
+  const handleDeletePaymentMethod = async (paymentMethodId: string) => {
+    console.log('🗑️ DELETE: Iniciando proceso de eliminación:', paymentMethodId);
+    setIsLoadingPaymentMethodDetails(true);
+    try {
+      console.log('🔍 DELETE: Cargando detalles del método...');
+      const paymentMethod = await PaymentMethodService.obtenerMetodoPagoPorId(paymentMethodId);
+      console.log('✅ DELETE: Método cargado:', paymentMethod);
+      setSelectedPaymentMethod(paymentMethod);
+      console.log('🚀 DELETE: Abriendo modal de eliminación...');
+      setIsDeletePaymentMethodModalOpen(true);
+      console.log('📊 DELETE: Estado del modal:', isDeletePaymentMethodModalOpen);
+    } catch (error) {
+      console.error('❌ DELETE: Error al cargar método de pago:', error);
+      alert('Error al cargar información del método de pago');
+    } finally {
+      setIsLoadingPaymentMethodDetails(false);
+      console.log('🏁 DELETE: Proceso de carga completado');
+    }
+  };
+
+  const handleConfirmDeletePaymentMethod = async () => {
+    if (!selectedPaymentMethod) return;
+    
+    setIsDeletingPaymentMethod(true);
+    try {
+      console.log('Confirmando eliminación del método de pago:', selectedPaymentMethod.id);
+      await PaymentMethodService.eliminarMetodoPago(selectedPaymentMethod.id);
+      console.log('Método de pago eliminado exitosamente');
+      await loadPaymentMethods();
+      setIsDeletePaymentMethodModalOpen(false);
+      setSelectedPaymentMethod(null);
+      alert('Método de pago eliminado exitosamente');
+    } catch (error: any) {
+      console.error('Error al eliminar método de pago:', error);
+      alert(error.message || 'Error al eliminar el método de pago');
+    } finally {
+      setIsDeletingPaymentMethod(false);
+    }
+  };
+
+  // Función para cerrar modales de métodos de pago
+  const closePaymentMethodModals = () => {
+    setIsViewPaymentMethodModalOpen(false);
+    setIsEditPaymentMethodModalOpen(false);
+    setIsDeletePaymentMethodModalOpen(false);
+    setSelectedPaymentMethod(null);
+  };
 
   const handleLogout = () => {
     logout();
@@ -342,8 +504,34 @@ export function OrganizerDashboard() {
     if (user?.id) {
       loadMetrics();
       loadPromotions();
+      loadPaymentMethods();
     }
   }, [user?.id, finalEvents.length]);
+
+  // Effect para cerrar dropdown al hacer clic fuera
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (openPaymentMethodDropdown) {
+        const target = event.target as Element;
+        
+        // No cerrar si el clic fue dentro del dropdown o en el botón del dropdown
+        if (target && (
+          target.closest('.dropdown-menu') || 
+          target.closest('[data-dropdown-button]')
+        )) {
+          return;
+        }
+        
+        console.log('🚫 CLOSING DROPDOWN: Cerrando dropdown por clic fuera');
+        setOpenPaymentMethodDropdown(null);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [openPaymentMethodDropdown]);
 
   // Status functions removed - not used in current implementation
 
@@ -378,6 +566,9 @@ export function OrganizerDashboard() {
         const otherEvents = storeEvents.filter(e => e.organizerId !== user.id);
         setEvents([...otherEvents, ...convertedEvents]);
       }
+
+      // Recargar también métodos de pago
+      await loadPaymentMethods();
     } catch (error) {
       console.error('Error al refrescar eventos:', error);
     }
@@ -441,6 +632,71 @@ export function OrganizerDashboard() {
 
   const handleCreatePromotion = async () => {
     await loadPromotions();
+  };
+
+  const handleCreatePaymentMethod = async (formData: CreatePaymentMethodFormData) => {
+    setIsCreatingPaymentMethod(true);
+    
+    try {
+      if (!user?.id) {
+        throw new Error('No hay usuario autenticado');
+      }
+
+      console.log('🚀 INICIO - Creando método de pago:', formData);
+
+      // Convertir los datos del formulario al formato de la base de datos
+      const datosMetodoPago = {
+        nombre: formData.name,
+        tipo: formData.type,
+        proveedor: formData.provider,
+        descripcion: formData.description,
+        activo: formData.isActive,
+        comision_porcentaje: formData.processingFee,
+        comision_fija: formData.fixedFee,
+        monto_minimo: formData.minAmount,
+        monto_maximo: formData.maxAmount,
+        monedas_soportadas: formData.supportedCurrencies,
+        requiere_verificacion: formData.requiresVerification,
+        tiempo_procesamiento: formData.processingTime,
+        configuracion: {
+          apiKey: formData.configuration.apiKey,
+          merchantId: formData.configuration.merchantId,
+          publicKey: formData.configuration.publicKey,
+          secretKey: formData.configuration.secretKey,
+          webhookUrl: formData.configuration.webhookUrl,
+          sandboxMode: formData.configuration.sandboxMode
+        },
+        id_organizador: user.id,
+      };
+      
+      console.log('📋 Datos convertidos:', datosMetodoPago);
+      
+      // Crear el método de pago usando el servicio real de Supabase
+      console.log('⏳ Creando método de pago en Supabase...');
+      const metodoPagoCreado = await PaymentMethodService.crearMetodoPago(datosMetodoPago);
+      console.log('✅ Método de pago creado exitosamente:', metodoPagoCreado);
+      
+      // Cerrar modal
+      setIsCreatePaymentMethodModalOpen(false);
+      
+      // Refrescar datos si es necesario
+      await handleRefresh();
+      
+      // Mostrar mensaje de éxito
+      alert('✅ Método de pago creado exitosamente');
+      
+    } catch (error: any) {
+      console.error('❌ Error al crear método de pago:', error);
+      
+      // Mostrar mensaje de error al usuario
+      const errorMessage = error.message || 'Error al crear el método de pago';
+      alert(`❌ Error: ${errorMessage}`);
+      
+      // Re-lanzar el error para que el modal lo maneje si es necesario
+      throw error;
+    } finally {
+      setIsCreatingPaymentMethod(false);
+    }
   };
 
   const handleUploadImage = (eventId: string) => {
@@ -1274,18 +1530,24 @@ export function OrganizerDashboard() {
                   <div className="flex flex-wrap gap-2 w-full sm:w-auto">
                     <button 
                       onClick={handleRefresh}
-                      className="flex-1 sm:flex-none inline-flex items-center justify-center px-3 md:px-4 py-2 bg-gradient-to-r from-orange-500 to-red-600 text-white font-medium rounded-xl hover:from-orange-600 hover:to-red-700 transition-all duration-200 shadow-sm"
+                      className="flex-1 sm:flex-none inline-flex items-center justify-center px-3 md:px-4 py-2 bg-gradient-to-r from-orange-500 to-red-600 text-white font-medium rounded-xl hover:from-orange-600 hover:to-red-700 transition-all duration-200 shadow-sm gap-2"
                     >
                       <RefreshCw className="w-4 h-4" />
+                      <span className="hidden sm:inline">Actualizar</span>
                     </button>
                     <button 
-                      onClick={() => console.log('Exportando reportes de pago...')}
-                      className="flex-1 sm:flex-none inline-flex items-center justify-center px-3 md:px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-medium rounded-xl hover:from-blue-600 hover:to-purple-700 transition-all duration-200 shadow-sm"
+                      onClick={() => console.log('Importando configuración de pagos...')}
+                      className="flex-1 sm:flex-none inline-flex items-center justify-center px-3 md:px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-medium rounded-xl hover:from-blue-600 hover:to-purple-700 transition-all duration-200 shadow-sm gap-2"
                     >
                       <Download className="w-4 h-4" />
+                      <span className="hidden sm:inline">Importar</span>
                     </button>
-                    <button className="flex-1 sm:flex-none inline-flex items-center justify-center px-3 md:px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-medium rounded-xl hover:from-green-600 hover:to-emerald-700 transition-all duration-200 shadow-sm">
+                    <button 
+                      onClick={() => setIsCreatePaymentMethodModalOpen(true)}
+                      className="flex-1 sm:flex-none inline-flex items-center justify-center px-3 md:px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-medium rounded-xl hover:from-green-600 hover:to-emerald-700 transition-all duration-200 shadow-sm gap-2"
+                    >
                       <Plus className="w-4 h-4" />
+                      <span className="hidden sm:inline">Crear</span>
                     </button>
                   </div>
                   </div>
@@ -1293,45 +1555,167 @@ export function OrganizerDashboard() {
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                   {/* Payment Methods */}
                   <div className="bg-gradient-to-br from-white to-indigo-100/98 backdrop-blur-lg shadow-xl border border-white/20 rounded-xl md:rounded-2xl p-4 md:p-6">
-                    <h4 className="font-semibold text-gray-900 mb-3 md:mb-4 text-sm md:text-base">Métodos de Pago Activos</h4>
-                    <div className="space-y-3 md:space-y-4">
-                      <div className="p-3 md:p-4 bg-blue-50 rounded-lg border border-blue-200">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center space-x-2 md:space-x-3 min-w-0 flex-1">
-                            <CreditCard className="w-4 h-4 md:w-5 md:h-5 text-blue-600 flex-shrink-0" />
-                            <div className="min-w-0 flex-1">
-                              <h5 className="font-medium text-gray-900 text-xs md:text-sm truncate">Tarjetas de Crédito/Débito</h5>
-                              <p className="text-xs md:text-sm text-gray-600 truncate">Visa, Mastercard, American Express</p>
-                            </div>
-                          </div>
-                          <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full flex-shrink-0 ml-2">Activo</span>
-                        </div>
-                      </div>
-                      <div className="p-3 md:p-4 bg-purple-50 rounded-lg border border-purple-200">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center space-x-2 md:space-x-3 min-w-0 flex-1">
-                            <Wallet className="w-4 h-4 md:w-5 md:h-5 text-purple-600 flex-shrink-0" />
-                            <div className="min-w-0 flex-1">
-                              <h5 className="font-medium text-gray-900 text-xs md:text-sm truncate">Wallets Digitales</h5>
-                              <p className="text-xs md:text-sm text-gray-600 truncate">PayPal, Apple Pay, Google Pay</p>
-                            </div>
-                          </div>
-                          <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full flex-shrink-0 ml-2">Activo</span>
-                        </div>
-                      </div>
-                      <div className="p-3 md:p-4 bg-green-50 rounded-lg border border-green-200">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center space-x-2 md:space-x-3 min-w-0 flex-1">
-                            <Receipt className="w-4 h-4 md:w-5 md:h-5 text-green-600 flex-shrink-0" />
-                            <div className="min-w-0 flex-1">
-                              <h5 className="font-medium text-gray-900 text-xs md:text-sm truncate">Transferencias Bancarias</h5>
-                              <p className="text-xs md:text-sm text-gray-600 truncate">PSE, Nequi, Daviplata</p>
-                            </div>
-                          </div>
-                          <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full flex-shrink-0 ml-2">Activo</span>
-                        </div>
-                      </div>
+                    <div className="flex items-center justify-between mb-3 md:mb-4">
+                      <h4 className="font-semibold text-gray-900 text-sm md:text-base">Métodos de Pago</h4>
+                      {isLoadingPaymentMethods && (
+                        <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                      )}
                     </div>
+                    
+                    {isLoadingPaymentMethods ? (
+                      <div className="flex items-center justify-center py-8">
+                        <div className="text-center">
+                          <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
+                          <p className="text-sm text-gray-500">Cargando métodos de pago...</p>
+                        </div>
+                      </div>
+                    ) : paymentMethods.length === 0 ? (
+                      <div className="text-center py-8">
+                        <CreditCard className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+                        <p className="text-sm text-gray-500 mb-2">No hay métodos de pago configurados</p>
+                        <p className="text-xs text-gray-400">Haz clic en "Crear" para agregar tu primer método de pago</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-3 md:space-y-4">
+                        {paymentMethods.map((method) => {
+                          const getPaymentMethodIcon = (tipo: string) => {
+                            switch (tipo) {
+                              case 'credit_card':
+                              case 'debit_card':
+                                return CreditCard;
+                              case 'digital_wallet':
+                                return Wallet;
+                              case 'bank_transfer':
+                                return Receipt;
+                              case 'cash':
+                                return Receipt;
+                              case 'crypto':
+                                return Receipt;
+                              default:
+                                return CreditCard;
+                            }
+                          };
+
+                          const getPaymentMethodColor = (tipo: string) => {
+                            switch (tipo) {
+                              case 'credit_card':
+                              case 'debit_card':
+                                return { bg: 'bg-blue-50', border: 'border-blue-200', icon: 'text-blue-600' };
+                              case 'digital_wallet':
+                                return { bg: 'bg-purple-50', border: 'border-purple-200', icon: 'text-purple-600' };
+                              case 'bank_transfer':
+                                return { bg: 'bg-green-50', border: 'border-green-200', icon: 'text-green-600' };
+                              case 'cash':
+                                return { bg: 'bg-yellow-50', border: 'border-yellow-200', icon: 'text-yellow-600' };
+                              case 'crypto':
+                                return { bg: 'bg-orange-50', border: 'border-orange-200', icon: 'text-orange-600' };
+                              default:
+                                return { bg: 'bg-gray-50', border: 'border-gray-200', icon: 'text-gray-600' };
+                            }
+                          };
+
+                          const Icon = getPaymentMethodIcon(method.tipo);
+                          const colors = getPaymentMethodColor(method.tipo);
+
+                          return (
+                            <div key={method.id} className={`p-3 md:p-4 ${colors.bg} rounded-lg border ${colors.border} hover:shadow-md transition-shadow`}>
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center space-x-2 md:space-x-3 min-w-0 flex-1">
+                                  <Icon className={`w-4 h-4 md:w-5 md:h-5 ${colors.icon} flex-shrink-0`} />
+                                  <div className="min-w-0 flex-1">
+                                    <h5 className="font-medium text-gray-900 text-xs md:text-sm truncate">{method.nombre}</h5>
+                                    <p className="text-xs md:text-sm text-gray-600 truncate">{method.proveedor} • {method.comision_porcentaje}% comisión</p>
+                                  </div>
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                  <span className={`px-2 py-1 text-xs rounded-full flex-shrink-0 ${
+                                    method.activo 
+                                      ? 'bg-green-100 text-green-800' 
+                                      : 'bg-red-100 text-red-800'
+                                  }`}>
+                                    {method.activo ? 'Activo' : 'Inactivo'}
+                                  </span>
+                                  <div className="relative">
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        const newState = openPaymentMethodDropdown === method.id ? null : method.id;
+                                        console.log('📋 DROPDOWN: Cambiando estado dropdown para método:', method.id, 'nuevo estado:', newState);
+                                        setOpenPaymentMethodDropdown(newState);
+                                      }}
+                                      className="p-1 hover:bg-white/50 rounded-full transition-colors"
+                                      title="Más opciones"
+                                      data-dropdown-button="true"
+                                    >
+                                      <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
+                                      </svg>
+                                    </button>
+                                    {/* Menú desplegable dinámico */}
+                                    <div className={`dropdown-menu ${
+                                      openPaymentMethodDropdown === method.id ? 'block' : 'hidden'
+                                    } absolute right-0 top-8 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-50`}
+                                      style={{ zIndex: 9999, pointerEvents: 'auto' }}
+                                      onClick={() => console.log('📋 DROPDOWN CLICK: Click en el dropdown')}>
+                                      {openPaymentMethodDropdown === method.id && (() => {
+                                        console.log('🎨 DROPDOWN RENDER: Renderizando dropdown para método:', method.id);
+                                        return null;
+                                      })()}
+                                      <div className="py-1">
+                                        <button 
+                                          onClick={(e) => {
+                                            console.log('👁️ CLICK VIEW BUTTON: Ver detalles clickeado para:', method.id);
+                                            e.stopPropagation();
+                                            handleViewPaymentMethod(method.id);
+                                            setOpenPaymentMethodDropdown(null);
+                                          }}
+                                          onMouseDown={() => console.log('🖱️ MOUSEDOWN VIEW: MouseDown en Ver')}
+                                          className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center space-x-2"
+                                          style={{ pointerEvents: 'auto', zIndex: 9999 }}
+                                        >
+                                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                          </svg>
+                                          <span>Ver detalles</span>
+                                        </button>
+                                        <button 
+                                          onClick={() => {
+                                            console.log('✏️ CLICK EDIT BUTTON: Editar clickeado para:', method.id);
+                                            handleEditPaymentMethod(method.id);
+                                            setOpenPaymentMethodDropdown(null);
+                                          }}
+                                          className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center space-x-2"
+                                        >
+                                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                          </svg>
+                                          <span>Editar</span>
+                                        </button>
+                                        <div className="border-t border-gray-100 my-1"></div>
+                                        <button 
+                                          onClick={() => {
+                                            console.log('🔴 CLICK DELETE BUTTON: Botón eliminar clickeado para método:', method.id);
+                                            handleDeletePaymentMethod(method.id);
+                                            setOpenPaymentMethodDropdown(null);
+                                          }}
+                                          className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center space-x-2"
+                                        >
+                                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                          </svg>
+                                          <span>Eliminar</span>
+                                        </button>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
                   </div>
 
                   {/* Reconciliation Reports */}
@@ -1671,6 +2055,36 @@ export function OrganizerDashboard() {
           loadPromotions();
           closePromotionModals();
         }}
+      />
+
+      {/* Modal de Crear Método de Pago */}
+      <CreatePaymentMethodModal
+        isOpen={isCreatePaymentMethodModalOpen}
+        onClose={() => setIsCreatePaymentMethodModalOpen(false)}
+        onSave={handleCreatePaymentMethod}
+        isLoading={isCreatingPaymentMethod}
+      />
+
+      {/* Modales CRUD de Métodos de Pago */}
+      <ViewPaymentMethodModal
+        isOpen={isViewPaymentMethodModalOpen}
+        onClose={closePaymentMethodModals}
+        paymentMethod={selectedPaymentMethod}
+      />
+
+      <EditPaymentMethodModal
+        isOpen={isEditPaymentMethodModalOpen}
+        onClose={closePaymentMethodModals}
+        paymentMethod={selectedPaymentMethod}
+        onSave={handleSavePaymentMethodChanges}
+        isLoading={isLoadingPaymentMethodDetails}
+      />
+
+      <DeletePaymentMethodModal
+        isOpen={isDeletePaymentMethodModalOpen}
+        onClose={closePaymentMethodModals}
+        paymentMethod={selectedPaymentMethod}
+        onDelete={handleConfirmDeletePaymentMethod}
       />
     </div>
   );

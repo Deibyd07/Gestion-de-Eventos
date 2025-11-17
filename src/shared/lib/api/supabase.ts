@@ -240,6 +240,80 @@ export interface Database {
           tipo?: 'bienvenida' | 'recordatorio_evento' | 'confirmacion_entrada' | 'evento_cancelado' | 'encuesta';
         };
       };
+      metodos_pago: {
+        Row: {
+          id: string;
+          nombre: string;
+          tipo: 'credit_card' | 'debit_card' | 'digital_wallet' | 'bank_transfer' | 'cash' | 'crypto';
+          proveedor: string;
+          descripcion: string;
+          activo: boolean;
+          comision_porcentaje: number;
+          comision_fija?: number;
+          monto_minimo?: number;
+          monto_maximo?: number;
+          monedas_soportadas: string[];
+          requiere_verificacion: boolean;
+          tiempo_procesamiento: string;
+          configuracion: {
+            apiKey?: string;
+            merchantId?: string;
+            publicKey?: string;
+            secretKey?: string;
+            webhookUrl?: string;
+            sandboxMode: boolean;
+          };
+          id_organizador: string;
+          fecha_creacion: string;
+          fecha_actualizacion: string;
+        };
+        Insert: {
+          id?: string;
+          nombre: string;
+          tipo: 'credit_card' | 'debit_card' | 'digital_wallet' | 'bank_transfer' | 'cash' | 'crypto';
+          proveedor: string;
+          descripcion: string;
+          activo?: boolean;
+          comision_porcentaje: number;
+          comision_fija?: number;
+          monto_minimo?: number;
+          monto_maximo?: number;
+          monedas_soportadas?: string[];
+          requiere_verificacion?: boolean;
+          tiempo_procesamiento: string;
+          configuracion?: {
+            apiKey?: string;
+            merchantId?: string;
+            publicKey?: string;
+            secretKey?: string;
+            webhookUrl?: string;
+            sandboxMode?: boolean;
+          };
+          id_organizador: string;
+        };
+        Update: {
+          nombre?: string;
+          tipo?: 'credit_card' | 'debit_card' | 'digital_wallet' | 'bank_transfer' | 'cash' | 'crypto';
+          proveedor?: string;
+          descripcion?: string;
+          activo?: boolean;
+          comision_porcentaje?: number;
+          comision_fija?: number;
+          monto_minimo?: number;
+          monto_maximo?: number;
+          monedas_soportadas?: string[];
+          requiere_verificacion?: boolean;
+          tiempo_procesamiento?: string;
+          configuracion?: {
+            apiKey?: string;
+            merchantId?: string;
+            publicKey?: string;
+            secretKey?: string;
+            webhookUrl?: string;
+            sandboxMode?: boolean;
+          };
+        };
+      };
       analiticas_eventos: {
         Row: {
           id: string;

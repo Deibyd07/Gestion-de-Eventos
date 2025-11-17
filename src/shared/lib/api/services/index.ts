@@ -12,6 +12,7 @@ export { AttendanceService } from './Attendance.service';
 export { SystemConfigService } from './SystemConfig.service';
 export { EventRatingService } from './EventRating.service';
 export { UserFavoritesService } from './UserFavorites.service';
+export { PaymentMethodService } from './PaymentMethod.service';
 
 // Mantener compatibilidad con el archivo original
 export { UserService as ServicioUsuarios } from './User.service';
@@ -27,3 +28,4 @@ export { AttendanceService as ServicioAsistencia } from './Attendance.service';
 export { SystemConfigService as ServicioConfiguraciones } from './SystemConfig.service';
 export { EventRatingService as ServicioCalificaciones } from './EventRating.service';
 export { UserFavoritesService as ServicioFavoritos } from './UserFavorites.service';
+export { PaymentMethodService as ServicioMetodosPago } from './PaymentMethod.service';

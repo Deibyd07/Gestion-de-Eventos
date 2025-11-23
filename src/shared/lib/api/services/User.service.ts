@@ -170,10 +170,65 @@ export class UserService {
   static async obtenerTodosUsuarios() {
     const { data, error } = await supabase
       .from('usuarios')
-      .select('*');
+      .select('*')
+      .order('fecha_creacion', { ascending: false });
 
     if (error) throw error;
     return data || [];
+  }
+
+  static async actualizarEstadoUsuario(id: string, estado: string) {
+    // Nota: Necesitas agregar el campo 'estado' a la tabla 'usuarios' en Supabase
+    const { data, error } = await supabase
+      .from('usuarios')
+      .update({ 
+        estado: estado,
+        fecha_actualizacion: getRegistrationDate()
+      } as any)
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  }
+
+  static async buscarUsuarios(termino: string) {
+    const { data, error } = await supabase
+      .from('usuarios')
+      .select('*')
+      .or(`nombre_completo.ilike.%${termino}%,correo_electronico.ilike.%${termino}%`)
+      .order('fecha_creacion', { ascending: false });
+
+    if (error) throw error;
+    return data || [];
+  }
+
+  static async obtenerUsuariosPorRol(rol: 'administrador' | 'organizador' | 'asistente') {
+    const { data, error } = await supabase
+      .from('usuarios')
+      .select('*')
+      .eq('rol', rol)
+      .order('fecha_creacion', { ascending: false });
+
+    if (error) throw error;
+    return data || [];
+  }
+
+  static async obtenerEstadisticasUsuarios() {
+    const { data, error } = await supabase
+      .from('usuarios')
+      .select('rol, id')
+
+    if (error) throw error;
+    
+    const usuarios = data || [];
+    return {
+      total: usuarios.length,
+      administradores: usuarios.filter(u => u.rol === 'administrador').length,
+      organizadores: usuarios.filter(u => u.rol === 'organizador').length,
+      asistentes: usuarios.filter(u => u.rol === 'asistente').length
+    };
   }
 
   static async eliminarUsuario(id: string) {

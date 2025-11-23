@@ -58,7 +58,7 @@ export const UserFilters: React.FC<UserFiltersProps> = ({
         className="px-3 py-2 bg-white/50 backdrop-blur-sm border border-white/30 rounded-xl focus:ring-2 focus:ring-blue-500/50 focus:border-transparent focus:bg-white/80 transition-all duration-200 shadow-sm text-sm"
       >
         <option value="all">Todos los roles</option>
-        <option value="admin">Administrador</option>
+        <option value="administrador">Administrador</option>
         <option value="organizador">Organizador</option>
         <option value="asistente">Asistente</option>
       </select>

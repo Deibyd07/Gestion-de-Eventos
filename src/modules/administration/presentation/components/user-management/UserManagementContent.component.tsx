@@ -131,9 +131,9 @@ export const UserManagementContent: React.FC<UserManagementContentProps> = ({
       );
     }
 
-    // Filtro por rol
+    // Filtro por rol (case-insensitive)
     if (filterRole !== 'all') {
-      filtered = filtered.filter(user => user.rol === filterRole);
+      filtered = filtered.filter(user => user.rol.toLowerCase() === filterRole.toLowerCase());
     }
 
     // Filtro por estado

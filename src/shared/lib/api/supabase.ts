@@ -17,8 +17,12 @@ export interface Database {
           correo_electronico: string;
           nombre_completo: string;
           rol: 'administrador' | 'organizador' | 'asistente';
+          estado?: 'activo' | 'inactivo' | 'suspendido' | 'pendiente';
+          telefono?: string;
+          ubicacion?: string;
           url_avatar?: string;
           preferencias?: any;
+          verificacion?: boolean;
           fecha_creacion: string;
           fecha_actualizacion: string;
         };
@@ -27,15 +31,23 @@ export interface Database {
           correo_electronico: string;
           nombre_completo: string;
           rol?: 'administrador' | 'organizador' | 'asistente';
+          estado?: 'activo' | 'inactivo' | 'suspendido' | 'pendiente';
+          telefono?: string;
+          ubicacion?: string;
           url_avatar?: string;
           preferencias?: any;
+          verificacion?: boolean;
         };
         Update: {
           correo_electronico?: string;
           nombre_completo?: string;
           rol?: 'administrador' | 'organizador' | 'asistente';
+          estado?: 'activo' | 'inactivo' | 'suspendido' | 'pendiente';
+          telefono?: string;
+          ubicacion?: string;
           url_avatar?: string;
           preferencias?: any;
+          verificacion?: boolean;
         };
       };
       eventos: {

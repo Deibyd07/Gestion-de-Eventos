@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Download, Upload } from 'lucide-react';
 import { UserManagementContent } from './user-management/UserManagementContent.component';
+import { UserEditModal } from './user-management/UserEditModal.component';
+import { UserDeleteModal } from './user-management/UserDeleteModal.component';
+import { UserService } from '@shared/lib/api/services/User.service';
 
 interface User {
   id: string;
@@ -38,6 +41,10 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onViewOrganizerP
   const [showRoleModal, setShowRoleModal] = useState(false);
   const [userToUpdateRole, setUserToUpdateRole] = useState<User | null>(null);
   const [newRole, setNewRole] = useState('');
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [userToEdit, setUserToEdit] = useState<User | null>(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [userToDelete, setUserToDelete] = useState<User | null>(null);
 
   // Función para obtener estadísticas basadas en el rol del usuario
   const getStatsByRole = (userRole: string) => {
@@ -81,103 +88,44 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onViewOrganizerP
   const currentUserRole = 'admin';
   const stats = getStatsByRole(currentUserRole);
 
-  // Datos de ejemplo más realistas
-  const mockUsers: User[] = [
-    {
-      id: '1',
-      nombre_completo: 'Juan Pérez',
-      correo_electronico: 'juan.perez@email.com',
-      rol: 'organizador',
-      estado: 'activo',
-      fecha_registro: '2024-01-15',
-      ultima_actividad: '2024-11-28',
-      telefono: '+57 300 123 4567',
-      ubicacion: 'Bogotá, Colombia',
-      avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Juan',
-      eventos_creados: 12,
-      eventos_asistidos: 8,
-      ingresos_generados: 15000000,
-      rating: 4.8,
-      verificacion: true
-    },
-    {
-      id: '2',
-      nombre_completo: 'Ana López',
-      correo_electronico: 'ana.lopez@email.com',
-      rol: 'organizador',
-      estado: 'activo',
-      fecha_registro: '2024-02-20',
-      ultima_actividad: '2024-11-27',
-      telefono: '+57 300 234 5678',
-      ubicacion: 'Medellín, Colombia',
-      avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Ana',
-      eventos_creados: 8,
-      eventos_asistidos: 15,
-      ingresos_generados: 12000000,
-      rating: 4.9,
-      verificacion: true
-    },
-    {
-      id: '3',
-      nombre_completo: 'Carlos Ruiz',
-      correo_electronico: 'carlos.ruiz@email.com',
-      rol: 'asistente',
-      estado: 'activo',
-      fecha_registro: '2024-03-10',
-      ultima_actividad: '2024-11-26',
-      telefono: '+57 300 345 6789',
-      ubicacion: 'Cali, Colombia',
-      avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Carlos',
-      eventos_creados: 0,
-      eventos_asistidos: 25,
-      ingresos_generados: 0,
-      rating: 4.7,
-      verificacion: false
-    },
-    {
-      id: '4',
-      nombre_completo: 'María García',
-      correo_electronico: 'maria.garcia@email.com',
-      rol: 'admin',
-      estado: 'activo',
-      fecha_registro: '2024-01-05',
-      ultima_actividad: '2024-11-28',
-      telefono: '+57 300 456 7890',
-      ubicacion: 'Bogotá, Colombia',
-      avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Maria',
-      eventos_creados: 0,
-      eventos_asistidos: 5,
-      ingresos_generados: 0,
-      rating: 5.0,
-      verificacion: true
-    },
-    {
-      id: '5',
-      nombre_completo: 'Pedro Martínez',
-      correo_electronico: 'pedro.martinez@email.com',
-      rol: 'organizador',
-      estado: 'suspendido',
-      fecha_registro: '2024-04-15',
-      ultima_actividad: '2024-11-20',
-      telefono: '+57 300 567 8901',
-      ubicacion: 'Barranquilla, Colombia',
-      avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Pedro',
-      eventos_creados: 3,
-      eventos_asistidos: 12,
-      ingresos_generados: 5000000,
-      rating: 3.2,
-      verificacion: false
-    }
-  ];
-
+  // Cargar usuarios desde Supabase
   useEffect(() => {
-    // Simular carga de datos
-    const timer = setTimeout(() => {
-      setUsers(mockUsers);
-      setLoading(false);
-    }, 1000);
+    const loadUsers = async () => {
+      setLoading(true);
+      try {
+        console.log('🔄 Cargando usuarios desde Supabase...');
+        const usuariosDB = await UserService.obtenerTodosUsuarios();
+        
+        // Mapear usuarios de la base de datos al formato esperado
+        const usuariosMapeados: User[] = usuariosDB.map(usuario => ({
+          id: usuario.id,
+          nombre_completo: usuario.nombre_completo,
+          correo_electronico: usuario.correo_electronico,
+          rol: usuario.rol,
+          estado: usuario.estado || 'activo', // Usar el estado de la BD o por defecto activo
+          fecha_registro: usuario.fecha_creacion,
+          ultima_actividad: usuario.fecha_actualizacion || usuario.fecha_creacion,
+          telefono: usuario.telefono,
+          ubicacion: usuario.ubicacion,
+          avatar: usuario.url_avatar,
+          eventos_creados: 0, // Estos campos requieren consultas adicionales
+          eventos_asistidos: 0,
+          ingresos_generados: 0,
+          rating: 0,
+          verificacion: usuario.verificacion || false
+        }));
+        
+        console.log('✅ Usuarios cargados:', usuariosMapeados.length);
+        setUsers(usuariosMapeados);
+      } catch (error) {
+        console.error('❌ Error al cargar usuarios:', error);
+        alert('Error al cargar usuarios desde la base de datos');
+      } finally {
+        setLoading(false);
+      }
+    };
 
-    return () => clearTimeout(timer);
+    loadUsers();
   }, []);
 
   const formatCurrency = (amount: number) => {
@@ -218,13 +166,62 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onViewOrganizerP
   };
 
   const handleEditUser = (user: User) => {
-    // Implementar edición de usuario
-    console.log('Edit user:', user);
+    setUserToEdit(user);
+    setShowEditModal(true);
+  };
+
+  const handleSaveUserEdit = async (userId: string, updates: Partial<User>) => {
+    try {
+      console.log('💾 Guardando cambios de usuario:', userId, updates);
+      await UserService.actualizarUsuario(userId, {
+        nombre_completo: updates.nombre_completo,
+        correo_electronico: updates.correo_electronico,
+        telefono: updates.telefono,
+        ubicacion: updates.ubicacion,
+        rol: updates.rol as 'administrador' | 'organizador' | 'asistente',
+        // estado y verificacion se manejan por separado si es necesario
+      });
+      
+      // Si el estado cambió, actualizarlo
+      if (updates.estado) {
+        await UserService.actualizarEstadoUsuario(userId, updates.estado);
+      }
+      
+      console.log('✅ Usuario actualizado exitosamente');
+      
+      // Actualizar el estado local
+      setUsers(prev => prev.map(u => 
+        u.id === userId 
+          ? { ...u, ...updates }
+          : u
+      ));
+      
+      setShowEditModal(false);
+      setUserToEdit(null);
+      alert('Usuario actualizado exitosamente');
+    } catch (error) {
+      console.error('❌ Error al actualizar usuario:', error);
+      alert('Error al actualizar el usuario');
+    }
   };
 
   const handleDeleteUser = (user: User) => {
-    if (window.confirm(`¿Estás seguro de que quieres eliminar a ${user.nombre_completo}?`)) {
-      setUsers(prev => prev.filter(u => u.id !== user.id));
+    setUserToDelete(user);
+    setShowDeleteModal(true);
+  };
+
+  const handleConfirmDelete = async (userId: string) => {
+    try {
+      console.log('🗑️ Eliminando usuario:', userId);
+      await UserService.eliminarUsuario(userId);
+      console.log('✅ Usuario eliminado exitosamente');
+      setUsers(prev => prev.filter(u => u.id !== userId));
+      setShowDeleteModal(false);
+      setUserToDelete(null);
+      alert('Usuario eliminado exitosamente');
+    } catch (error) {
+      console.error('❌ Error al eliminar usuario:', error);
+      alert('Error al eliminar el usuario');
     }
   };
 
@@ -234,12 +231,23 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onViewOrganizerP
     setShowRoleModal(true);
   };
 
-  const handleToggleUserStatus = (user: User) => {
-    setUsers(prev => prev.map(u => 
-      u.id === user.id 
-        ? { ...u, estado: u.estado === 'activo' ? 'suspendido' : 'activo' }
-        : u
-    ));
+  const handleToggleUserStatus = async (user: User) => {
+    try {
+      const nuevoEstado = user.estado === 'activo' ? 'suspendido' : 'activo';
+      console.log('🔄 Cambiando estado de usuario:', user.id, 'de', user.estado, 'a', nuevoEstado);
+      
+      await UserService.actualizarEstadoUsuario(user.id, nuevoEstado);
+      console.log('✅ Estado actualizado exitosamente');
+      
+      setUsers(prev => prev.map(u => 
+        u.id === user.id 
+          ? { ...u, estado: nuevoEstado }
+          : u
+      ));
+    } catch (error) {
+      console.error('❌ Error al cambiar estado:', error);
+      alert('Error al cambiar el estado del usuario');
+    }
   };
 
   const handleExportUsers = () => {
@@ -252,16 +260,27 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onViewOrganizerP
     console.log('Import users');
   };
 
-  const handleConfirmRoleUpdate = () => {
+  const handleConfirmRoleUpdate = async () => {
     if (userToUpdateRole && newRole) {
-      setUsers(prev => prev.map(user => 
-        user.id === userToUpdateRole.id 
-          ? { ...user, rol: newRole }
-          : user
-      ));
-      setShowRoleModal(false);
-      setUserToUpdateRole(null);
-      setNewRole('');
+      try {
+        console.log('🔄 Actualizando rol de usuario:', userToUpdateRole.id, 'a', newRole);
+        await UserService.actualizarUsuario(userToUpdateRole.id, {
+          rol: newRole as 'administrador' | 'organizador' | 'asistente'
+        });
+        console.log('✅ Rol actualizado exitosamente');
+        setUsers(prev => prev.map(user => 
+          user.id === userToUpdateRole.id 
+            ? { ...user, rol: newRole }
+            : user
+        ));
+        setShowRoleModal(false);
+        setUserToUpdateRole(null);
+        setNewRole('');
+        alert('Rol de usuario actualizado exitosamente');
+      } catch (error) {
+        console.error('❌ Error al actualizar rol:', error);
+        alert('Error al actualizar el rol del usuario');
+      }
     }
   };
 
@@ -330,10 +349,10 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onViewOrganizerP
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-purple-700">
-                {currentUserRole === 'organizador' ? 'Asistentes' : 'Organizadores'}
+                Organizadores
               </p>
               <p className="text-2xl font-bold text-purple-900">
-                {currentUserRole === 'organizador' ? stats.attendees : stats.organizers}
+                {stats.organizers}
               </p>
             </div>
           </div>
@@ -394,6 +413,28 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onViewOrganizerP
         formatCurrency={formatCurrency}
         formatDate={formatDate}
         currentUserRole={currentUserRole}
+      />
+
+      {/* Modal de edición */}
+      <UserEditModal
+        user={userToEdit}
+        isOpen={showEditModal}
+        onClose={() => {
+          setShowEditModal(false);
+          setUserToEdit(null);
+        }}
+        onSave={handleSaveUserEdit}
+      />
+
+      {/* Modal de eliminación */}
+      <UserDeleteModal
+        user={userToDelete}
+        isOpen={showDeleteModal}
+        onClose={() => {
+          setShowDeleteModal(false);
+          setUserToDelete(null);
+        }}
+        onConfirm={handleConfirmDelete}
       />
     </div>
   );

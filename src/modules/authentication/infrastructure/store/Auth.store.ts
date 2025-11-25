@@ -24,7 +24,7 @@ interface AuthState {
   login: (email: string, password: string) => Promise<void>;
   loginWithGoogle: () => Promise<void>;
   loginWithFacebook: () => Promise<void>;
-  register: (userData: { email: string; password: string; name: string }) => Promise<void>;
+  register: (userData: { email: string; password: string; name: string; phone?: string; location?: string; role?: string }) => Promise<void>;
   logout: () => void;
   updateProfile: (userData: Partial<User>) => void;
   updateUserRole: (userId: string, role: 'admin' | 'organizer' | 'attendee') => Promise<void>;
@@ -96,33 +96,88 @@ export const useAuthStore = create<AuthState>()(
 
       register: async (userData) => {
         try {
-          // Crear usuario en la base de datos
-          const newUserData = await ServicioUsuarios.crearUsuario({
-            correo_electronico: userData.email,
-            nombre_completo: userData.name,
-            contraseña: userData.password,
-            rol: 'asistente' as any,
-            ubicacion: 'Colombia'
+          // 1. Crear usuario en Supabase Auth (encripta contraseña y agrega metadatos)
+          const { data: authData, error: authError } = await supabase.auth.signUp({
+            email: userData.email,
+            password: userData.password,
+            options: {
+              data: {
+                nombre_completo: userData.name,
+                telefono: userData.phone,
+                ubicacion: userData.location,
+                rol: userData.role || 'attendee'
+              }
+            }
           });
 
+          if (authError) {
+            console.error('[Auth.register] Supabase signUp error:', authError);
+            throw new Error(authError.message || 'Error al crear la cuenta');
+          }
+          if (!authData.user) throw new Error('No se pudo crear el usuario');
+
+          const userId = authData.user.id;
+
+          // 2. Esperar a que el trigger inserte en usuarios; fallback si no existe.
+          await new Promise(r => setTimeout(r, 150));
+          const { data: perfil } = await supabase
+            .from('usuarios')
+            .select('*')
+            .eq('id', userId)
+            .maybeSingle();
+
+          let finalPerfil = perfil;
+          if (!finalPerfil) {
+            // Mapear rol frontend -> BD
+            const roleMapping: { [key: string]: string } = {
+              admin: 'administrador',
+              organizer: 'organizador',
+              attendee: 'asistente'
+            };
+            const dbRole = roleMapping[userData.role || 'attendee'] || 'asistente';
+            try {
+              finalPerfil = await ServicioUsuarios.crearUsuario({
+                id: userId as any,
+                correo_electronico: userData.email,
+                nombre_completo: userData.name,
+                rol: dbRole as any,
+                ...(userData.phone && { telefono: userData.phone } as any),
+                ...(userData.location && { ubicacion: userData.location } as any)
+              } as any);
+            } catch (e: any) {
+              if (!e.message?.includes('duplicate')) {
+                console.error('[Auth.register] Fallback inserción usuarios error:', e);
+                throw new Error('Error creando perfil de usuario');
+              }
+              // Si es duplicate, reintentar obtener
+              const { data: existente } = await supabase
+                .from('usuarios')
+                .select('*')
+                .eq('id', userId)
+                .maybeSingle();
+              finalPerfil = existente || null;
+            }
+          }
+
+          if (!finalPerfil) throw new Error('No se pudo obtener el perfil de usuario');
+
+          const mappedRole = (userData.role as any) || 'attendee';
+
           const user: User = {
-            id: newUserData.id,
-            email: newUserData.correo_electronico,
-            name: newUserData.nombre_completo,
-            role: 'attendee',
+            id: finalPerfil.id,
+            email: finalPerfil.correo_electronico,
+            name: finalPerfil.nombre_completo || userData.name,
+            role: mappedRole,
             avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${userData.email}`,
             preferences: {
               categories: [],
-              location: newUserData.ubicacion || 'Colombia'
+              location: finalPerfil.ubicacion || userData.location || 'Colombia'
             }
           };
 
-          set({
-            user,
-            isAuthenticated: true,
-            token: `auth-token-${newUserData.id}`
-          });
+          set({ user, isAuthenticated: true, token: `auth-token-${user.id}` });
         } catch (error: any) {
+          console.error('[Auth.register] Error final:', error);
           throw new Error(error.message || 'Error al crear la cuenta');
         }
       },

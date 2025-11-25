@@ -45,6 +45,9 @@ import { NotificationsPage } from './modules/notifications/presentation/pages/No
 // Pages - Tickets
 import { TicketConsultPage } from './modules/tickets/presentation/pages/TicketConsult.page';
 
+// Pages - Auth
+import { AuthCallbackPage } from './modules/authentication/presentation/pages/AuthCallback.page';
+
 function App() {
   const { isAuthenticated, user } = useAuthStore();
 
@@ -128,6 +131,12 @@ function App() {
           <Route
             path="/consultar-entrada"
             element={<TicketConsultPage />}
+          />
+
+          {/* Auth Callback (Email confirmation) */}
+          <Route
+            path="/auth/callback"
+            element={<AuthCallbackPage />}
           />
           
           {/* ========== Protected Routes ========== */}

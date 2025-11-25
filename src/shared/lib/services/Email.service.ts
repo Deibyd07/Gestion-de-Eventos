@@ -1,4 +1,5 @@
 import { supabase } from '../api/supabase';
+import { formatPrice } from '@shared/lib/utils/Currency.utils';
 
 export interface EmailTemplate {
   id: string;
@@ -102,6 +103,40 @@ export class EmailService {
     }
   }
 
+  // Enviar email directo (sin plantilla)
+  static async sendDirectEmail(emailData: { 
+    to: string; 
+    subject: string; 
+    message: string; 
+  }): Promise<{ success: boolean; messageId?: string; error?: string }> {
+    try {
+      // Simular envío de email (en producción, integrar con SendGrid, Mailgun, etc.)
+      const messageId = `email_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      
+      console.log('Enviando email:', {
+        to: emailData.to,
+        subject: emailData.subject,
+        message: emailData.message,
+        timestamp: new Date().toISOString()
+      });
+
+      // TODO: Integrar con servicio de email real
+      // Por ahora, simular envío exitoso después de un delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      return {
+        success: true,
+        messageId
+      };
+    } catch (error) {
+      console.error('Error sending direct email:', error);
+      return {
+        success: false,
+        error: 'Error al enviar el email'
+      };
+    }
+  }
+
   // Enviar email usando plantilla
   static async sendEmail(emailData: EmailData): Promise<{ success: boolean; messageId?: string; error?: string }> {
     try {
@@ -194,7 +229,7 @@ export class EmailService {
         eventLocation: purchaseData.eventLocation,
         total: purchaseData.total.toString(),
         ticketTypes: purchaseData.ticketTypes.map(t => 
-          `${t.name} x${t.quantity} - €${t.price * t.quantity}`
+          `${t.name} x${t.quantity} - ${formatPrice(t.price * t.quantity)}`
         ).join('\n')
       };
 
@@ -221,6 +256,7 @@ export class EmailService {
             <p><strong>Entradas:</strong></p>
             <ul>{{ticketTypes}}</ul>
             <p><strong>Total:</strong> €{{total}}</p>
+            <p><strong>Total:</strong> {{total_cop}}</p>
             <p>Presenta este código QR en la entrada del evento:</p>
             <div style="text-align: center; margin: 20px 0;">
               <img src="data:image/png;base64,{{qrCode}}" alt="Código QR" style="max-width: 200px;" />

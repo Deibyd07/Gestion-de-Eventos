@@ -18,8 +18,7 @@ import {
   Percent,
   Wallet,
   Receipt,
-  FileBarChart,
-  Bell
+  FileBarChart
 } from 'lucide-react';
 import { useAuthStore } from '../../../authentication/infrastructure/store/Auth.store';
 import { useEventStore } from '../../../events/infrastructure/store/Event.store';
@@ -581,6 +580,11 @@ export function OrganizerDashboard() {
 
       // Recargar también métodos de pago
       await loadPaymentMethods();
+
+      // Si estamos en la pestaña de asistentes, recargar asistentes también
+      if (activeTab === 'attendees' && (window as any).__attendeeRefresh) {
+        await (window as any).__attendeeRefresh();
+      }
     } catch (error) {
       console.error('Error al refrescar eventos:', error);
     }
@@ -1899,28 +1903,20 @@ export function OrganizerDashboard() {
                   <div className="flex flex-wrap gap-2 w-full sm:w-auto">
                     <button 
                       onClick={handleRefresh}
+                      aria-label="Actualizar asistentes"
                       className="flex-1 sm:flex-none inline-flex items-center justify-center px-3 md:px-4 py-2 bg-gradient-to-r from-orange-500 to-red-600 text-white font-medium rounded-xl hover:from-orange-600 hover:to-red-700 transition-all duration-200 shadow-sm"
                     >
                       <RefreshCw className="w-4 h-4" />
+                      <span className="ml-2 text-xs sm:text-sm">Actualizar</span>
                     </button>
-                    <button 
-                      onClick={() => console.log('Exportando lista de asistentes...')}
-                      className="flex-1 sm:flex-none inline-flex items-center justify-center px-3 md:px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-medium rounded-xl hover:from-blue-600 hover:to-purple-700 transition-all duration-200 shadow-sm"
-                    >
-                      <Download className="w-4 h-4" />
-                    </button>
-                    <button 
-                      onClick={() => console.log('Enviar notificación masiva...')}
-                      className="flex-1 sm:flex-none inline-flex items-center justify-center px-3 md:px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-600 text-white font-medium rounded-xl hover:from-purple-600 hover:to-pink-700 transition-all duration-200 shadow-sm"
-                    >
-                      <Bell className="w-4 h-4" />
-                    </button>
+                    {/* Export format selector removed */}
                   </div>
                 </div>
                 
                 <AttendeeManagement 
                   eventId={selectedEvent?.id}
                   eventTitle={selectedEvent?.title}
+                  onRefreshRequest={() => {}}
                 />
               </div>
             )}

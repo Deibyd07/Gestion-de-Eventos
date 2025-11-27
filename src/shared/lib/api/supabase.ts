@@ -64,7 +64,7 @@ export interface Database {
           asistentes_actuales: number;
           id_organizador: string;
           nombre_organizador: string;
-          estado: 'proximo' | 'en_curso' | 'completado' | 'cancelado';
+          estado: 'borrador' | 'publicado' | 'pausado' | 'cancelado' | 'finalizado';
           etiquetas: string[];
           fecha_creacion: string;
           fecha_actualizacion: string;
@@ -82,7 +82,7 @@ export interface Database {
           asistentes_actuales?: number;
           id_organizador: string;
           nombre_organizador: string;
-          estado?: 'proximo' | 'en_curso' | 'completado' | 'cancelado';
+          estado?: 'borrador' | 'publicado' | 'pausado' | 'cancelado' | 'finalizado';
           etiquetas?: string[];
         };
         Update: {
@@ -96,7 +96,7 @@ export interface Database {
           maximo_asistentes?: number;
           asistentes_actuales?: number;
           nombre_organizador?: string;
-          estado?: 'proximo' | 'en_curso' | 'completado' | 'cancelado';
+          estado?: 'borrador' | 'publicado' | 'pausado' | 'cancelado' | 'finalizado';
           etiquetas?: string[];
         };
       };

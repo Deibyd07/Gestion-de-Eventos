@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Calendar, 
   Search, 
@@ -15,26 +15,37 @@ import {
   DollarSign,
   Star,
   AlertTriangle,
-  MoreVertical,
   Download,
   Upload,
   RefreshCw
 } from 'lucide-react';
+import { EventService } from '../../../../shared/lib/api/services';
+import { ViewEventModal } from './events/ViewEventModal.component';
+import { EditEventModal } from './events/EditEventModal.component';
+import { DeleteEventModal } from './events/DeleteEventModal.component';
+import { CreateEventModal, EventCreateData } from './events/CreateEventModal.component';
+import { useAuthStore } from '../../../authentication/infrastructure/store/Auth.store';
 
+// Tipo de evento según la base de datos
 interface Event {
   id: string;
-  title: string;
-  description: string;
-  date: string;
-  location: string;
-  price: number;
-  maxAttendees: number;
-  currentAttendees: number;
-  status: 'active' | 'pending' | 'cancelled' | 'completed';
-  organizer: string;
-  category: string;
-  image: string;
-  createdAt: string;
+  titulo: string;
+  descripcion: string;
+  url_imagen: string;
+  fecha_evento: string;
+  hora_evento: string;
+  ubicacion: string;
+  categoria: string;
+  maximo_asistentes: number;
+  asistentes_actuales: number;
+  estado: 'borrador' | 'publicado' | 'pausado' | 'cancelado' | 'finalizado';
+  id_organizador: string;
+  nombre_organizador: string;
+  etiquetas: string[];
+  fecha_creacion: string;
+  fecha_actualizacion: string;
+  tipos_entrada?: any[];
+  analiticas_eventos?: any[];
 }
 
 export const EventManagement: React.FC = () => {
@@ -43,96 +54,141 @@ export const EventManagement: React.FC = () => {
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [sortBy, setSortBy] = useState<string>('date');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  
+  // Estados para datos reales de Supabase
+  const [events, setEvents] = useState<Event[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  
+  // Estados para los modales
+  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+  const [viewModalOpen, setViewModalOpen] = useState(false);
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [createModalOpen, setCreateModalOpen] = useState(false);
 
-  // Datos de ejemplo
-  const events: Event[] = [
-    {
-      id: '1',
-      title: 'Feria Agropecuaria Nacional 2024',
-      description: 'La feria más importante de Colombia con exhibición de ganado, productos agrícolas y artesanías.',
-      date: '2024-12-15',
-      location: 'Bogotá, Colombia',
-      price: 0,
-      maxAttendees: 5000,
-      currentAttendees: 3247,
-      status: 'active',
-      organizer: 'Juan Pérez',
-      category: 'Agropecuario',
-      image: 'https://images.unsplash.com/photo-1574943320219-553eb213f72d?w=400',
-      createdAt: '2024-11-01'
-    },
-    {
-      id: '2',
-      title: 'Workshop de React Avanzado',
-      description: 'Aprende las mejores prácticas de React con proyectos reales.',
-      date: '2024-12-20',
-      location: 'Medellín, Colombia',
-      price: 150000,
-      maxAttendees: 50,
-      currentAttendees: 32,
-      status: 'active',
-      organizer: 'Ana López',
-      category: 'Tecnología',
-      image: 'https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=400',
-      createdAt: '2024-11-05'
-    },
-    {
-      id: '3',
-      title: 'Festival de Música Vallenata',
-      description: 'Disfruta de la mejor música vallenata con artistas reconocidos.',
-      date: '2024-12-25',
-      location: 'Cali, Colombia',
-      price: 50000,
-      maxAttendees: 2000,
-      currentAttendees: 0,
-      status: 'pending',
-      organizer: 'Carlos Ruiz',
-      category: 'Cultura',
-      image: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400',
-      createdAt: '2024-11-10'
-    },
-    {
-      id: '4',
-      title: 'Conferencia de Emprendimiento',
-      description: 'Conoce las claves del éxito empresarial con expertos.',
-      date: '2024-11-30',
-      location: 'Barranquilla, Colombia',
-      price: 75000,
-      maxAttendees: 200,
-      currentAttendees: 156,
-      status: 'completed',
-      organizer: 'María García',
-      category: 'Negocios',
-      image: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=400',
-      createdAt: '2024-10-15'
+  // Obtener usuario autenticado
+  const { user } = useAuthStore();
+
+  // Cargar eventos desde Supabase
+  useEffect(() => {
+    loadEvents();
+  }, []);
+
+  const loadEvents = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const data = await EventService.obtenerTodosEventos();
+      setEvents(data || []);
+    } catch (err) {
+      console.error('Error al cargar eventos:', err);
+      setError('Error al cargar los eventos. Por favor, intenta de nuevo.');
+    } finally {
+      setLoading(false);
     }
-  ];
+  };
 
+  // Manejadores de modales
+  const handleViewEvent = (event: Event) => {
+    setSelectedEvent(event);
+    setViewModalOpen(true);
+  };
+
+  const handleEditEvent = (event: Event) => {
+    setSelectedEvent(event);
+    setEditModalOpen(true);
+  };
+
+  const handleDeleteEvent = (event: Event) => {
+    setSelectedEvent(event);
+    setDeleteModalOpen(true);
+  };
+
+  // Función para guardar cambios en el evento
+  const handleSaveEvent = async (eventId: string, updates: Partial<Event>) => {
+    await EventService.actualizarEvento(eventId, updates);
+    await loadEvents(); // Recargar la lista
+  };
+
+  // Función para confirmar eliminación
+  const handleConfirmDelete = async (eventId: string) => {
+    await EventService.eliminarEvento(eventId);
+    await loadEvents(); // Recargar la lista
+  };
+
+  // Función para crear nuevo evento
+  const handleCreateEvent = async (eventData: EventCreateData) => {
+    // Verificar que haya un usuario autenticado
+    if (!user) {
+      throw new Error('Debes estar autenticado para crear eventos');
+    }
+    
+    const newEventData = {
+      ...eventData,
+      id_organizador: user.id,
+      nombre_organizador: user.name,
+      asistentes_actuales: 0
+    };
+    
+    await EventService.crearEvento(newEventData);
+    await loadEvents(); // Recargar la lista
+  };
+
+  // Filtrar eventos
   const filteredEvents = events.filter(event => {
-    const matchesSearch = event.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         event.organizer.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === 'all' || event.status === statusFilter;
-    const matchesCategory = categoryFilter === 'all' || event.category === categoryFilter;
+    const matchesSearch = event.titulo.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         event.nombre_organizador.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus = statusFilter === 'all' || event.estado === statusFilter;
+    const matchesCategory = categoryFilter === 'all' || event.categoria === categoryFilter;
     
     return matchesSearch && matchesStatus && matchesCategory;
   });
 
+  // Ordenar eventos según el criterio seleccionado
+  const sortedEvents = [...filteredEvents].sort((a, b) => {
+    switch (sortBy) {
+      case 'date':
+        return new Date(a.fecha_evento).getTime() - new Date(b.fecha_evento).getTime();
+      
+      case 'title':
+        return a.titulo.localeCompare(b.titulo, 'es');
+      
+      case 'attendees':
+        return (b.asistentes_actuales || 0) - (a.asistentes_actuales || 0);
+      
+      case 'price':
+        const priceA = a.tipos_entrada && a.tipos_entrada.length > 0 
+          ? Math.min(...a.tipos_entrada.map((t: any) => t.precio))
+          : 0;
+        const priceB = b.tipos_entrada && b.tipos_entrada.length > 0 
+          ? Math.min(...b.tipos_entrada.map((t: any) => t.precio))
+          : 0;
+        return priceA - priceB;
+      
+      default:
+        return 0;
+    }
+  });
+
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'active': return 'text-green-600 bg-green-100';
-      case 'pending': return 'text-yellow-600 bg-yellow-100';
-      case 'cancelled': return 'text-red-600 bg-red-100';
-      case 'completed': return 'text-blue-600 bg-blue-100';
+      case 'publicado': return 'text-green-600 bg-green-100';
+      case 'borrador': return 'text-yellow-600 bg-yellow-100';
+      case 'pausado': return 'text-orange-600 bg-orange-100';
+      case 'cancelado': return 'text-red-600 bg-red-100';
+      case 'finalizado': return 'text-blue-600 bg-blue-100';
       default: return 'text-gray-600 bg-gray-100';
     }
   };
 
   const getStatusText = (status: string) => {
     switch (status) {
-      case 'active': return 'Activo';
-      case 'pending': return 'Pendiente';
-      case 'cancelled': return 'Cancelado';
-      case 'completed': return 'Completado';
+      case 'publicado': return 'Publicado';
+      case 'borrador': return 'Borrador';
+      case 'pausado': return 'Pausado';
+      case 'cancelado': return 'Cancelado';
+      case 'finalizado': return 'Finalizado';
       default: return 'Desconocido';
     }
   };
@@ -156,6 +212,23 @@ export const EventManagement: React.FC = () => {
 
   return (
     <div className="space-y-4 md:space-y-6 w-full max-w-full">
+      {/* Error Message */}
+      {error && (
+        <div className="bg-red-50 border border-red-200 rounded-xl p-4 flex items-center space-x-3">
+          <AlertTriangle className="w-5 h-5 text-red-600" />
+          <div>
+            <p className="text-red-800 font-medium">Error</p>
+            <p className="text-red-600 text-sm">{error}</p>
+          </div>
+          <button
+            onClick={loadEvents}
+            className="ml-auto p-2 text-red-600 hover:bg-red-100 rounded-lg transition-colors"
+          >
+            <RefreshCw className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+
       {/* Action Buttons */}
       <div className="flex flex-col sm:flex-row justify-end items-stretch sm:items-center gap-2 sm:gap-3">
         <div className="flex flex-row-reverse sm:flex-row flex-wrap gap-2 w-full sm:w-auto">
@@ -167,7 +240,10 @@ export const EventManagement: React.FC = () => {
             <Upload className="w-4 h-4" />
             <span>Importar</span>
           </button>
-          <button className="flex-1 min-w-0 sm:flex-none flex items-center justify-center space-x-2 px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl hover:from-green-600 hover:to-emerald-700 transition-all duration-200 shadow-sm">
+          <button 
+            onClick={() => setCreateModalOpen(true)}
+            className="flex-1 min-w-0 sm:flex-none flex items-center justify-center space-x-2 px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl hover:from-green-600 hover:to-emerald-700 transition-all duration-200 shadow-sm"
+          >
             <Plus className="w-4 h-4" />
             <span>Nuevo</span>
           </button>
@@ -194,10 +270,10 @@ export const EventManagement: React.FC = () => {
         <div className="bg-gradient-to-br from-green-50 to-green-100 border border-green-200 rounded-xl md:rounded-2xl p-3 sm:p-4 shadow-xl hover:shadow-2xl transition-all duration-200 backdrop-blur-lg">
           <div className="flex items-start sm:items-center justify-between gap-2">
             <div className="flex-1 min-w-0">
-              <p className="text-xs md:text-sm font-medium text-green-700 truncate">Eventos Activos</p>
-              <p className="text-lg md:text-2xl font-bold text-green-900">{events.filter(e => e.status === 'active').length}</p>
+              <p className="text-xs md:text-sm font-medium text-green-700 truncate">Eventos Publicados</p>
+              <p className="text-lg md:text-2xl font-bold text-green-900">{loading ? '...' : events.filter(e => e.estado === 'publicado').length}</p>
               <p className="text-xs text-green-600 font-medium flex items-center mt-1">
-                <span className="truncate">En curso</span>
+                <span className="truncate">Activos</span>
               </p>
             </div>
             <div className="p-2 bg-gradient-to-r from-green-500 to-green-600 rounded-lg shadow-sm flex-shrink-0">
@@ -209,10 +285,10 @@ export const EventManagement: React.FC = () => {
         <div className="bg-gradient-to-br from-amber-50 to-amber-100 border border-amber-200 rounded-xl md:rounded-2xl p-3 sm:p-4 shadow-xl hover:shadow-2xl transition-all duration-200 backdrop-blur-lg">
           <div className="flex items-start sm:items-center justify-between gap-2">
             <div className="flex-1 min-w-0">
-              <p className="text-xs md:text-sm font-medium text-amber-700 truncate">Pendientes</p>
-              <p className="text-lg md:text-2xl font-bold text-amber-900">{events.filter(e => e.status === 'pending').length}</p>
+              <p className="text-xs md:text-sm font-medium text-amber-700 truncate">Borradores</p>
+              <p className="text-lg md:text-2xl font-bold text-amber-900">{loading ? '...' : events.filter(e => e.estado === 'borrador').length}</p>
               <p className="text-xs text-yellow-600 font-medium flex items-center mt-1">
-                <span className="truncate">Por aprobar</span>
+                <span className="truncate">Por publicar</span>
               </p>
             </div>
             <div className="p-2 bg-gradient-to-r from-amber-500 to-amber-600 rounded-lg shadow-sm flex-shrink-0">
@@ -225,7 +301,7 @@ export const EventManagement: React.FC = () => {
           <div className="flex items-start sm:items-center justify-between gap-2">
             <div className="flex-1 min-w-0">
               <p className="text-xs md:text-sm font-medium text-purple-700 truncate">Total Asistentes</p>
-              <p className="text-lg md:text-2xl font-bold text-purple-900">{events.reduce((sum, e) => sum + e.currentAttendees, 0)}</p>
+              <p className="text-lg md:text-2xl font-bold text-purple-900">{loading ? '...' : events.reduce((sum, e) => sum + (e.asistentes_actuales || 0), 0)}</p>
               <p className="text-xs text-purple-600 font-medium flex items-center mt-1">
                 <span className="truncate">Registrados</span>
               </p>
@@ -259,10 +335,11 @@ export const EventManagement: React.FC = () => {
             className="px-3 py-2 bg-white/50 backdrop-blur-sm border border-white/30 rounded-xl focus:ring-2 focus:ring-blue-500/50 focus:border-transparent focus:bg-white/80 transition-all duration-200 shadow-sm text-sm"
           >
             <option value="all">Todos los estados</option>
-            <option value="active">Activos</option>
-            <option value="pending">Pendientes</option>
-            <option value="cancelled">Cancelados</option>
-            <option value="completed">Completados</option>
+            <option value="publicado">Publicados</option>
+            <option value="borrador">Borradores</option>
+            <option value="pausado">Pausados</option>
+            <option value="cancelado">Cancelados</option>
+            <option value="finalizado">Finalizados</option>
           </select>
 
           {/* Category Filter */}
@@ -284,10 +361,10 @@ export const EventManagement: React.FC = () => {
             onChange={(e) => setSortBy(e.target.value)}
             className="px-3 py-2 bg-white/50 backdrop-blur-sm border border-white/30 rounded-xl focus:ring-2 focus:ring-blue-500/50 focus:border-transparent focus:bg-white/80 transition-all duration-200 shadow-sm text-sm"
           >
-            <option value="date">Ordenar por fecha</option>
-            <option value="title">Ordenar por título</option>
-            <option value="attendees">Ordenar por asistentes</option>
-            <option value="price">Ordenar por precio</option>
+            <option value="date">Fecha (Más próximos primero)</option>
+            <option value="title">Título (A-Z alfabético)</option>
+            <option value="attendees">Asistentes (Mayor a menor)</option>
+            <option value="price">Precio (Menor a mayor)</option>
           </select>
         </div>
 
@@ -319,77 +396,107 @@ export const EventManagement: React.FC = () => {
             </button>
           </div>
           <div className="text-xs md:text-sm text-gray-600">
-            {filteredEvents.length} eventos encontrados
+            {sortedEvents.length} eventos encontrados
           </div>
         </div>
       </div>
 
       {/* Events Grid/List */}
-      {viewMode === 'grid' ? (
+      {loading ? (
+        <div className="flex items-center justify-center py-20">
+          <div className="text-center">
+            <RefreshCw className="w-12 h-12 text-blue-500 animate-spin mx-auto mb-4" />
+            <p className="text-gray-600">Cargando eventos...</p>
+          </div>
+        </div>
+      ) : sortedEvents.length === 0 ? (
+        <div className="bg-gradient-to-br from-white to-indigo-100/98 backdrop-blur-lg shadow-xl border border-white/20 rounded-xl p-12 text-center">
+          <Calendar className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">No se encontraron eventos</h3>
+          <p className="text-gray-600 mb-4">No hay eventos que coincidan con los filtros seleccionados.</p>
+          <button
+            onClick={loadEvents}
+            className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+          >
+            Recargar eventos
+          </button>
+        </div>
+      ) : viewMode === 'grid' ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-          {filteredEvents.map((event) => (
+          {sortedEvents.map((event) => (
             <div key={event.id} className="bg-gradient-to-br from-white to-indigo-100/98 backdrop-blur-lg shadow-xl border border-white/20 rounded-xl overflow-hidden hover:shadow-2xl transition-all duration-200">
               {/* Event Image */}
               <div className="relative h-40 md:h-48">
                 <img
-                  src={event.image}
-                  alt={event.title}
+                  src={event.url_imagen || 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=400'}
+                  alt={event.titulo}
                   className="w-full h-full object-cover"
                 />
                 <div className="absolute top-3 md:top-4 left-3 md:left-4">
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(event.status)}`}>
-                    {getStatusText(event.status)}
+                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(event.estado)}`}>
+                    {getStatusText(event.estado)}
                   </span>
-                </div>
-                <div className="absolute top-3 md:top-4 right-3 md:right-4">
-                  <button className="p-2 bg-white/80 rounded-lg hover:bg-white transition-colors">
-                    <MoreVertical className="w-4 h-4" />
-                  </button>
                 </div>
               </div>
 
               {/* Event Content */}
               <div className="p-4 md:p-6">
                 <div className="flex items-start justify-between mb-2">
-                  <h3 className="text-base md:text-lg font-semibold text-gray-900 line-clamp-2">{event.title}</h3>
+                  <h3 className="text-base md:text-lg font-semibold text-gray-900 line-clamp-2">{event.titulo}</h3>
                 </div>
                 
-                <p className="text-xs md:text-sm text-gray-600 mb-3 md:mb-4 line-clamp-2">{event.description}</p>
+                <p className="text-xs md:text-sm text-gray-600 mb-3 md:mb-4 line-clamp-2">{event.descripcion}</p>
                 
                 <div className="space-y-1 md:space-y-2 mb-3 md:mb-4">
                   <div className="flex items-center text-xs md:text-sm text-gray-600">
                     <Calendar className="w-3 h-3 md:w-4 md:h-4 mr-2" />
-                    <span className="truncate">{formatDate(event.date)}</span>
+                    <span className="truncate">{formatDate(event.fecha_evento)}</span>
                   </div>
                   <div className="flex items-center text-xs md:text-sm text-gray-600">
                     <MapPin className="w-3 h-3 md:w-4 md:h-4 mr-2" />
-                    <span className="truncate">{event.location}</span>
+                    <span className="truncate">{event.ubicacion}</span>
                   </div>
                   <div className="flex items-center text-xs md:text-sm text-gray-600">
                     <Users className="w-3 h-3 md:w-4 md:h-4 mr-2" />
-                    <span className="truncate">{event.currentAttendees} / {event.maxAttendees} asistentes</span>
+                    <span className="truncate">{event.asistentes_actuales || 0} / {event.maximo_asistentes} asistentes</span>
                   </div>
                   <div className="flex items-center text-xs md:text-sm text-gray-600">
                     <DollarSign className="w-3 h-3 md:w-4 md:h-4 mr-2" />
-                    <span className="truncate">{formatCurrency(event.price)}</span>
+                    <span className="truncate">
+                      {event.tipos_entrada && event.tipos_entrada.length > 0 
+                        ? formatCurrency(Math.min(...event.tipos_entrada.map((t: any) => t.precio)))
+                        : 'Sin precio'}
+                    </span>
                   </div>
                 </div>
 
                 {/* Actions */}
                 <div className="flex items-center justify-between">
                   <div className="flex space-x-1 md:space-x-2">
-                    <button className="p-2 text-gray-400 hover:text-blue-600 transition-colors" title="Ver">
+                    <button 
+                      onClick={() => handleViewEvent(event)}
+                      className="p-2 text-gray-400 hover:text-blue-600 transition-colors" 
+                      title="Ver"
+                    >
                       <Eye className="w-4 h-4" />
                     </button>
-                    <button className="p-2 text-gray-400 hover:text-green-600 transition-colors" title="Editar">
+                    <button 
+                      onClick={() => handleEditEvent(event)}
+                      className="p-2 text-gray-400 hover:text-green-600 transition-colors" 
+                      title="Editar"
+                    >
                       <Edit className="w-4 h-4" />
                     </button>
-                    <button className="p-2 text-gray-400 hover:text-red-600 transition-colors" title="Eliminar">
+                    <button 
+                      onClick={() => handleDeleteEvent(event)}
+                      className="p-2 text-gray-400 hover:text-red-600 transition-colors" 
+                      title="Eliminar"
+                    >
                       <Trash2 className="w-4 h-4" />
                     </button>
                   </div>
                   <div className="text-xs md:text-sm text-gray-500 truncate">
-                    Por {event.organizer}
+                    Por {event.nombre_organizador}
                   </div>
                 </div>
               </div>
@@ -411,47 +518,63 @@ export const EventManagement: React.FC = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
-                {filteredEvents.map((event) => (
+                {sortedEvents.map((event) => (
                   <tr key={event.id} className="hover:bg-gray-50">
                     <td className="px-3 md:px-6 py-4">
                       <div className="flex items-center">
                         <img
-                          src={event.image}
-                          alt={event.title}
+                          src={event.url_imagen || 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=400'}
+                          alt={event.titulo}
                           className="w-10 h-10 md:w-12 md:h-12 rounded-lg object-cover mr-3 md:mr-4"
                         />
                         <div className="min-w-0 flex-1">
-                          <div className="text-sm font-medium text-gray-900 truncate">{event.title}</div>
-                          <div className="text-xs md:text-sm text-gray-500 truncate">{event.organizer}</div>
+                          <div className="text-sm font-medium text-gray-900 truncate">{event.titulo}</div>
+                          <div className="text-xs md:text-sm text-gray-500 truncate">{event.nombre_organizador}</div>
                           {/* Mobile: Show additional info inline */}
                           <div className="sm:hidden flex items-center gap-2 mt-1">
-                            <span className="text-xs text-gray-500">{formatDate(event.date)}</span>
-                            <span className={`px-1.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(event.status)}`}>
-                              {getStatusText(event.status)}
+                            <span className="text-xs text-gray-500">{formatDate(event.fecha_evento)}</span>
+                            <span className={`px-1.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(event.estado)}`}>
+                              {getStatusText(event.estado)}
                             </span>
                           </div>
                         </div>
                       </div>
                     </td>
-                    <td className="px-3 md:px-6 py-4 text-sm text-gray-900 hidden sm:table-cell">{formatDate(event.date)}</td>
+                    <td className="px-3 md:px-6 py-4 text-sm text-gray-900 hidden sm:table-cell">{formatDate(event.fecha_evento)}</td>
                     <td className="px-3 md:px-6 py-4 text-sm text-gray-900 hidden md:table-cell">
-                      {event.currentAttendees} / {event.maxAttendees}
+                      {event.asistentes_actuales || 0} / {event.maximo_asistentes}
                     </td>
-                    <td className="px-3 md:px-6 py-4 text-sm text-gray-900 hidden lg:table-cell">{formatCurrency(event.price)}</td>
+                    <td className="px-3 md:px-6 py-4 text-sm text-gray-900 hidden lg:table-cell">
+                      {event.tipos_entrada && event.tipos_entrada.length > 0 
+                        ? formatCurrency(Math.min(...event.tipos_entrada.map((t: any) => t.precio)))
+                        : 'Sin precio'}
+                    </td>
                     <td className="px-3 md:px-6 py-4 hidden md:table-cell">
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(event.status)}`}>
-                        {getStatusText(event.status)}
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(event.estado)}`}>
+                        {getStatusText(event.estado)}
                       </span>
                     </td>
                     <td className="px-3 md:px-6 py-4">
                       <div className="flex space-x-1 md:space-x-2">
-                        <button className="p-2 text-gray-400 hover:text-blue-600 transition-colors" title="Ver">
+                        <button 
+                          onClick={() => handleViewEvent(event)}
+                          className="p-2 text-gray-400 hover:text-blue-600 transition-colors" 
+                          title="Ver"
+                        >
                           <Eye className="w-4 h-4" />
                         </button>
-                        <button className="p-2 text-gray-400 hover:text-green-600 transition-colors" title="Editar">
+                        <button 
+                          onClick={() => handleEditEvent(event)}
+                          className="p-2 text-gray-400 hover:text-green-600 transition-colors" 
+                          title="Editar"
+                        >
                           <Edit className="w-4 h-4" />
                         </button>
-                        <button className="p-2 text-gray-400 hover:text-red-600 transition-colors" title="Eliminar">
+                        <button 
+                          onClick={() => handleDeleteEvent(event)}
+                          className="p-2 text-gray-400 hover:text-red-600 transition-colors" 
+                          title="Eliminar"
+                        >
                           <Trash2 className="w-4 h-4" />
                         </button>
                       </div>
@@ -463,6 +586,33 @@ export const EventManagement: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Modales */}
+      <ViewEventModal
+        event={selectedEvent}
+        isOpen={viewModalOpen}
+        onClose={() => setViewModalOpen(false)}
+      />
+
+      <EditEventModal
+        event={selectedEvent}
+        isOpen={editModalOpen}
+        onClose={() => setEditModalOpen(false)}
+        onSave={handleSaveEvent}
+      />
+
+      <DeleteEventModal
+        event={selectedEvent}
+        isOpen={deleteModalOpen}
+        onClose={() => setDeleteModalOpen(false)}
+        onConfirm={handleConfirmDelete}
+      />
+
+      <CreateEventModal
+        isOpen={createModalOpen}
+        onClose={() => setCreateModalOpen(false)}
+        onCreate={handleCreateEvent}
+      />
     </div>
   );
 };

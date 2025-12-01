@@ -47,6 +47,8 @@ import { TicketConsultPage } from './modules/tickets/presentation/pages/TicketCo
 
 // Pages - Auth
 import { AuthCallbackPage } from './modules/authentication/presentation/pages/AuthCallback.page';
+import { EmailVerificationPendingPage } from './modules/authentication/presentation/pages/EmailVerificationPending.page';
+import { EmailVerificationGuard } from './modules/authentication/presentation/guards/EmailVerificationGuard.guard';
 
 function App() {
   const { isAuthenticated, user } = useAuthStore();
@@ -138,6 +140,12 @@ function App() {
             path="/auth/callback"
             element={<AuthCallbackPage />}
           />
+
+          {/* Email Verification Pending */}
+          <Route
+            path="/auth/verify-email"
+            element={<EmailVerificationPendingPage />}
+          />
           
           {/* ========== Protected Routes ========== */}
           
@@ -146,11 +154,13 @@ function App() {
             path="/profile" 
             element={
               <ProtectedRoute>
-                <AdminRedirect>
-                  <Layout>
-                    <ProfilePage />
-                  </Layout>
-                </AdminRedirect>
+                <EmailVerificationGuard>
+                  <AdminRedirect>
+                    <Layout>
+                      <ProfilePage />
+                    </Layout>
+                  </AdminRedirect>
+                </EmailVerificationGuard>
               </ProtectedRoute>
             } 
           />
@@ -160,11 +170,13 @@ function App() {
             path="/followed-organizers" 
             element={
               <ProtectedRoute>
-                <AdminRedirect>
-                  <Layout>
-                    <FollowedOrganizersPage />
-                  </Layout>
-                </AdminRedirect>
+                <EmailVerificationGuard>
+                  <AdminRedirect>
+                    <Layout>
+                      <FollowedOrganizersPage />
+                    </Layout>
+                  </AdminRedirect>
+                </EmailVerificationGuard>
               </ProtectedRoute>
             } 
           />
@@ -174,11 +186,13 @@ function App() {
             path="/checkout" 
             element={
               <ProtectedRoute>
-                <AdminRedirect>
-                  <Layout>
-                    <CheckoutPage />
-                  </Layout>
-                </AdminRedirect>
+                <EmailVerificationGuard>
+                  <AdminRedirect>
+                    <Layout>
+                      <CheckoutPage />
+                    </Layout>
+                  </AdminRedirect>
+                </EmailVerificationGuard>
               </ProtectedRoute>
             } 
           />
@@ -188,11 +202,13 @@ function App() {
             path="/tickets" 
             element={
               <ProtectedRoute>
-                <AdminRedirect>
-                  <Layout>
-                    <TicketsPage />
-                  </Layout>
-                </AdminRedirect>
+                <EmailVerificationGuard>
+                  <AdminRedirect>
+                    <Layout>
+                      <TicketsPage />
+                    </Layout>
+                  </AdminRedirect>
+                </EmailVerificationGuard>
               </ProtectedRoute>
             } 
           />

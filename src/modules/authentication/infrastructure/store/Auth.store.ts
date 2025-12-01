@@ -39,7 +39,16 @@ export const useAuthStore = create<AuthState>()(
 
       login: async (email: string, password: string) => {
         try {
-          // Primero autenticar con Supabase Auth
+          // IMPORTANTE: Limpiar cualquier sesión/datos anteriores antes de iniciar sesión
+          await supabase.auth.signOut();
+          set({
+            user: null,
+            isAuthenticated: false,
+            token: null
+          });
+          localStorage.removeItem('auth-storage');
+          
+          // Ahora autenticar con Supabase Auth
           const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
             email,
             password
@@ -47,6 +56,13 @@ export const useAuthStore = create<AuthState>()(
 
           if (authError || !authData.user) {
             throw new Error('Credenciales inválidas');
+          }
+
+          // Verificar si el email está confirmado
+          if (!authData.user.email_confirmed_at) {
+            // Email no verificado - cerrar sesión y no permitir login
+            await supabase.auth.signOut();
+            throw new Error('Debes verificar tu correo electrónico antes de iniciar sesión. Revisa tu bandeja de entrada.');
           }
 
           // Obtener datos del usuario desde la base de datos
@@ -112,21 +128,41 @@ export const useAuthStore = create<AuthState>()(
 
           if (authError) {
             console.error('[Auth.register] Supabase signUp error:', authError);
+            // Mensajes de error más específicos según el tipo de error
+            if (authError.message.includes('already registered') || authError.message.includes('already been registered')) {
+              throw new Error('Este correo electrónico ya está registrado');
+            }
+            if (authError.message.includes('Email rate limit exceeded')) {
+              throw new Error('Demasiados intentos. Por favor espera un momento e intenta nuevamente');
+            }
             throw new Error(authError.message || 'Error al crear la cuenta');
           }
           if (!authData.user) throw new Error('No se pudo crear el usuario');
 
           const userId = authData.user.id;
 
-          // 2. Esperar a que el trigger inserte en usuarios; fallback si no existe.
-          await new Promise(r => setTimeout(r, 150));
-          const { data: perfil } = await supabase
-            .from('usuarios')
-            .select('*')
-            .eq('id', userId)
-            .maybeSingle();
+          // 2. Esperar a que el trigger inserte en usuarios; intentar varias veces si es necesario
+          let finalPerfil = null;
+          let attempts = 0;
+          const maxAttempts = 5;
+          
+          while (!finalPerfil && attempts < maxAttempts) {
+            attempts++;
+            await new Promise(r => setTimeout(r, 500)); // Esperar 500ms entre intentos
+            
+            const { data: perfil } = await supabase
+              .from('usuarios')
+              .select('*')
+              .eq('id', userId)
+              .maybeSingle();
+            
+            if (perfil) {
+              finalPerfil = perfil;
+              console.log(`[Auth.register] Perfil encontrado en intento ${attempts}`);
+              break;
+            }
+          }
 
-          let finalPerfil = perfil;
           if (!finalPerfil) {
             // Mapear rol frontend -> BD
             const roleMapping: { [key: string]: string } = {
@@ -161,21 +197,16 @@ export const useAuthStore = create<AuthState>()(
 
           if (!finalPerfil) throw new Error('No se pudo obtener el perfil de usuario');
 
-          const mappedRole = (userData.role as any) || 'attendee';
-
-          const user: User = {
-            id: finalPerfil.id,
-            email: finalPerfil.correo_electronico,
-            name: finalPerfil.nombre_completo || userData.name,
-            role: mappedRole,
-            avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${userData.email}`,
-            preferences: {
-              categories: [],
-              location: finalPerfil.ubicacion || userData.location || 'Colombia'
-            }
-          };
-
-          set({ user, isAuthenticated: true, token: `auth-token-${user.id}` });
+          // NO iniciar sesión en el store - el usuario debe verificar su email primero
+          // IMPORTANTE: NO hacemos signOut() porque la sesión de Supabase es necesaria
+          // para que el callback de verificación funcione correctamente
+          
+          // Solo limpiamos el store para que no aparezca como autenticado
+          set({ 
+            user: null, 
+            isAuthenticated: false, 
+            token: null 
+          });
         } catch (error: any) {
           console.error('[Auth.register] Error final:', error);
           throw new Error(error.message || 'Error al crear la cuenta');
@@ -183,11 +214,18 @@ export const useAuthStore = create<AuthState>()(
       },
 
       logout: () => {
+        // Cerrar sesión de Supabase
+        supabase.auth.signOut();
+        
+        // Limpiar el store
         set({
           user: null,
           isAuthenticated: false,
           token: null
         });
+        
+        // IMPORTANTE: Limpiar el localStorage manualmente para asegurar que no queden datos
+        localStorage.removeItem('auth-storage');
       },
 
       loginWithGoogle: async () => {

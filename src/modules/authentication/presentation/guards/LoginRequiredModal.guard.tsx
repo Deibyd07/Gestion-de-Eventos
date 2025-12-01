@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { X, LogIn, UserPlus, Lock, Calendar, Users, Mail, Eye, EyeOff, User, Phone, MapPin, CheckCircle } from 'lucide-react';
 import { useAuthStore } from '../../../authentication/infrastructure/store/Auth.store';
 
@@ -37,10 +37,11 @@ export function LoginRequiredModal({
   const [isRedirecting, setIsRedirecting] = useState(false);
   const [error, setError] = useState('');
   const { login, register, isAuthenticated, user } = useAuthStore();
+  const navigate = useNavigate();
 
-  // Efecto para detectar cuando la autenticación se complete
+  // Efecto para detectar cuando la autenticación se complete (solo para login)
   useEffect(() => {
-    if ((isLoggingIn || isRegistering) && isAuthenticated && user) {
+    if (isLoggingIn && isAuthenticated && user) {
       setIsAuthenticating(true);
       // Para organizadores, esperar un poco más antes de marcar como redirigiendo
       const delay = user.role === 'organizer' ? 1000 : 500;
@@ -133,6 +134,8 @@ export function LoginRequiredModal({
       setIsLoading(true);
       setIsRegistering(true);
       setError('');
+      
+      // Intentar registro
       await register({
         name,
         email,
@@ -141,9 +144,15 @@ export function LoginRequiredModal({
         location: location || undefined,
         role: 'attendee'
       });
-      // No cerramos inmediatamente, dejamos que el estado de carga se muestre
-    } catch (err) {
-      setError('Error al crear la cuenta. Por favor, intenta de nuevo.');
+      
+      // Solo si el registro fue exitoso (sin errores), redirigir a sala de espera
+      onClose();
+      navigate(`/auth/verify-email?email=${encodeURIComponent(email)}`, { replace: true });
+    } catch (err: any) {
+      // Si hay error, mostrar el mensaje y NO redirigir
+      console.error('[LoginRequiredModal] Error en registro:', err);
+      const errorMessage = err?.message || 'Error al crear la cuenta. Por favor, intenta de nuevo.';
+      setError(errorMessage);
       setIsRegistering(false);
     } finally {
       setIsLoading(false);
@@ -177,18 +186,18 @@ export function LoginRequiredModal({
 
         {/* Content */}
         <div className="p-4 sm:p-6">
-          {isLoggingIn || isRegistering || isAuthenticating || isRedirecting ? (
-            // Pantalla de carga después del login/registro
+          {isLoggingIn || isAuthenticating || isRedirecting ? (
+            // Pantalla de carga solo para login (registro redirige directamente)
             <div className="text-center py-6 sm:py-8">
-              <div className={`w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br ${isLoggingIn ? 'from-green-600 to-emerald-600' : 'from-blue-600 to-indigo-600'} rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4 animate-pulse`}>
-                {isLoggingIn ? <LogIn className="w-7 h-7 sm:w-8 sm:h-8 text-white" /> : <UserPlus className="w-7 h-7 sm:w-8 sm:h-8 text-white" />}
+              <div className={`w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br from-green-600 to-emerald-600 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4 animate-pulse`}>
+                <LogIn className="w-7 h-7 sm:w-8 sm:h-8 text-white" />
               </div>
               <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-2 leading-tight">
                 {isRedirecting 
-                  ? (isLoggingIn ? '¡Bienvenido de vuelta!' : '¡Cuenta creada exitosamente!')
+                  ? '¡Bienvenido de vuelta!'
                   : isAuthenticating 
-                    ? (isLoggingIn ? '¡Bienvenido de vuelta!' : '¡Cuenta creada exitosamente!')
-                    : (isLoggingIn ? 'Iniciando sesión...' : 'Creando cuenta...')
+                    ? '¡Bienvenido de vuelta!'
+                    : 'Iniciando sesión...'
                 }
               </h3>
               <p className="text-gray-600 text-xs sm:text-sm mb-3 sm:mb-4 leading-relaxed px-2">
@@ -200,7 +209,7 @@ export function LoginRequiredModal({
                     ? (user?.role === 'organizer' 
                         ? 'Preparando tu panel de organizador...' 
                         : 'Preparando tu dashboard...')
-                    : (isLoggingIn ? 'Verificando credenciales...' : 'Configurando tu nueva cuenta...')
+                    : 'Verificando credenciales...'
                 }
               </p>
               <div className="flex justify-center">

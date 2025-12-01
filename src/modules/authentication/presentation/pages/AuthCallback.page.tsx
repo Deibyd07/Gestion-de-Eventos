@@ -8,6 +8,8 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@shared/lib/api/supabase';
+import { ServicioUsuarios } from '@shared/lib/api/Supabase.service';
+import { useAuthStore } from '@modules/authentication/infrastructure/store/Auth.store';
 
 export const AuthCallbackPage = () => {
   const navigate = useNavigate();
@@ -31,6 +33,54 @@ export const AuthCallbackPage = () => {
           });
 
           if (error) throw error;
+
+          // Obtener información del usuario y actualizar el store
+          const { data: { user: authUser } } = await supabase.auth.getUser();
+          
+          console.log('[AuthCallback] Usuario autenticado:', authUser);
+          
+          if (authUser) {
+            // Obtener datos del perfil desde la base de datos
+            const userData = await ServicioUsuarios.obtenerUsuarioPorEmail(authUser.email!);
+            console.log('[AuthCallback] Datos del usuario desde BD:', userData);
+            
+            if (userData) {
+              // Mapear roles
+              const roleMapping: { [key: string]: 'admin' | 'organizer' | 'attendee' } = {
+                'administrador': 'admin',
+                'organizador': 'organizer', 
+                'asistente': 'attendee',
+              };
+              
+              const userRole = roleMapping[userData.tipo_usuario?.toLowerCase()] || 'attendee';
+
+              // IMPORTANTE: Limpiar localStorage anterior antes de establecer el nuevo usuario
+              localStorage.removeItem('auth-storage');
+              
+              // Actualizar el store DIRECTAMENTE con los datos completos del nuevo usuario
+              useAuthStore.setState({
+                user: {
+                  id: userData.id,
+                  email: userData.correo_electronico,
+                  name: userData.nombre || 'Usuario',
+                  role: userRole,
+                  avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${userData.correo_electronico}`,
+                  preferences: {
+                    categories: [],
+                    location: userData.ubicacion || 'Colombia'
+                  }
+                },
+                isAuthenticated: true, 
+                token: `auth-token-${userData.id}`
+              });
+              
+              console.log('[AuthCallback] Store actualizado con usuario:', useAuthStore.getState().user);
+            } else {
+              throw new Error('No se encontraron datos del usuario en la base de datos');
+            }
+          } else {
+            throw new Error('No se pudo obtener el usuario autenticado');
+          }
 
           setStatus('success');
           setMessage('¡Email verificado exitosamente!');

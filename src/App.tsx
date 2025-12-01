@@ -35,6 +35,7 @@ import { FollowedOrganizersPage } from './modules/users/presentation/pages/Follo
 // Pages - Organizers
 import { OrganizerDashboard } from './modules/organizers/presentation/pages/OrganizerDashboard.page';
 import { OrganizerPublicPage } from './modules/organizers/presentation/pages/OrganizerPublic.page';
+import { AttendanceControlPage } from './modules/organizers/presentation/pages/AttendanceControl.page';
 
 // Pages - Administration
 import { AdminPage } from './modules/administration/presentation/pages/Admin.page';
@@ -239,6 +240,7 @@ function App() {
                     <Route path="events" element={<EventsPage />} />
                     <Route path="events/create" element={<CreateEventPage />} />
                     <Route path="events/:id/edit" element={<CreateEventPage />} />
+                    <Route path="events/:eventId/attendance" element={<AttendanceControlPage />} />
                     <Route path="analytics" element={<div>Analytics Page</div>} />
                     <Route path="attendees" element={<div>Attendees Page</div>} />
                     <Route path="promotions" element={<div>Promotions Page</div>} />

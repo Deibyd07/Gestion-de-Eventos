@@ -136,6 +136,7 @@ export function AttendeeManagement({ eventId, eventTitle, onRefreshRequest }: At
     try {
       setLoading(true);
       const rows: AttendeeRow[] = await AttendeeService.getOrganizerAttendees(user.id, eventId);
+      console.log('📋 Asistentes cargados desde servicio:', rows.map(r => ({ nombre: r.name, email: r.email })));
       let mapped: Attendee[] = rows.map((r: AttendeeRow) => ({
         id: r.userId,
         name: r.name,

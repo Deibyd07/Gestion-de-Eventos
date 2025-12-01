@@ -191,6 +191,8 @@ export class AttendeeService {
     }
     if (usuariosRows.length === 0) {
       console.warn('⚠️ usuariosRows vacío tras RPC + fallback. Los nombres pueden usar fallback (email).');
+    } else {
+      console.log('✅ Usuarios obtenidos:', usuariosRows.length, 'usuarios con nombres:', usuariosRows.map(u => ({ id: u.id, nombre: u.nombre_completo, email: u.correo_electronico })).slice(0, 3));
     }
 
     // 8. Construir mapas
@@ -213,10 +215,29 @@ export class AttendeeService {
         console.warn('⚠️ Usuario sin nombre válido:', { id: usuario.id, nombre: usuario.nombre_completo, email: usuario.correo_electronico });
       }
       
-      // Mejorar fallback: usar email si nombre_completo es "usuario" o vacío
-      const nombreValido = usuario?.nombre_completo && usuario.nombre_completo.trim() !== '' && usuario.nombre_completo.toLowerCase() !== 'usuario'
-        ? usuario.nombre_completo.trim()
-        : (usuario?.correo_electronico?.split('@')[0] || 'Asistente');
+      // Mejorar fallback: usar email antes de @ si nombre es "usuario", vacío o muy corto
+      let nombreFinal = 'Asistente';
+      if (usuario) {
+        const nombreCompleto = usuario.nombre_completo?.trim() || '';
+        const esNombreGenerico = !nombreCompleto || 
+                                  nombreCompleto.toLowerCase() === 'usuario' || 
+                                  nombreCompleto.length < 3;
+        
+        if (!esNombreGenerico) {
+          nombreFinal = nombreCompleto;
+          console.log('✅ Nombre válido encontrado:', { userId: usuario.id, nombre: nombreFinal });
+        } else if (usuario.correo_electronico) {
+          // Extraer nombre del email y capitalizar
+          const nombreEmail = usuario.correo_electronico.split('@')[0];
+          nombreFinal = nombreEmail
+            .split(/[._-]/)
+            .map(part => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+            .join(' ');
+          console.log('🔄 Nombre extraído del email:', { email: usuario.correo_electronico, nombreFinal });
+        }
+      } else {
+        console.warn('⚠️ Usuario no encontrado para QR id:', r.id_usuario);
+      }
       
       return {
         qr_id: r.id,
@@ -228,7 +249,7 @@ export class AttendeeService {
         eventTitle: evento?.titulo || 'Evento',
         organizerId: evento?.id_organizador || organizerId,
         userId: r.id_usuario,
-        name: nombreValido,
+        name: nombreFinal,
         email: usuario?.correo_electronico || '',
         phone: null,
         avatar: usuario?.url_avatar || null,
@@ -250,10 +271,25 @@ export class AttendeeService {
       const usuario = usuarioMap.get(r.id_usuario);
       const evento = eventoMap.get(r.id_evento);
       
-      // Mejorar fallback: usar email si nombre_completo es "usuario" o vacío
-      const nombreValido = usuario?.nombre_completo && usuario.nombre_completo.trim() !== '' && usuario.nombre_completo.toLowerCase() !== 'usuario'
-        ? usuario.nombre_completo.trim()
-        : (usuario?.correo_electronico?.split('@')[0] || 'Asistente');
+      // Mejorar fallback: usar email antes de @ si nombre es "usuario", vacío o muy corto
+      let nombreFinal = 'Asistente';
+      if (usuario) {
+        const nombreCompleto = usuario.nombre_completo?.trim() || '';
+        const esNombreGenerico = !nombreCompleto || 
+                                  nombreCompleto.toLowerCase() === 'usuario' || 
+                                  nombreCompleto.length < 3;
+        
+        if (!esNombreGenerico) {
+          nombreFinal = nombreCompleto;
+        } else if (usuario.correo_electronico) {
+          // Extraer nombre del email y capitalizar
+          const nombreEmail = usuario.correo_electronico.split('@')[0];
+          nombreFinal = nombreEmail
+            .split(/[._-]/)
+            .map(part => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+            .join(' ');
+        }
+      }
       
       return {
         qr_id: r.id,
@@ -265,7 +301,7 @@ export class AttendeeService {
         eventTitle: evento?.titulo || 'Evento',
         organizerId: evento?.id_organizador || organizerId,
         userId: r.id_usuario,
-        name: nombreValido,
+        name: nombreFinal,
         email: usuario?.correo_electronico || '',
         phone: null,
         avatar: usuario?.url_avatar || null,
@@ -297,15 +333,68 @@ export class AttendeeService {
         .in('id_evento', eventIds);
       if (!compFbErr && comprasFallbackRaw) {
         const comprasFallback: CompraRow[] = comprasFallbackRaw ?? [];
+        
+        // Si usuarioMap está vacío, obtener usuarios de las compras
+        if (usuarioMap.size === 0 && comprasFallback.length > 0) {
+          const userIdsFromCompras = Array.from(new Set(comprasFallback.map(c => c.id_usuario)));
+          console.log('🔄 Obteniendo usuarios para fallback de compras:', userIdsFromCompras.length);
+          
+          try {
+            const { data: usuariosRpcRows, error: usuariosRpcErr } = await (supabase as any)
+              .rpc('obtener_usuarios_por_ids', { p_user_ids: userIdsFromCompras.join(',') });
+            
+            if (!usuariosRpcErr && usuariosRpcRows) {
+              const usuariosFallback: UsuarioRow[] = (usuariosRpcRows || []).map(u => ({
+                id: u.id,
+                nombre_completo: u.nombre_completo,
+                correo_electronico: u.correo_electronico,
+                url_avatar: u.url_avatar,
+                rol: u.rol
+              }));
+              usuariosFallback.forEach(u => usuarioMap.set(u.id, u));
+              console.log('✅ Usuarios obtenidos para fallback:', usuariosFallback.length);
+            } else {
+              // Fallback directo a tabla usuarios
+              const { data: usuariosRowsRaw, error: usuariosErr } = await supabase
+                .from('usuarios')
+                .select('id,nombre_completo,correo_electronico,url_avatar,rol')
+                .in('id', userIdsFromCompras);
+              
+              if (!usuariosErr && usuariosRowsRaw) {
+                const usuariosFallback = usuariosRowsRaw as UsuarioRow[];
+                usuariosFallback.forEach(u => usuarioMap.set(u.id, u));
+                console.log('✅ Usuarios obtenidos para fallback (direct):', usuariosFallback.length);
+              }
+            }
+          } catch (e: any) {
+            console.error('❌ Error obteniendo usuarios para fallback:', e.message);
+          }
+        }
+        
         comprasFallback.forEach(c => {
           const tipoEntrada = tipoEntradaMap.get(c.id_tipo_entrada);
           const usuario = usuarioMap.get(c.id_usuario);
           const evento = eventoMap.get(c.id_evento);
           
-          // Mejorar fallback: usar email si nombre_completo es "usuario" o vacío
-          const nombreValido = usuario?.nombre_completo && usuario.nombre_completo.toLowerCase() !== 'usuario' 
-            ? usuario.nombre_completo 
-            : usuario?.correo_electronico?.split('@')[0] || 'Asistente';
+          // Mejorar fallback: usar email antes de @ si nombre es "usuario", vacío o muy corto
+          let nombreFinal = 'Asistente';
+          if (usuario) {
+            const nombreCompleto = usuario.nombre_completo?.trim() || '';
+            const esNombreGenerico = !nombreCompleto || 
+                                      nombreCompleto.toLowerCase() === 'usuario' || 
+                                      nombreCompleto.length < 3;
+            
+            if (!esNombreGenerico) {
+              nombreFinal = nombreCompleto;
+            } else if (usuario.correo_electronico) {
+              // Extraer nombre del email y capitalizar
+              const nombreEmail = usuario.correo_electronico.split('@')[0];
+              nombreFinal = nombreEmail
+                .split(/[._-]/)
+                .map(part => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+                .join(' ');
+            }
+          }
           
           map.set(c.id, {
             qr_id: `PURCHASE-${c.id}`,
@@ -317,7 +406,7 @@ export class AttendeeService {
             eventTitle: evento?.titulo || 'Evento',
             organizerId: evento?.id_organizador || organizerId,
             userId: c.id_usuario,
-            name: nombreValido,
+            name: nombreFinal,
             email: usuario?.correo_electronico || '',
             phone: null,
             avatar: usuario?.url_avatar || null,

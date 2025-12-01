@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { 
   Calendar, 
   Users, 
@@ -124,6 +124,15 @@ export function OrganizerDashboard() {
   
   // Estado para el modal de escáner QR
   const [isQRScannerOpen, setIsQRScannerOpen] = useState(false);
+
+  // Estados para estadísticas de asistencia en tiempo real
+  const [attendanceStats, setAttendanceStats] = useState({
+    totalAttendees: 0,
+    checkedIn: 0,
+    pending: 0,
+    attendanceRate: 0,
+    recentScans: [] as Array<{ name: string; time: string }>
+  });
 
   // Estados para el Toast de notificaciones
   const [showSuccessToast, setShowSuccessToast] = useState(false);
@@ -519,6 +528,13 @@ export function OrganizerDashboard() {
     }
   }, [user?.id, finalEvents.length]);
 
+  // Effect para cargar estadísticas de asistencia
+  useEffect(() => {
+    if (activeTab === 'attendance' && selectedEvent) {
+      loadAttendanceStats(selectedEvent.id);
+    }
+  }, [activeTab, selectedEvent]);
+
   // Effect para cerrar dropdown al hacer clic fuera
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -585,8 +601,52 @@ export function OrganizerDashboard() {
       if (activeTab === 'attendees' && (window as any).__attendeeRefresh) {
         await (window as any).__attendeeRefresh();
       }
+      
+      // Si estamos en la pestaña de attendance, recargar estadísticas
+      if (activeTab === 'attendance' && selectedEvent) {
+        await loadAttendanceStats(selectedEvent.id);
+      }
     } catch (error) {
       console.error('Error al refrescar eventos:', error);
+    }
+  };
+
+  // Función para cargar estadísticas de asistencia en tiempo real
+  const loadAttendanceStats = async (eventId: string) => {
+    if (!user?.id) return;
+    
+    try {
+      const { AttendeeService } = await import('@shared/lib/api/services/Attendee.service');
+      const attendees = await AttendeeService.getOrganizerAttendees(user.id, eventId);
+      
+      // Calcular estadísticas
+      const total = attendees.length;
+      const checkedIn = attendees.filter(a => a.estado_qr === 'usado').length;
+      const pending = attendees.filter(a => a.estado_qr === 'activo').length;
+      const rate = total > 0 ? Math.round((checkedIn / total) * 100) : 0;
+      
+      // Obtener últimos 3 escaneos
+      const recentScans = attendees
+        .filter(a => a.fecha_escaneado)
+        .sort((a, b) => new Date(b.fecha_escaneado!).getTime() - new Date(a.fecha_escaneado!).getTime())
+        .slice(0, 3)
+        .map(a => ({
+          name: a.name,
+          time: new Date(a.fecha_escaneado!).toLocaleTimeString('es-ES', { 
+            hour: '2-digit', 
+            minute: '2-digit' 
+          })
+        }));
+      
+      setAttendanceStats({
+        totalAttendees: total,
+        checkedIn,
+        pending,
+        attendanceRate: rate,
+        recentScans
+      });
+    } catch (error) {
+      console.error('Error al cargar estadísticas de asistencia:', error);
     }
   };
 
@@ -1330,13 +1390,6 @@ export function OrganizerDashboard() {
               <span className="hidden sm:inline">Actualizar</span>
             </button>
             <button 
-                      onClick={() => console.log('Exportando eventos...')}
-              className="flex-1 sm:flex-none inline-flex items-center justify-center px-3 md:px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-medium rounded-xl hover:from-blue-600 hover:to-purple-700 transition-all duration-200 shadow-sm text-sm"
-            >
-              <Download className="w-4 h-4 sm:mr-2" />
-                      <span className="hidden sm:inline">Exportar</span>
-            </button>
-            <button 
                       onClick={() => setIsCreateEventModalOpen(true)}
               className="flex-1 sm:flex-none inline-flex items-center justify-center px-3 md:px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-medium rounded-xl hover:from-green-600 hover:to-emerald-700 transition-all duration-200 shadow-sm text-sm"
             >
@@ -1398,13 +1451,6 @@ export function OrganizerDashboard() {
                     >
                       <RefreshCw className="w-4 h-4 sm:mr-2" />
                       <span className="hidden sm:inline">Actualizar</span>
-                    </button>
-                    <button 
-                      onClick={() => console.log('Exportando entradas...')}
-                      className="flex-1 sm:flex-none inline-flex items-center justify-center px-3 md:px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-medium rounded-xl hover:from-blue-600 hover:to-purple-700 transition-all duration-200 shadow-sm text-sm"
-                    >
-                      <Download className="w-4 h-4 sm:mr-2" />
-                      <span className="hidden sm:inline">Exportar</span>
                     </button>
                     <button 
                       onClick={() => setIsCreateTicketModalOpen(true)}
@@ -1485,13 +1531,6 @@ export function OrganizerDashboard() {
                       <RefreshCw className="w-4 h-4 sm:mr-2" />
                       <span className="hidden sm:inline">Actualizar</span>
                     </button>
-                    <button
-                      onClick={() => console.log('Exportando promociones...')}
-                      className="flex-1 sm:flex-none inline-flex items-center justify-center px-3 md:px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-medium rounded-xl hover:from-blue-600 hover:to-purple-700 transition-all duration-200 shadow-sm text-sm"
-                    >
-                      <Download className="w-4 h-4 sm:mr-2" />
-                      <span className="hidden sm:inline">Exportar</span>
-                    </button>
                     <button 
                       onClick={() => setIsCreatePromotionModalOpen(true)}
                       className="flex-1 sm:flex-none inline-flex items-center justify-center px-3 md:px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-medium rounded-xl hover:from-green-600 hover:to-emerald-700 transition-all duration-200 shadow-sm text-sm"
@@ -1545,13 +1584,6 @@ export function OrganizerDashboard() {
                     >
                       <RefreshCw className="w-4 h-4" />
                       <span className="hidden sm:inline">Actualizar</span>
-                    </button>
-                    <button 
-                      onClick={() => console.log('Importando configuración de pagos...')}
-                      className="flex-1 sm:flex-none inline-flex items-center justify-center px-3 md:px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-medium rounded-xl hover:from-blue-600 hover:to-purple-700 transition-all duration-200 shadow-sm gap-2"
-                    >
-                      <Download className="w-4 h-4" />
-                      <span className="hidden sm:inline">Importar</span>
                     </button>
                     <button 
                       onClick={() => setIsCreatePaymentMethodModalOpen(true)}
@@ -1766,23 +1798,13 @@ export function OrganizerDashboard() {
                   <div>
                     <h3 className="text-lg font-semibold text-gray-900">Control de Asistencia</h3>
                   </div>
-                  <div className="flex flex-wrap gap-2 w-full sm:w-auto">
-                    <button 
-                      onClick={handleRefresh}
-                      className="flex-1 sm:flex-none inline-flex items-center justify-center px-3 md:px-4 py-2 bg-gradient-to-r from-orange-500 to-red-600 text-white font-medium rounded-xl hover:from-orange-600 hover:to-red-700 transition-all duration-200 shadow-sm"
-                    >
-                      <RefreshCw className="w-4 h-4 sm:mr-2" />
-                      <span className="hidden sm:inline">Actualizar</span>
-                    </button>
-                    <button className="flex-1 sm:flex-none inline-flex items-center justify-center px-3 md:px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-medium rounded-xl hover:from-blue-600 hover:to-purple-700 transition-all duration-200 shadow-sm">
-                      <QrCode className="w-4 h-4 sm:mr-2" />
-                      <span className="hidden sm:inline">Escanear</span>
-                    </button>
-                    <button className="flex-1 sm:flex-none inline-flex items-center justify-center px-3 md:px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-medium rounded-xl hover:from-green-600 hover:to-emerald-700 transition-all duration-200 shadow-sm">
-                      <CheckCircle className="w-4 h-4 sm:mr-2" />
-                      <span className="hidden sm:inline">Registrar</span>
-                    </button>
-                  </div>
+                  <button 
+                    onClick={handleRefresh}
+                    className="inline-flex items-center justify-center px-4 py-2 bg-gradient-to-r from-orange-500 to-red-600 text-white font-medium rounded-xl hover:from-orange-600 hover:to-red-700 transition-all duration-200 shadow-sm"
+                  >
+                    <RefreshCw className="w-4 h-4 mr-2" />
+                    Actualizar
+                  </button>
                 </div>
                 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -1818,29 +1840,29 @@ export function OrganizerDashboard() {
                     <div className="space-y-4">
                       <div className="grid grid-cols-2 gap-4">
                         <div className="p-3 bg-green-50 rounded-lg">
-                          <div className="text-2xl font-bold text-green-600">85%</div>
+                          <div className="text-2xl font-bold text-green-600">{attendanceStats.attendanceRate}%</div>
                           <div className="text-sm text-gray-600">Tasa de Asistencia</div>
                       </div>
                         <div className="p-3 bg-blue-50 rounded-lg">
-                          <div className="text-2xl font-bold text-blue-600">127</div>
+                          <div className="text-2xl font-bold text-blue-600">{attendanceStats.checkedIn}</div>
                           <div className="text-sm text-gray-600">Asistentes Registrados</div>
                       </div>
                       </div>
                       <div className="p-4 bg-gray-50 rounded-lg">
                         <h5 className="font-medium text-gray-900 mb-2">Últimos Escaneos</h5>
                         <div className="space-y-2 text-sm">
-                          <div className="flex justify-between">
-                            <span>Juan Pérez</span>
-                            <span className="text-green-600">14:32</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span>María García</span>
-                            <span className="text-green-600">14:28</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span>Carlos López</span>
-                            <span className="text-green-600">14:25</span>
-                          </div>
+                          {attendanceStats.recentScans.length > 0 ? (
+                            attendanceStats.recentScans.map((scan, index) => (
+                              <div key={index} className="flex justify-between">
+                                <span>{scan.name}</span>
+                                <span className="text-green-600">{scan.time}</span>
+                              </div>
+                            ))
+                          ) : (
+                            <div className="text-center text-gray-500 py-2">
+                              No hay escaneos recientes
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>

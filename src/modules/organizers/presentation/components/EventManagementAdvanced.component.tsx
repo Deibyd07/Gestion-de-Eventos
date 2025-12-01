@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { 
   Calendar, 
   MapPin, 
@@ -70,8 +71,9 @@ export const EventManagementAdvanced: React.FC<EventManagementAdvancedProps> = (
   onDeleteEvent,
   onDuplicateEvent,
   onUploadImage,
-  onCustomizeEvent
+  onCustomizeEvent,
 }) => {
+  const navigate = useNavigate();
   const [filterStatus, setFilterStatus] = useState<'all' | 'draft' | 'published' | 'cancelled' | 'completed'>('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState<'date' | 'title' | 'revenue' | 'attendees'>('date');

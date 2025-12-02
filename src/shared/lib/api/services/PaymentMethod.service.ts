@@ -47,6 +47,103 @@ export class PaymentMethodService {
   }
 
   /**
+   * Obtener métodos de pago asociados a un evento específico (directo por columna id_evento)
+   */
+  static async obtenerMetodosPagoEvento(idEvento: string) {
+    const { data, error } = await supabase
+      .from('metodos_pago')
+      .select('*')
+      .eq('id_evento', idEvento)
+      .order('fecha_creacion', { ascending: false });
+    if (error) throw error;
+    return data;
+  }
+
+  /**
+   * Obtener métricas de reconciliación del evento (compras vs métodos de pago)
+   */
+  static async obtenerReconciliacionEvento(idEvento: string) {
+    // Traer compras del evento
+    const { data: compras, error } = await supabase
+      .from('compras')
+      .select('id, total_pagado, estado, fecha_creacion')
+      .eq('id_evento', idEvento);
+    if (error) throw error;
+
+    const totalTransacciones = compras?.length || 0;
+    const ingresosCompletados = compras?.filter(c => c.estado === 'completada').reduce((s, c) => s + (c.total_pagado || 0), 0) || 0;
+    const ingresosReembolsados = compras?.filter(c => c.estado === 'reembolsada').reduce((s, c) => s + (c.total_pagado || 0), 0) || 0;
+    const ingresosNetos = ingresosCompletados - ingresosReembolsados;
+    const completadas = compras?.filter(c => c.estado === 'completada').length || 0;
+    const pendientes = compras?.filter(c => c.estado === 'pendiente').length || 0;
+    const canceladas = compras?.filter(c => c.estado === 'cancelada').length || 0;
+    const reembolsadas = compras?.filter(c => c.estado === 'reembolsada').length || 0;
+    const promedioTransaccion = completadas > 0 ? ingresosCompletados / completadas : 0;
+    const ultimoPago = compras?.sort((a,b) => new Date(b.fecha_creacion).getTime() - new Date(a.fecha_creacion).getTime())[0]?.fecha_creacion || null;
+
+    // Comisión fija del 2.5% como en dashboard
+    const comision = ingresosCompletados * 0.025;
+    const netoDespuesComision = ingresosCompletados - comision - ingresosReembolsados;
+
+    return {
+      totalTransacciones,
+      ingresosCompletados,
+      ingresosReembolsados,
+      ingresosNetos,
+      completadas,
+      pendientes,
+      canceladas,
+      reembolsadas,
+      promedioTransaccion,
+      ultimoPago,
+      comision,
+      netoDespuesComision
+    };
+  }
+
+  /** Obtener estadísticas de métodos de pago de un evento */
+  static async obtenerEstadisticasMetodosPagoEvento(idEvento: string) {
+    console.log('📊 [STATS] Obteniendo estadísticas para evento:', idEvento);
+    const metodos = await this.obtenerMetodosPagoEvento(idEvento) || [];
+    console.log('📊 [STATS] Métodos encontrados:', metodos.length, metodos);
+    const total = metodos.length;
+    const activos = metodos.filter(m => m.activo).length;
+    const inactivos = total - activos;
+    const porTipo = metodos.reduce((acc: Record<string, number>, m: any) => {
+      acc[m.tipo] = (acc[m.tipo] || 0) + 1;
+      return acc;
+    }, {});
+
+    // Obtener compras del evento para calcular uso real por método
+    const { data: compras, error } = await supabase
+      .from('compras')
+      .select('id, id_metodo_pago, estado')
+      .eq('id_evento', idEvento)
+      .eq('estado', 'completada');
+    
+    console.log('📊 [STATS] Compras query:', { error, comprasCount: compras?.length });
+    console.log('📊 [STATS] Compras completadas:', compras);
+    
+    const totalCompletadas = compras?.length || 0;
+    const uso = metodos.map(m => {
+      const transacciones = compras?.filter(c => c.id_metodo_pago === m.id).length || 0;
+      const porcentaje = totalCompletadas > 0 ? (transacciones / totalCompletadas) * 100 : 0;
+      console.log(`📊 [STATS] Método ${m.nombre}: ${transacciones} transacciones (${porcentaje.toFixed(1)}%)`);
+      return {
+        id: m.id,
+        nombre: m.nombre,
+        tipo: m.tipo,
+        transacciones,
+        porcentaje
+      };
+    });
+
+    const result = { total, activos, inactivos, porTipo, uso };
+    console.log('📊 [STATS] Resultado final:', result);
+    return result;
+  }
+
+  /**
    * Obtener métodos de pago activos de un organizador
    */
   static async obtenerMetodosPagoActivos(idOrganizador: string) {

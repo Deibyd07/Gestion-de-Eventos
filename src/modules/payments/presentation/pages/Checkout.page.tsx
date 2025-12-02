@@ -7,12 +7,15 @@ import { useNotificationStore } from '../../../notifications/infrastructure/stor
 import { formatPriceDisplay, formatPrice } from '@shared/lib/utils/Currency.utils';
 import { useAuthStore } from '../../../authentication/infrastructure/store/Auth.store';
 import { PurchaseService } from '@shared/lib/api/services/Purchase.service';
+import { PaymentMethodService } from '@shared/lib/api/services/PaymentMethod.service';
 
 export function CheckoutPage() {
   const { items, total, updateQuantity, removeItem, clearCart } = useCartStore();
   const { addNotification } = useNotificationStore();
   const [isProcessing, setIsProcessing] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState('card');
+  const [paymentMethod, setPaymentMethod] = useState('');
+  const [availablePaymentMethods, setAvailablePaymentMethods] = useState<any[]>([]);
+  const [isLoadingMethods, setIsLoadingMethods] = useState(true);
   const navigate = useNavigate();
   const { user } = useAuthStore();
 
@@ -21,6 +24,35 @@ export function CheckoutPage() {
   console.log('📦 Items en carrito:', items);
   console.log('💰 Total:', total);
   console.log('👤 Usuario autenticado:', user);
+
+  // Cargar métodos de pago del evento
+  useEffect(() => {
+    const loadPaymentMethods = async () => {
+      if (items.length === 0) {
+        setAvailablePaymentMethods([]);
+        setIsLoadingMethods(false);
+        return;
+      }
+      
+      setIsLoadingMethods(true);
+      try {
+        const eventId = items[0].eventId;
+        const methods = await PaymentMethodService.obtenerMetodosPagoEvento(eventId);
+        const activeMethods = methods?.filter(m => m.activo) || [];
+        setAvailablePaymentMethods(activeMethods);
+        if (activeMethods.length > 0 && !paymentMethod) {
+          setPaymentMethod(activeMethods[0].id);
+        }
+      } catch (error) {
+        console.error('Error cargando métodos de pago:', error);
+        setAvailablePaymentMethods([]);
+      } finally {
+        setIsLoadingMethods(false);
+      }
+    };
+    
+    loadPaymentMethods();
+  }, [items]);
 
   const handleQuantityChange = (eventId: string, ticketTypeId: string, newQuantity: number) => {
     updateQuantity(eventId, ticketTypeId, newQuantity);
@@ -75,7 +107,7 @@ export function CheckoutPage() {
         console.log(`📝 Insertando compra ${index + 1}/${items.length}:`, insert);
         
         try {
-          const result = await PurchaseService.crearCompra(insert);
+          const result = await PurchaseService.crearCompra(insert, paymentMethod || null);
           console.log(`✅ Compra ${index + 1} creada:`, result);
           return result;
         } catch (err) {
@@ -269,39 +301,76 @@ export function CheckoutPage() {
                   <Lock className="w-4 h-4 md:w-5 md:h-5 mr-2 text-blue-600" />
                   Método de Pago
                 </h4>
-                <div className="space-y-2 md:space-y-3">
-                  <label className="flex items-center p-3 md:p-4 bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-lg md:rounded-xl cursor-pointer hover:from-blue-100 hover:to-blue-200 transition-all duration-200">
-                    <input
-                      type="radio"
-                      name="payment"
-                      value="card"
-                      checked={paymentMethod === 'card'}
-                      onChange={(e) => setPaymentMethod(e.target.value)}
-                      className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500 flex-shrink-0"
-                    />
-                    <div className="ml-3 flex items-center min-w-0 flex-1">
-                      <CreditCard className="w-4 h-4 md:w-5 md:h-5 text-blue-600 mr-2 flex-shrink-0" />
-                      <span className="text-xs md:text-sm font-medium text-gray-900 truncate">Tarjeta de Crédito/Débito</span>
-                    </div>
-                  </label>
-                  
-                  <label className="flex items-center p-3 md:p-4 bg-gradient-to-br from-orange-50 to-orange-100 border border-orange-200 rounded-lg md:rounded-xl cursor-pointer hover:from-orange-100 hover:to-orange-200 transition-all duration-200">
-                    <input
-                      type="radio"
-                      name="payment"
-                      value="paypal"
-                      checked={paymentMethod === 'paypal'}
-                      onChange={(e) => setPaymentMethod(e.target.value)}
-                      className="w-4 h-4 text-orange-600 border-gray-300 focus:ring-orange-500 flex-shrink-0"
-                    />
-                    <div className="ml-3 flex items-center min-w-0 flex-1">
-                      <div className="w-4 h-4 md:w-5 md:h-5 bg-orange-600 rounded mr-2 flex items-center justify-center flex-shrink-0">
-                        <span className="text-xs text-white font-bold">P</span>
-                      </div>
-                      <span className="text-xs md:text-sm font-medium text-gray-900 truncate">PayPal</span>
-                    </div>
-                  </label>
-                </div>
+                {isLoadingMethods ? (
+                  <div className="flex items-center justify-center py-6">
+                    <Loader2 className="w-6 h-6 animate-spin text-blue-600" />
+                    <span className="ml-2 text-sm text-gray-600">Cargando métodos de pago...</span>
+                  </div>
+                ) : availablePaymentMethods.length === 0 ? (
+                  <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-xl">
+                    <p className="text-sm text-yellow-800">No hay métodos de pago disponibles para este evento. Contacta al organizador.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-2 md:space-y-3">
+                    {availablePaymentMethods.map((method) => {
+                      const getPaymentIcon = (tipo: string) => {
+                        switch(tipo) {
+                          case 'credit_card':
+                          case 'debit_card':
+                            return <CreditCard className="w-4 h-4 md:w-5 md:h-5 text-blue-600 mr-2 flex-shrink-0" />;
+                          case 'digital_wallet':
+                            return <div className="w-4 h-4 md:w-5 md:h-5 bg-purple-600 rounded mr-2 flex items-center justify-center flex-shrink-0"><span className="text-xs text-white font-bold">W</span></div>;
+                          case 'bank_transfer':
+                            return <div className="w-4 h-4 md:w-5 md:h-5 bg-green-600 rounded mr-2 flex items-center justify-center flex-shrink-0"><span className="text-xs text-white font-bold">B</span></div>;
+                          case 'cash':
+                            return <div className="w-4 h-4 md:w-5 md:h-5 bg-gray-600 rounded mr-2 flex items-center justify-center flex-shrink-0"><span className="text-xs text-white font-bold">$</span></div>;
+                          case 'crypto':
+                            return <div className="w-4 h-4 md:w-5 md:h-5 bg-orange-600 rounded mr-2 flex items-center justify-center flex-shrink-0"><span className="text-xs text-white font-bold">₿</span></div>;
+                          default:
+                            return <CreditCard className="w-4 h-4 md:w-5 md:h-5 text-blue-600 mr-2 flex-shrink-0" />;
+                        }
+                      };
+                      
+                      const getColorClass = (tipo: string) => {
+                        switch(tipo) {
+                          case 'credit_card':
+                          case 'debit_card':
+                            return 'from-blue-50 to-blue-100 border-blue-200 hover:from-blue-100 hover:to-blue-200';
+                          case 'digital_wallet':
+                            return 'from-purple-50 to-purple-100 border-purple-200 hover:from-purple-100 hover:to-purple-200';
+                          case 'bank_transfer':
+                            return 'from-green-50 to-green-100 border-green-200 hover:from-green-100 hover:to-green-200';
+                          case 'cash':
+                            return 'from-gray-50 to-gray-100 border-gray-200 hover:from-gray-100 hover:to-gray-200';
+                          case 'crypto':
+                            return 'from-orange-50 to-orange-100 border-orange-200 hover:from-orange-100 hover:to-orange-200';
+                          default:
+                            return 'from-blue-50 to-blue-100 border-blue-200 hover:from-blue-100 hover:to-blue-200';
+                        }
+                      };
+
+                      return (
+                        <label key={method.id} className={`flex items-center p-3 md:p-4 bg-gradient-to-br ${getColorClass(method.tipo)} border rounded-lg md:rounded-xl cursor-pointer transition-all duration-200`}>
+                          <input
+                            type="radio"
+                            name="payment"
+                            value={method.id}
+                            checked={paymentMethod === method.id}
+                            onChange={(e) => setPaymentMethod(e.target.value)}
+                            className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500 flex-shrink-0"
+                          />
+                          <div className="ml-3 flex items-center min-w-0 flex-1">
+                            {getPaymentIcon(method.tipo)}
+                            <div className="flex flex-col min-w-0">
+                              <span className="text-xs md:text-sm font-medium text-gray-900 truncate">{method.nombre}</span>
+                              {method.descripcion && <span className="text-[10px] md:text-xs text-gray-500 truncate">{method.descripcion}</span>}
+                            </div>
+                          </div>
+                        </label>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
 
               {/* Security Notice */}
@@ -316,7 +385,7 @@ export function CheckoutPage() {
 
               <button
                 onClick={handleCheckout}
-                disabled={isProcessing}
+                disabled={isProcessing || !paymentMethod || availablePaymentMethods.length === 0}
                 className="w-full py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-semibold rounded-xl hover:from-green-600 hover:to-emerald-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow-md"
               >
                 {isProcessing ? (

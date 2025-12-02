@@ -7,7 +7,7 @@ import { UserService } from './User.service';
 type Tables = Database['public']['Tables'];
 
 export class PurchaseService {
-  static async crearCompra(datosCompra: Tables['compras']['Insert']) {
+  static async crearCompra(datosCompra: Tables['compras']['Insert'], idMetodoPago?: string | null) {
     console.log('🔵 PurchaseService.crearCompra iniciado');
     const { data: authInfo } = await supabase.auth.getUser();
     const userEmail = authInfo?.user?.email;
@@ -29,11 +29,31 @@ export class PurchaseService {
     // Usar el ID de la tabla usuarios (NO auth.uid)
     const insertPayload = {
       ...datosCompra,
-      id_usuario: usuario.id // Usar el ID real de la tabla usuarios
+      id_usuario: usuario.id, // Usar el ID real de la tabla usuarios
+      id_metodo_pago: idMetodoPago || null // Asociar método de pago si se proporciona
     } as Tables['compras']['Insert'];
 
     console.log('📦 Datos de compra a insertar:', insertPayload);
 
+    // 1. Verificar disponibilidad del tipo de entrada
+    const { data: tipoEntradaActual, error: tipoError } = await supabase
+      .from('tipos_entrada')
+      .select('id, cantidad_disponible, cantidad_maxima, nombre_tipo, precio')
+      .eq('id', insertPayload.id_tipo_entrada)
+      .single();
+
+    if (tipoError) {
+      console.error('❌ Error obteniendo tipo de entrada:', tipoError);
+      throw new Error('No se pudo verificar el tipo de entrada');
+    }
+    if (!tipoEntradaActual) {
+      throw new Error('Tipo de entrada no encontrado');
+    }
+    if (tipoEntradaActual.cantidad_disponible < insertPayload.cantidad) {
+      throw new Error(`No hay suficientes entradas disponibles. Quedan ${tipoEntradaActual.cantidad_disponible}`);
+    }
+
+    // 2. Crear compra
     const { data, error } = await supabase
       .from('compras')
       .insert(insertPayload)
@@ -54,7 +74,17 @@ export class PurchaseService {
 
     console.log('✅ Compra creada exitosamente:', data);
 
-    // Generar códigos QR para cada entrada
+    // 3. Decrementar disponibilidad (operación sencilla; para concurrencia alta usar RPC)
+    const { error: updateStockError } = await supabase
+      .from('tipos_entrada')
+      .update({ cantidad_disponible: tipoEntradaActual.cantidad_disponible - insertPayload.cantidad })
+      .eq('id', insertPayload.id_tipo_entrada);
+    if (updateStockError) {
+      console.error('⚠️ Error actualizando disponibilidad del tipo de entrada:', updateStockError);
+      // No abortamos la compra pero dejamos log; podría disparar proceso de compensación
+    }
+
+    // 4. Generar códigos QR para cada entrada
     try {
       // Obtener datos completos del evento y usuario
       const [evento, usuario, tipoEntrada] = await Promise.all([

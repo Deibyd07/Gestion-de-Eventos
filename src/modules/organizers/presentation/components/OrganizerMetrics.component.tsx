@@ -9,6 +9,15 @@ interface QuickStats {
   avgTicketPrice: number;
   upcomingEvents: number;
   completedEvents: number;
+  ventasHoy?: number;
+  ingresosHoy?: number;
+  comisionHoy?: number;
+  netoHoy?: number;
+  vistasUnicas?: number;
+  abandonoCarrito?: number;
+  eventosEnCurso?: number;
+  asistenciaPromedio?: number;
+  ultimoEscaneoISO?: string | null;
 }
 
 interface OrganizerMetricsProps {
@@ -77,7 +86,7 @@ export function OrganizerMetrics({ stats, formatRevenue }: OrganizerMetricsProps
           <div className="flex items-start sm:items-center justify-between gap-2">
             <div className="flex-1 min-w-0">
               <p className="text-xs md:text-sm font-medium text-gray-600">Ventas Hoy</p>
-              <p className="text-xl md:text-2xl font-bold text-gray-900">47</p>
+              <p className="text-xl md:text-2xl font-bold text-gray-900">{stats.ventasHoy ?? 0}</p>
               <p className="text-xs md:text-sm text-orange-600 flex items-center mt-1">
                 <Activity className="w-3 h-3 md:w-4 md:h-4 mr-1" />
                 <span className="truncate">+23% vs ayer</span>
@@ -91,61 +100,54 @@ export function OrganizerMetrics({ stats, formatRevenue }: OrganizerMetricsProps
       </div>
 
       {/* Additional Real-time Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-        {/* Métricas de Conversión */}
-        <div className="bg-gradient-to-br from-white to-indigo-100/98 backdrop-blur-lg shadow-xl border border-white/20 rounded-xl md:rounded-2xl p-4 md:p-6">
-          <h3 className="text-base md:text-lg font-semibold text-gray-900 mb-3 md:mb-4">Métricas de Conversión</h3>
-          <div className="space-y-3 md:space-y-4">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
-              <span className="text-xs md:text-sm text-gray-600">Tasa de Conversión</span>
-              <span className="font-semibold text-green-600 text-sm md:text-base">3.2%</span>
-            </div>
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
-              <span className="text-xs md:text-sm text-gray-600">Vistas Únicas</span>
-              <span className="font-semibold text-blue-600 text-sm md:text-base">1,247</span>
-            </div>
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
-              <span className="text-xs md:text-sm text-gray-600">Abandono de Carrito</span>
-              <span className="font-semibold text-red-600 text-sm md:text-base">68%</span>
-            </div>
-          </div>
-        </div>
-
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 md:gap-6">
         {/* Métricas de Asistencia */}
         <div className="bg-gradient-to-br from-white to-indigo-100/98 backdrop-blur-lg shadow-xl border border-white/20 rounded-xl md:rounded-2xl p-4 md:p-6">
           <h3 className="text-base md:text-lg font-semibold text-gray-900 mb-3 md:mb-4">Asistencia en Tiempo Real</h3>
           <div className="space-y-3 md:space-y-4">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
               <span className="text-xs md:text-sm text-gray-600">Eventos en Curso</span>
-              <span className="font-semibold text-green-600 text-sm md:text-base">2</span>
+              <span className="font-semibold text-green-600 text-sm md:text-base">{stats.eventosEnCurso ?? 0}</span>
             </div>
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
               <span className="text-xs md:text-sm text-gray-600">Asistencia Promedio</span>
-              <span className="font-semibold text-blue-600 text-sm md:text-base">87%</span>
+              <span className="font-semibold text-blue-600 text-sm md:text-base">{(stats.asistenciaPromedio ?? 0).toFixed(1)}%</span>
             </div>
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
               <span className="text-xs md:text-sm text-gray-600">Último Escaneo</span>
-              <span className="font-semibold text-gray-600 text-sm md:text-base">Hace 2 min</span>
+              <span className="font-semibold text-gray-600 text-sm md:text-base">
+                {stats.ultimoEscaneoISO ? new Date(stats.ultimoEscaneoISO).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }) : '—'}
+              </span>
             </div>
           </div>
         </div>
 
-        {/* Métricas Financieras */}
+        {/* Métricas Financieras (del Evento) */}
         <div className="bg-gradient-to-br from-white to-indigo-100/98 backdrop-blur-lg shadow-xl border border-white/20 rounded-xl md:rounded-2xl p-4 md:p-6">
           <h3 className="text-base md:text-lg font-semibold text-gray-900 mb-3 md:mb-4">Métricas Financieras</h3>
           <div className="space-y-3 md:space-y-4">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
-              <span className="text-xs md:text-sm text-gray-600">Ingresos Hoy</span>
-              <span className="font-semibold text-green-600 text-sm md:text-base">$2,350,000</span>
-            </div>
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
-              <span className="text-xs md:text-sm text-gray-600">Comisiones</span>
-              <span className="font-semibold text-red-600 text-sm md:text-base">$117,500</span>
-            </div>
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
-              <span className="text-xs md:text-sm text-gray-600">Neto</span>
-              <span className="font-semibold text-blue-600 text-sm md:text-base">$2,232,500</span>
-            </div>
+            {(() => {
+              const tasa = 0.025; // 2.5%
+              const ingresosEvento = stats.totalRevenue || 0;
+              const comisionEvento = ingresosEvento * tasa;
+              const netoEvento = ingresosEvento - comisionEvento;
+              return (
+                <>
+                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
+                    <span className="text-xs md:text-sm text-gray-600">Ingresos del Evento</span>
+                    <span className="font-semibold text-green-600 text-sm md:text-base">{formatRevenue(ingresosEvento)}</span>
+                  </div>
+                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
+                    <span className="text-xs md:text-sm text-gray-600">Comisión del Evento</span>
+                    <span className="font-semibold text-red-600 text-sm md:text-base">{formatRevenue(comisionEvento)}</span>
+                  </div>
+                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
+                    <span className="text-xs md:text-sm text-gray-600">Neto del Evento</span>
+                    <span className="font-semibold text-blue-600 text-sm md:text-base">{formatRevenue(netoEvento)}</span>
+                  </div>
+                </>
+              );
+            })()}
           </div>
         </div>
       </div>

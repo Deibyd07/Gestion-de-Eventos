@@ -234,6 +234,7 @@ export interface Database {
           estado: 'pendiente' | 'completada' | 'cancelada' | 'reembolsada';
           codigo_qr: string | null;
           numero_orden: string;
+          id_metodo_pago?: string | null;
           fecha_creacion: string;
           fecha_actualizacion: string;
         };
@@ -248,9 +249,11 @@ export interface Database {
           estado?: 'pendiente' | 'completada' | 'cancelada' | 'reembolsada';
           codigo_qr?: string | null;
           numero_orden: string;
+          id_metodo_pago?: string | null;
         };
         Update: {
           estado?: 'pendiente' | 'completada' | 'cancelada' | 'reembolsada';
+          id_metodo_pago?: string | null;
         };
       };
       notificaciones: {
@@ -327,6 +330,7 @@ export interface Database {
             sandboxMode: boolean;
           };
           id_organizador: string;
+          id_evento?: string | null;
           fecha_creacion: string;
           fecha_actualizacion: string;
         };
@@ -353,6 +357,7 @@ export interface Database {
             sandboxMode?: boolean;
           };
           id_organizador: string;
+          id_evento?: string | null;
         };
         Update: {
           nombre?: string;
@@ -375,6 +380,7 @@ export interface Database {
             webhookUrl?: string;
             sandboxMode?: boolean;
           };
+          id_evento?: string | null;
         };
       };
       analiticas_eventos: {

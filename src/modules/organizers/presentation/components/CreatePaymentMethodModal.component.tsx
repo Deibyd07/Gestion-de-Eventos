@@ -666,7 +666,7 @@ export function CreatePaymentMethodModal({ isOpen, onClose, onSave, isLoading = 
                   ) : (
                     <>
                       <Check className="w-5 h-5" />
-                      <span>Crear Método de Pago</span>
+                      <span>Nuevo Método de Pago</span>
                     </>
                   )}
                 </button>

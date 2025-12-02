@@ -58,6 +58,7 @@ import { formatRevenue } from '@shared/lib/utils/Currency.utils';
 import { EventService } from '@shared/lib/api/services/Event.service';
 import { QRScannerModal } from '../components/QRScannerModal.component';
 import { AnalyticsService } from '@shared/lib/api/services/Analytics.service';
+import { AttendeeService } from '@shared/lib/api/services/Attendee.service';
 import { Toast } from '@shared/ui/components/Toast/Toast.component';
 
 
@@ -134,6 +135,9 @@ export function OrganizerDashboard() {
     recentScans: [] as Array<{ name: string; time: string }>
   });
 
+  // Actividad reciente del organizador
+  const [recentActivity, setRecentActivity] = useState<Array<{ type: 'venta' | 'escaneo' | string; timeISO: string; title: string; description: string; badge?: string; eventTitle?: string }>>([]);
+
   // Estados para el Toast de notificaciones
   const [showSuccessToast, setShowSuccessToast] = useState(false);
   const [showErrorToast, setShowErrorToast] = useState(false);
@@ -200,6 +204,8 @@ export function OrganizerDashboard() {
   const [isLoadingPaymentMethodDetails, setIsLoadingPaymentMethodDetails] = useState(false);
   const [isDeletingPaymentMethod, setIsDeletingPaymentMethod] = useState(false);
   const [openPaymentMethodDropdown, setOpenPaymentMethodDropdown] = useState<string | null>(null);
+  const [eventPaymentStats, setEventPaymentStats] = useState<any | null>(null);
+  const [isLoadingEventPaymentStats, setIsLoadingEventPaymentStats] = useState(false);
 
     // Handlers para CRUD de promociones
     const handleViewPromotion = (promotionId: string) => {
@@ -240,7 +246,9 @@ export function OrganizerDashboard() {
       try {
         if (user?.id) {
           const PromotionService = (await import('@shared/lib/api/services/Promotion.service')).PromotionService;
-          const data = await PromotionService.obtenerPromocionesOrganizador(user.id);
+          const data = selectedEventId
+            ? await PromotionService.obtenerPromocionesEvento(selectedEventId)
+            : await PromotionService.obtenerPromocionesOrganizador(user.id);
           setPromotions(data || []);
         }
       } catch (error) {
@@ -248,21 +256,43 @@ export function OrganizerDashboard() {
       }
     };
 
-    // Función para cargar métodos de pago
+    // Función para cargar métodos de pago (estrictamente por evento si hay uno seleccionado)
     const loadPaymentMethods = async () => {
       if (!user?.id) return;
-      
       setIsLoadingPaymentMethods(true);
       try {
-        console.log('🔄 Cargando métodos de pago para organizador:', user.id);
-        const data = await PaymentMethodService.obtenerMetodosPagoOrganizador(user.id);
-        console.log('📦 Métodos de pago cargados:', data);
-        setPaymentMethods(data || []);
+        // Solo mostrar métodos del evento seleccionado; si no hay evento, lista vacía
+        if (!selectedEventId) {
+          setPaymentMethods([]);
+          setEventPaymentStats(null);
+          return;
+        }
+        const data = await PaymentMethodService.obtenerMetodosPagoEvento(selectedEventId) || [];
+        setPaymentMethods(data);
+        // Cargar estadísticas inmediatamente después de cargar métodos
+        await loadEventPaymentStats();
       } catch (error) {
         console.error('❌ Error al cargar métodos de pago:', error);
         setPaymentMethods([]);
       } finally {
         setIsLoadingPaymentMethods(false);
+      }
+    };
+
+    const loadEventPaymentStats = async () => {
+      if (!selectedEventId) {
+        setEventPaymentStats(null);
+        return;
+      }
+      setIsLoadingEventPaymentStats(true);
+      try {
+        const stats = await PaymentMethodService.obtenerEstadisticasMetodosPagoEvento(selectedEventId);
+        setEventPaymentStats(stats);
+      } catch (error) {
+        console.error('❌ Error cargando estadísticas de métodos de pago del evento:', error);
+        setEventPaymentStats(null);
+      } finally {
+        setIsLoadingEventPaymentStats(false);
       }
     };
 
@@ -326,6 +356,7 @@ export function OrganizerDashboard() {
       });
       console.log('Método de pago actualizado exitosamente');
       await loadPaymentMethods();
+      await loadEventPaymentStats();
       setIsEditPaymentMethodModalOpen(false);
       setSelectedPaymentMethod(null);
       alert('Método de pago actualizado exitosamente');
@@ -487,11 +518,60 @@ export function OrganizerDashboard() {
   });
 
   const loadMetrics = async () => {
+    const eventIdAtStart = selectedEvent?.id || null;
+          console.group('METRICAS-ASISTENCIA');
+          // Calcular a partir de todos los asistentes del organizador (evita depender de status)
+          let eventosEnCurso = 0;
+          let totalVendidos = 0;
+          let totalCheckin = 0;
+          let ultimoEscaneoISO: string | null = null;
+          try {
+            const attendeesAll = await AttendeeService.getOrganizerAttendees(user.id);
+            console.log('attendeesAll:', attendeesAll?.length);
+            totalVendidos = attendeesAll.length;
+            const checkinsAll = attendeesAll.filter(a => a.estado_qr === 'usado');
+            totalCheckin = checkinsAll.length;
+            // eventosEnCurso = número de eventos únicos con asistentes (aproximación operativa)
+            const eventIdSet = new Set(attendeesAll.map(a => a.eventId));
+            eventosEnCurso = eventIdSet.size;
+            for (const a of checkinsAll) {
+              if (a.fecha_escaneado && (!ultimoEscaneoISO || new Date(a.fecha_escaneado) > new Date(ultimoEscaneoISO))) {
+                ultimoEscaneoISO = a.fecha_escaneado as string;
+              }
+            }
+          } catch (e) {
+            console.warn('Error obteniendo attendeesAll para métricas:', (e as any)?.message);
+          }
+          console.log('Totales:', { eventosEnCurso, totalVendidos, totalCheckin, ultimoEscaneoISO });
+          console.groupEnd();
     if (!user?.id) return;
     setMetricsLoading(true);
     setMetricsError(null);
     try {
-      const data = await AnalyticsService.obtenerMetricasOrganizador(user.id);
+      const data = eventIdAtStart
+        ? await AnalyticsService.obtenerMetricasEvento(eventIdAtStart)
+        : await AnalyticsService.obtenerMetricasOrganizador(user.id);
+      // Calcular métricas de asistencia al estilo del módulo de control (event-specific si hay seleccionado)
+      let asistenciaPromedio = 0;
+      let eventosEnCurso = 0;
+      let ultimoEscaneoISO: string | null = null;
+      try {
+        const attendeesAll = await AttendeeService.getOrganizerAttendees(user.id, eventIdAtStart || undefined);
+        const total = attendeesAll.length;
+        const checkedIn = attendeesAll.filter(a => a.estado_qr === 'usado').length;
+        asistenciaPromedio = total > 0 ? (checkedIn / total) * 100 : 0;
+        const eventIdSet = new Set(attendeesAll.map(a => a.eventId));
+        eventosEnCurso = selectedEvent ? (eventIdSet.size > 0 ? 1 : 0) : eventIdSet.size;
+        const last = attendeesAll
+          .filter(a => !!a.fecha_escaneado)
+          .sort((a,b) => new Date(String(b.fecha_escaneado)).getTime() - new Date(String(a.fecha_escaneado)).getTime())[0];
+        ultimoEscaneoISO = last?.fecha_escaneado ?? null;
+      } catch {}
+      // Evitar race conditions: si el evento cambió mientras cargábamos, no sobrescribir
+      if (eventIdAtStart !== (selectedEvent?.id || null)) {
+        return;
+      }
+      // Usar Analytics como base y sobreescribir las tres métricas con cálculo real
       setQuickStats({
         totalEvents: data.totalEvents,
         activeEvents: data.activeEvents,
@@ -507,9 +587,9 @@ export function OrganizerDashboard() {
         netoHoy: data.netoHoy,
         vistasUnicas: data.vistasUnicas,
         abandonoCarrito: Number(data.abandonoCarrito.toFixed(2)),
-        eventosEnCurso: data.eventosEnCurso,
-        asistenciaPromedio: Number(data.asistenciaPromedio.toFixed(2)),
-        ultimoEscaneoISO: data.ultimoEscaneoISO
+        eventosEnCurso: (typeof data.eventosEnCurso === 'number' && data.eventosEnCurso > 0) ? data.eventosEnCurso : (eventosEnCurso || 0),
+        asistenciaPromedio: Number((asistenciaPromedio || data.asistenciaPromedio || 0).toFixed(2)),
+        ultimoEscaneoISO: ultimoEscaneoISO ?? data.ultimoEscaneoISO ?? null
       });
     } catch (err: any) {
       console.error('Error cargando métricas del organizador:', err);
@@ -519,14 +599,26 @@ export function OrganizerDashboard() {
     }
   };
 
+  const loadRecentActivity = async () => {
+    if (!user?.id) return;
+    try {
+      const items = await AnalyticsService.obtenerActividadRecienteOrganizador(user.id);
+      setRecentActivity(items as any);
+    } catch (e) {
+      console.error('Error cargando actividad reciente:', e);
+      setRecentActivity([]);
+    }
+  };
+
   useEffect(() => {
-    // Cargar métricas cuando se cargan eventos o cambia usuario
+    // Cargar métricas cuando se cargan eventos, cambia usuario o cambia evento seleccionado
     if (user?.id) {
       loadMetrics();
+      loadRecentActivity();
       loadPromotions();
       loadPaymentMethods();
     }
-  }, [user?.id, finalEvents.length]);
+  }, [user?.id, finalEvents.length, selectedEventId]);
 
   // Effect para cargar estadísticas de asistencia
   useEffect(() => {
@@ -719,7 +811,7 @@ export function OrganizerDashboard() {
       }
 
       // Convertir los datos del formulario al formato de la base de datos
-      const datosMetodoPago = {
+      const datosMetodoPago: any = {
         nombre: formData.name,
         tipo: formData.type,
         proveedor: formData.provider,
@@ -744,13 +836,17 @@ export function OrganizerDashboard() {
       };
       
       // Crear el método de pago usando el servicio real de Supabase
-      const metodoPagoCreado = await PaymentMethodService.crearMetodoPago(datosMetodoPago);
+      // Asignar al evento si hay uno seleccionado
+      const metodoPagoCreado: any = await PaymentMethodService.crearMetodoPago({
+        ...datosMetodoPago,
+        id_evento: selectedEventId || null
+      });
       
       // Cerrar modal
       setIsCreatePaymentMethodModalOpen(false);
       
-      // Refrescar datos si es necesario
-      await handleRefresh();
+      // Refrescar métodos de pago (evitar recargar todo el dashboard)
+      await loadPaymentMethods();
       
       // Mostrar mensaje de éxito
       setToastMessage('Método de pago creado exitosamente');
@@ -895,7 +991,7 @@ export function OrganizerDashboard() {
     console.log('Ver evento:', eventId);
     setIsLoadingEventDetails(true);
     try {
-      const eventDetails = await EventService.obtenerEventoCompleto(eventId);
+      const eventDetails = await EventService.obtenerEventoCompleto(eventId) as any;
       console.log('Detalles del evento:', eventDetails);
       setSelectedEventForView(eventDetails);
       setIsViewEventModalOpen(true);
@@ -943,10 +1039,14 @@ export function OrganizerDashboard() {
     console.log('Eliminar evento:', eventId);
     setIsLoadingEventDetails(true);
     try {
-      const eventDetails = await EventService.obtenerEventoCompleto(eventId);
+      const eventDetails: any = await EventService.obtenerEventoCompleto(eventId);
+      if (!eventDetails) {
+        alert('Evento no encontrado');
+        return;
+      }
       const comprasCompletadas = eventDetails.compras?.filter((c: any) => c.estado === 'completada') || [];
       const totalVentas = comprasCompletadas.reduce((sum: number, c: any) => sum + Number(c.total_pagado || 0), 0);
-      
+
       setSelectedEventForDelete({
         id: eventDetails.id,
         titulo: eventDetails.titulo,
@@ -955,7 +1055,7 @@ export function OrganizerDashboard() {
         comprasCompletadas: comprasCompletadas.length,
         totalVentas: totalVentas
       });
-      
+
       setIsDeleteEventModalOpen(true);
     } catch (error) {
       console.error('Error al preparar eliminación:', error);
@@ -1341,6 +1441,7 @@ export function OrganizerDashboard() {
                     }}
                     onNavigateToTab={setActiveTab}
                     formatRevenue={formatRevenue}
+                    recentActivity={recentActivity}
                   />
                 )}
               </>
@@ -1590,7 +1691,7 @@ export function OrganizerDashboard() {
                       className="flex-1 sm:flex-none inline-flex items-center justify-center px-3 md:px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-medium rounded-xl hover:from-green-600 hover:to-emerald-700 transition-all duration-200 shadow-sm gap-2"
                     >
                       <Plus className="w-4 h-4" />
-                      <span className="hidden sm:inline">Crear</span>
+                      <span className="hidden sm:inline">Nuevo</span>
                     </button>
                   </div>
                   </div>
@@ -1616,7 +1717,7 @@ export function OrganizerDashboard() {
                       <div className="text-center py-8">
                         <CreditCard className="w-12 h-12 text-gray-400 mx-auto mb-3" />
                         <p className="text-sm text-gray-500 mb-2">No hay métodos de pago configurados</p>
-                        <p className="text-xs text-gray-400">Haz clic en "Crear" para agregar tu primer método de pago</p>
+                        <p className="text-xs text-gray-400">Haz clic en "Nuevo" para agregar tu primer método de pago</p>
                       </div>
                     ) : (
                       <div className="space-y-3 md:space-y-4">
@@ -1763,29 +1864,54 @@ export function OrganizerDashboard() {
 
                   {/* Reconciliation Reports */}
                   <div className="bg-gradient-to-br from-white to-indigo-100/98 backdrop-blur-lg shadow-xl border border-white/20 rounded-2xl p-6">
-                    <h4 className="font-semibold text-gray-900 mb-4">Reportes de Reconciliación</h4>
-                    <div className="space-y-4">
-                      <div className="p-4 bg-gray-50 rounded-lg">
-                        <div className="flex justify-between items-center mb-2">
-                          <h5 className="font-medium text-gray-900">Reporte Mensual</h5>
-                          <span className="text-sm text-gray-500">Diciembre 2024</span>
-                    </div>
-                        <div className="grid grid-cols-2 gap-4 text-sm">
-                          <div>
-                            <p className="text-gray-600">Ingresos Totales:</p>
-                            <p className="font-semibold text-green-600">$2,450,000</p>
+                    <h4 className="font-semibold text-gray-900 mb-4">Estadísticas de Métodos de Pago</h4>
+                    {!selectedEventId ? (
+                      <p className="text-sm text-gray-500">Selecciona un evento para ver sus métodos.</p>
+                    ) : isLoadingEventPaymentStats ? (
+                      <div className="flex items-center gap-2 text-sm text-gray-600"><div className="w-4 h-4 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>Cargando estadísticas...</div>
+                    ) : !eventPaymentStats ? (
+                      <p className="text-sm text-gray-500">Sin métodos de pago en este evento.</p>
+                    ) : (
+                      <div className="space-y-4">
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs md:text-sm">
+                          <div className="bg-gray-50 rounded-lg p-3">
+                            <p className="text-gray-500">Total</p>
+                            <p className="font-semibold text-gray-900">{eventPaymentStats.total}</p>
                           </div>
-                          <div>
-                            <p className="text-gray-600">Comisiones:</p>
-                            <p className="font-semibold text-red-600">$122,500</p>
+                          <div className="bg-gray-50 rounded-lg p-3">
+                            <p className="text-gray-500">Activos</p>
+                            <p className="font-semibold text-green-600">{eventPaymentStats.activos}</p>
+                          </div>
+                          <div className="bg-gray-50 rounded-lg p-3">
+                            <p className="text-gray-500">Inactivos</p>
+                            <p className="font-semibold text-red-600">{eventPaymentStats.inactivos}</p>
+                          </div>
+                          <div className="bg-gray-50 rounded-lg p-3">
+                            <p className="text-gray-500">Tipos</p>
+                            <p className="font-semibold text-indigo-600">{Object.keys(eventPaymentStats.porTipo).length}</p>
                           </div>
                         </div>
-                        <button className="mt-3 w-full px-3 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-xl hover:from-blue-600 hover:to-purple-700 transition-all duration-200 text-sm">
-                          <Download className="w-4 h-4 mr-1" />
-                          Descargar Reporte
-                    </button>
+                        <div className="space-y-2">
+                          {paymentMethods.map(m => {
+                            const stats = eventPaymentStats.uso.find((u: any) => u.id === m.id);
+                            return (
+                              <div key={m.id} className="flex items-center justify-between bg-white/70 rounded-lg px-3 py-2 text-xs md:text-sm">
+                                <div className="flex items-center gap-2">
+                                  <span className="font-medium text-gray-800">{m.nombre}</span>
+                                  <span className="px-2 py-0.5 rounded-full text-[10px] bg-indigo-100 text-indigo-700">{m.tipo}</span>
+                                  {!m.activo && <span className="px-2 py-0.5 rounded-full text-[10px] bg-red-100 text-red-700">Inactivo</span>}
+                                </div>
+                                <div className="flex items-center gap-3 text-[10px] md:text-xs text-gray-500">
+                                  <span>Uso: {stats?.porcentaje?.toFixed(1) || 0}%</span>
+                                  <span>Tx: {stats?.transacciones || 0}</span>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                        <p className="text-[11px] text-gray-400">Para registrar uso, asigna método de pago al crear compra.</p>
                       </div>
-                    </div>
+                    )}
                   </div>
                 </div>
               </div>

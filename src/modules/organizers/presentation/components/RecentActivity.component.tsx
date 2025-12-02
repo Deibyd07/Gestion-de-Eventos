@@ -11,7 +11,16 @@ import {
   DollarSign 
 } from 'lucide-react';
 
-export function RecentActivity() {
+type ActivityItem = {
+  type: 'venta' | 'escaneo' | string;
+  timeISO: string;
+  title: string;
+  description: string;
+  badge?: string;
+  eventTitle?: string;
+};
+
+export function RecentActivity({ activities = [] as ActivityItem[] }: { activities?: ActivityItem[] }) {
   return (
     <div className="bg-gradient-to-br from-white to-indigo-100/98 backdrop-blur-lg shadow-xl border border-white/20 rounded-xl md:rounded-2xl overflow-hidden">
       <div className="bg-gradient-to-r from-blue-600 to-purple-600 px-4 md:px-6 py-3 md:py-4">
@@ -25,150 +34,34 @@ export function RecentActivity() {
       </div>
       <div className="p-4 md:p-6">
         <div className="space-y-3 md:space-y-4">
-          {/* Event Activity */}
-          <div className="p-3 md:p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg md:rounded-xl border border-blue-200">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 md:gap-4 w-full">
-              <div className="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg md:rounded-xl flex items-center justify-center flex-shrink-0">
-                <Calendar className="w-5 h-5 md:w-6 md:h-6 text-white" />
-              </div>
-              <div className="flex-1 min-w-0 w-full">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-0 w-full">
-                  <h4 className="font-semibold text-sm md:text-base text-gray-900">Nuevo Evento Creado</h4>
-                  <span className="text-xs text-gray-500">Hace 2 horas</span>
+          {activities.length === 0 && (
+            <div className="text-center text-gray-500 text-sm">Sin actividad reciente</div>
+          )}
+          {activities.map((item, idx) => (
+            <div key={idx} className="p-3 md:p-4 bg-white rounded-lg md:rounded-xl border border-gray-200">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 md:gap-4 w-full">
+                <div className="w-10 h-10 md:w-12 md:h-12 rounded-lg md:rounded-xl flex items-center justify-center flex-shrink-0"
+                  style={{ background: item.type === 'venta' ? 'linear-gradient(90deg,#22c55e,#059669)' : 'linear-gradient(90deg,#8b5cf6,#ec4899)' }}>
+                  {item.type === 'venta' ? <Ticket className="w-5 h-5 md:w-6 md:h-6 text-white" /> : <QrCode className="w-5 h-5 md:w-6 md:h-6 text-white" />}
                 </div>
-                <p className="text-xs md:text-sm text-gray-600 mt-1 line-clamp-2">"Conferencia de Tecnología 2024" - Bogotá</p>
-                <div className="flex flex-col sm:flex-row sm:items-center flex-wrap gap-2 sm:gap-4 mt-2 text-xs text-gray-500">
-                  <span className="flex items-center">
-                    <Users className="w-3 h-3 mr-1" />
-                    150/200 asistentes
-                  </span>
-                  <span className="flex items-center">
-                    <DollarSign className="w-3 h-3 mr-1" />
-                    $7,500,000 ingresos
-                  </span>
+                <div className="flex-1 min-w-0 w-full">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-0 w-full">
+                    <h4 className="font-semibold text-sm md:text-base text-gray-900">{item.title}</h4>
+                    <span className="text-xs text-gray-500">{new Date(item.timeISO).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}</span>
+                  </div>
+                  <p className="text-xs md:text-sm text-gray-600 mt-1 line-clamp-2">{item.description}</p>
+                  {item.eventTitle && (
+                    <div className="text-xs text-gray-500 mt-1">{item.eventTitle}</div>
+                  )}
                 </div>
-              </div>
-              <div className="px-3 py-1 bg-green-100 text-green-800 text-xs rounded-full font-medium self-start sm:self-auto">
-                Activo
+                {item.badge && (
+                  <div className="px-3 py-1 bg-gray-100 text-gray-800 text-xs rounded-full font-medium self-start sm:self-auto">
+                    {item.badge}
+                  </div>
+                )}
               </div>
             </div>
-          </div>
-          
-          {/* Ticket Sales Activity */}
-          <div className="p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border border-green-200">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
-              <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-emerald-600 rounded-xl flex items-center justify-center">
-                <Ticket className="w-6 h-6 text-white" />
-              </div>
-              <div className="flex-1 w-full">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between w-full">
-                  <h4 className="font-semibold text-gray-900">Venta de Entradas</h4>
-                  <span className="text-xs text-gray-500">Hace 15 minutos</span>
-                </div>
-                <p className="text-sm text-gray-600">3 entradas VIP vendidas - $450,000</p>
-                <div className="flex flex-col sm:flex-row sm:items-center flex-wrap gap-2 sm:gap-4 mt-2 text-xs text-gray-500">
-                  <span className="flex items-center">
-                    <TrendingUp className="w-3 h-3 mr-1" />
-                    Entrada VIP
-                  </span>
-                  <span className="flex items-center">
-                    <TrendingUp className="w-3 h-3 mr-1" />
-                    +15% vs ayer
-                  </span>
-                </div>
-              </div>
-              <div className="px-3 py-1 bg-blue-100 text-blue-800 text-xs rounded-full font-medium self-start sm:self-auto">
-                Venta
-              </div>
-            </div>
-          </div>
-
-          {/* Payment Activity */}
-          <div className="p-4 bg-gradient-to-r from-orange-50 to-yellow-50 rounded-xl border border-orange-200">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
-              <div className="w-12 h-12 bg-gradient-to-r from-orange-500 to-yellow-600 rounded-xl flex items-center justify-center">
-                <CreditCard className="w-6 h-6 text-white" />
-              </div>
-              <div className="flex-1 w-full">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between w-full">
-                  <h4 className="font-semibold text-gray-900">Pago Procesado</h4>
-                  <span className="text-xs text-gray-500">Hace 1 hora</span>
-                </div>
-                <p className="text-sm text-gray-600">Pago de $150,000 procesado exitosamente</p>
-                <div className="flex flex-col sm:flex-row sm:items-center flex-wrap gap-2 sm:gap-4 mt-2 text-xs text-gray-500">
-                  <span className="flex items-center">
-                    <CheckCircle className="w-3 h-3 mr-1" />
-                    Tarjeta de Crédito
-                  </span>
-                  <span className="flex items-center">
-                    <DollarSign className="w-3 h-3 mr-1" />
-                    Comisión: $7,500
-                  </span>
-                </div>
-              </div>
-              <div className="px-3 py-1 bg-green-100 text-green-800 text-xs rounded-full font-medium self-start sm:self-auto">
-                Completado
-              </div>
-            </div>
-          </div>
-
-          {/* QR Scan Activity */}
-          <div className="p-4 bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl border border-purple-200">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
-              <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-600 rounded-xl flex items-center justify-center">
-                <QrCode className="w-6 h-6 text-white" />
-              </div>
-              <div className="flex-1 w-full">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between w-full">
-                  <h4 className="font-semibold text-gray-900">Asistencia Registrada</h4>
-                  <span className="text-xs text-gray-500">Hace 5 minutos</span>
-                </div>
-                <p className="text-sm text-gray-600">María García - Entrada General escaneada</p>
-                <div className="flex flex-col sm:flex-row sm:items-center flex-wrap gap-2 sm:gap-4 mt-2 text-xs text-gray-500">
-                  <span className="flex items-center">
-                    <Users className="w-3 h-3 mr-1" />
-                    Total: 127 asistentes
-                  </span>
-                  <span className="flex items-center">
-                    <Activity className="w-3 h-3 mr-1" />
-                    85% tasa de asistencia
-                  </span>
-                </div>
-              </div>
-              <div className="px-3 py-1 bg-purple-100 text-purple-800 text-xs rounded-full font-medium self-start sm:self-auto">
-                Escaneado
-              </div>
-            </div>
-          </div>
-
-          {/* Promotion Activity */}
-          <div className="p-4 bg-gradient-to-r from-indigo-50 to-blue-50 rounded-xl border border-indigo-200">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
-              <div className="w-12 h-12 bg-gradient-to-r from-indigo-500 to-blue-600 rounded-xl flex items-center justify-center">
-                <Percent className="w-6 h-6 text-white" />
-              </div>
-              <div className="flex-1 w-full">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between w-full">
-                  <h4 className="font-semibold text-gray-900">Descuento Aplicado</h4>
-                  <span className="text-xs text-gray-500">Hace 30 minutos</span>
-                </div>
-                <p className="text-sm text-gray-600">Código "EARLYBIRD" usado - 30% descuento</p>
-                <div className="flex flex-col sm:flex-row sm:items-center flex-wrap gap-2 sm:gap-4 mt-2 text-xs text-gray-500">
-                  <span className="flex items-center">
-                    <Percent className="w-3 h-3 mr-1" />
-                    Ahorro: $45,000
-                  </span>
-                  <span className="flex items-center">
-                    <Users className="w-3 h-3 mr-1" />
-                    Usos: 25/50
-                  </span>
-                </div>
-              </div>
-              <div className="px-3 py-1 bg-indigo-100 text-indigo-800 text-xs rounded-full font-medium self-start sm:self-auto">
-                Descuento
-              </div>
-            </div>
-          </div>
+          ))}
         </div>
 
         {/* View All Activity Button */}

@@ -3,6 +3,8 @@ import { RefreshCw, Download } from 'lucide-react';
 import { AdminDashboardContent } from './dashboard/AdminDashboardContent.component';
 import { AdminStatsService } from '@shared/lib/api/services/AdminStats.service';
 import { RecentActivityService, RecentActivityItem } from '@shared/lib/api/services/RecentActivity.service';
+import { TopOrganizersService, TopOrganizer } from '@shared/lib/api/services/TopOrganizers.service';
+import { LocationStatsService } from '@shared/lib/api/services/LocationStats.service';
 
 interface AdminStats {
   totalUsers: number;
@@ -46,11 +48,15 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     revenue: 0
   });
   const [recentActivities, setRecentActivities] = useState<RecentActivityItem[]>([]);
+  const [topOrganizers, setTopOrganizers] = useState<TopOrganizer[]>([]);
+  const [locationStats, setLocationStats] = useState<Record<string, number>>({});
 
   // Cargar estadísticas de crecimiento y actividad reciente al montar
   useEffect(() => {
     loadGrowthStats();
     loadRecentActivities();
+    loadTopOrganizers();
+    loadLocationStats();
   }, [stats]);
 
   const loadGrowthStats = async () => {
@@ -76,11 +82,31 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     }
   };
 
+  const loadTopOrganizers = async () => {
+    try {
+      const organizers = await TopOrganizersService.getTopOrganizers(5);
+      setTopOrganizers(organizers);
+    } catch (error) {
+      console.error('Error al cargar top organizadores:', error);
+    }
+  };
+
+  const loadLocationStats = async () => {
+    try {
+      const stats = await LocationStatsService.getTopLocations(5);
+      setLocationStats(stats);
+    } catch (error) {
+      console.error('Error al cargar estadísticas de ubicaciones:', error);
+    }
+  };
+
   const handleRefresh = async () => {
     setIsRefreshing(true);
     await onRefresh();
     await loadGrowthStats();
     await loadRecentActivities();
+    await loadTopOrganizers();
+    await loadLocationStats();
     setIsRefreshing(false);
   };
 
@@ -95,41 +121,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       growth: growthStats
     },
     recentActivity: recentActivities,
-    topOrganizers: [
-      {
-        id: '1',
-        name: 'Juan Pérez',
-        events: 12,
-        revenue: 15000000,
-        rating: 4.8
-      },
-      {
-        id: '2',
-        name: 'Ana López',
-        events: 8,
-        revenue: 12000000,
-        rating: 4.9
-      },
-      {
-        id: '3',
-        name: 'Carlos Ruiz',
-        events: 6,
-        revenue: 8500000,
-        rating: 4.7
-      }
-    ],
+    topOrganizers: topOrganizers,
     deviceStats: {
       desktop: 65,
       mobile: 30,
       tablet: 5
     },
-    locationStats: {
-      'Bogotá': 35,
-      'Medellín': 25,
-      'Cali': 20,
-      'Barranquilla': 12,
-      'Otras ciudades': 8
-    }
+    locationStats: locationStats
   };
 
   const formatCurrency = (amount: number) => {

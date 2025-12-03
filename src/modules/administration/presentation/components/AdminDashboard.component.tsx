@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { RefreshCw, Download } from 'lucide-react';
 import { AdminDashboardContent } from './dashboard/AdminDashboardContent.component';
+import { AdminStatsService } from '@shared/lib/api/services/AdminStats.service';
 
 interface AdminStats {
   totalUsers: number;
@@ -38,26 +39,42 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   onSystemAction
 }) => {
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [growthStats, setGrowthStats] = useState({
+    users: 0,
+    events: 0,
+    revenue: 0
+  });
+
+  // Cargar estadísticas de crecimiento al montar
+  useEffect(() => {
+    loadGrowthStats();
+  }, [stats]);
+
+  const loadGrowthStats = async () => {
+    try {
+      const growth = await AdminStatsService.getGrowthStats();
+      setGrowthStats(growth);
+    } catch (error) {
+      console.error('Error al cargar estadísticas de crecimiento:', error);
+    }
+  };
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
     await onRefresh();
+    await loadGrowthStats();
     setIsRefreshing(false);
   };
 
-  // Datos de ejemplo más realistas
+  // Datos del dashboard con las estadísticas reales
   const dashboardData = {
     overview: {
-      totalUsers: 2847,
-      totalEvents: 156,
-      totalRevenue: 125000000,
-      activeEvents: 23,
-      pendingApprovals: 5,
-      growth: {
-        users: 12.5,
-        events: 8.3,
-        revenue: 15.2
-      }
+      totalUsers: stats.totalUsers,
+      totalEvents: stats.totalEvents,
+      totalRevenue: stats.totalRevenue,
+      activeEvents: stats.activeEvents,
+      pendingApprovals: stats.pendingApprovals,
+      growth: growthStats
     },
     recentActivity: [
       {

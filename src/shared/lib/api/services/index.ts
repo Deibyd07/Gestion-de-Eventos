@@ -13,6 +13,7 @@ export { SystemConfigService } from './SystemConfig.service';
 export { EventRatingService } from './EventRating.service';
 export { UserFavoritesService } from './UserFavorites.service';
 export { PaymentMethodService } from './PaymentMethod.service';
+export { AdminStatsService } from './AdminStats.service';
 
 // Mantener compatibilidad con el archivo original
 export { UserService as ServicioUsuarios } from './User.service';

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { LogOut, User, Menu, X, BarChart3, Users, Calendar, CreditCard, TrendingUp } from 'lucide-react';
 import { useAuthStore } from '../../../authentication/infrastructure/store/Auth.store';
 import { useNavigate } from 'react-router-dom';
@@ -9,30 +9,19 @@ import { AnalyticsDashboard } from '../../../analytics/presentation/components/A
 import { PaymentsDashboard } from '../components/PaymentsDashboard.component';
 import { AdminProfilePanel } from '../components/AdminProfilePanel.component';
 import { OrganizerProfilePanel } from '../../../organizers/presentation/components/OrganizerProfilePanel.component';
+import { AdminStatsService } from '@shared/lib/api/services/AdminStats.service';
 
 export function AdminPage() {
   const { logout } = useAuthStore();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('dashboard');
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
-  // Sidebar abierto por defecto en desktop, cerrado en móvil
-  const [isSidebarOpen, setIsSidebarOpen] = useState(() => {
-    if (typeof window !== 'undefined') {
-      return window.innerWidth >= 768;
-    }
-    return true;
-  });
-
-  const handleLogout = () => {
-    logout();
-    navigate('/');
-  };
-
-  const adminStats = {
-    totalUsers: 1250,
-    totalEvents: 89,
-    totalRevenue: 45000000,
-    activeEvents: 23,
+  const [isLoadingStats, setIsLoadingStats] = useState(true);
+  const [adminStats, setAdminStats] = useState({
+    totalUsers: 0,
+    totalEvents: 0,
+    totalRevenue: 0,
+    activeEvents: 0,
     pendingApprovals: 5,
     recentActivity: [
       { id: '1', type: 'user_registration' as const, description: 'Nuevo usuario registrado: María García', timestamp: 'Hace 2 horas', severity: 'low' as const },
@@ -43,10 +32,47 @@ export function AdminPage() {
       { id: '1', name: 'Juan Pérez', events: 12, revenue: 15000000, rating: 4.8 },
       { id: '2', name: 'Ana López', events: 8, revenue: 12000000, rating: 4.9 }
     ],
+  });
+  
+  // Sidebar abierto por defecto en desktop, cerrado en móvil
+  const [isSidebarOpen, setIsSidebarOpen] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return window.innerWidth >= 768;
+    }
+    return true;
+  });
+
+  // Cargar estadísticas al montar el componente
+  useEffect(() => {
+    loadDashboardStats();
+  }, []);
+
+  const loadDashboardStats = async () => {
+    try {
+      setIsLoadingStats(true);
+      const stats = await AdminStatsService.getDashboardStats();
+      setAdminStats(prev => ({
+        ...prev,
+        totalUsers: stats.totalUsers,
+        totalEvents: stats.totalEvents,
+        totalRevenue: stats.totalRevenue,
+        activeEvents: stats.activeEvents
+      }));
+    } catch (error) {
+      console.error('Error al cargar estadísticas:', error);
+    } finally {
+      setIsLoadingStats(false);
+    }
+  };
+
+  const handleLogout = () => {
+    logout();
+    navigate('/');
   };
 
   const handleRefresh = async () => {
     console.log('Actualizando datos...');
+    await loadDashboardStats();
   };
 
   const handleExportData = (type: string) => {

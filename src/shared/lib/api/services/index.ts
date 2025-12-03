@@ -14,6 +14,7 @@ export { EventRatingService } from './EventRating.service';
 export { UserFavoritesService } from './UserFavorites.service';
 export { PaymentMethodService } from './PaymentMethod.service';
 export { AdminStatsService } from './AdminStats.service';
+export { RecentActivityService } from './RecentActivity.service';
 
 // Mantener compatibilidad con el archivo original
 export { UserService as ServicioUsuarios } from './User.service';

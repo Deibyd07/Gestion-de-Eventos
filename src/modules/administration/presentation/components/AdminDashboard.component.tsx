@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { RefreshCw, Download } from 'lucide-react';
 import { AdminDashboardContent } from './dashboard/AdminDashboardContent.component';
 import { AdminStatsService } from '@shared/lib/api/services/AdminStats.service';
+import { RecentActivityService, RecentActivityItem } from '@shared/lib/api/services/RecentActivity.service';
 
 interface AdminStats {
   totalUsers: number;
@@ -44,10 +45,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     events: 0,
     revenue: 0
   });
+  const [recentActivities, setRecentActivities] = useState<RecentActivityItem[]>([]);
 
-  // Cargar estadísticas de crecimiento al montar
+  // Cargar estadísticas de crecimiento y actividad reciente al montar
   useEffect(() => {
     loadGrowthStats();
+    loadRecentActivities();
   }, [stats]);
 
   const loadGrowthStats = async () => {
@@ -59,10 +62,25 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     }
   };
 
+  const loadRecentActivities = async () => {
+    try {
+      const activities = await RecentActivityService.getRecentActivities(5);
+      // Formatear timestamps
+      const formattedActivities = activities.map(activity => ({
+        ...activity,
+        timestamp: RecentActivityService.formatTimestamp(activity.timestamp)
+      }));
+      setRecentActivities(formattedActivities);
+    } catch (error) {
+      console.error('Error al cargar actividades recientes:', error);
+    }
+  };
+
   const handleRefresh = async () => {
     setIsRefreshing(true);
     await onRefresh();
     await loadGrowthStats();
+    await loadRecentActivities();
     setIsRefreshing(false);
   };
 
@@ -76,36 +94,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       pendingApprovals: stats.pendingApprovals,
       growth: growthStats
     },
-    recentActivity: [
-      {
-        id: '1',
-        type: 'user_registration' as const,
-        description: 'Nuevo usuario registrado: María García',
-        timestamp: 'Hace 2 horas',
-        severity: 'low' as const
-      },
-      {
-        id: '2',
-        type: 'event_created' as const,
-        description: 'Evento creado: "Feria Agropecuaria Nacional 2024"',
-        timestamp: 'Hace 4 horas',
-        severity: 'medium' as const
-      },
-      {
-        id: '3',
-        type: 'payment_received' as const,
-        description: 'Pago recibido: $2,500,000 por evento "Workshop React"',
-        timestamp: 'Hace 6 horas',
-        severity: 'low' as const
-      },
-      {
-        id: '4',
-        type: 'system_alert' as const,
-        description: 'Alto tráfico detectado en el servidor',
-        timestamp: 'Hace 8 horas',
-        severity: 'high' as const
-      }
-    ],
+    recentActivity: recentActivities,
     topOrganizers: [
       {
         id: '1',

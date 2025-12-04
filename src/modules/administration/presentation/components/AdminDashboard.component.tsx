@@ -1,6 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { RefreshCw, Download } from 'lucide-react';
 import { AdminDashboardContent } from './dashboard/AdminDashboardContent.component';
+import { AdminStatsService } from '@shared/lib/api/services/AdminStats.service';
+import { RecentActivityService, RecentActivityItem } from '@shared/lib/api/services/RecentActivity.service';
+import { TopOrganizersService, TopOrganizer } from '@shared/lib/api/services/TopOrganizers.service';
+import { LocationStatsService } from '@shared/lib/api/services/LocationStats.service';
 
 interface AdminStats {
   totalUsers: number;
@@ -38,92 +42,92 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   onSystemAction
 }) => {
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [growthStats, setGrowthStats] = useState({
+    users: 0,
+    events: 0,
+    revenue: 0
+  });
+  const [recentActivities, setRecentActivities] = useState<RecentActivityItem[]>([]);
+  const [topOrganizers, setTopOrganizers] = useState<TopOrganizer[]>([]);
+  const [locationStats, setLocationStats] = useState<Record<string, number>>({});
+
+  // Cargar estadísticas de crecimiento y actividad reciente al montar
+  useEffect(() => {
+    loadGrowthStats();
+    loadRecentActivities();
+    loadTopOrganizers();
+    loadLocationStats();
+  }, [stats]);
+
+  const loadGrowthStats = async () => {
+    try {
+      const growth = await AdminStatsService.getGrowthStats();
+      setGrowthStats(growth);
+    } catch (error) {
+      console.error('Error al cargar estadísticas de crecimiento:', error);
+    }
+  };
+
+  const loadRecentActivities = async () => {
+    try {
+      const activities = await RecentActivityService.getRecentActivities(5);
+      // Formatear timestamps
+      const formattedActivities = activities.map(activity => ({
+        ...activity,
+        timestamp: RecentActivityService.formatTimestamp(activity.timestamp)
+      }));
+      setRecentActivities(formattedActivities);
+    } catch (error) {
+      console.error('Error al cargar actividades recientes:', error);
+    }
+  };
+
+  const loadTopOrganizers = async () => {
+    try {
+      const organizers = await TopOrganizersService.getTopOrganizers(5);
+      setTopOrganizers(organizers);
+    } catch (error) {
+      console.error('Error al cargar top organizadores:', error);
+    }
+  };
+
+  const loadLocationStats = async () => {
+    try {
+      const stats = await LocationStatsService.getTopLocations(5);
+      setLocationStats(stats);
+    } catch (error) {
+      console.error('Error al cargar estadísticas de ubicaciones:', error);
+    }
+  };
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
     await onRefresh();
+    await loadGrowthStats();
+    await loadRecentActivities();
+    await loadTopOrganizers();
+    await loadLocationStats();
     setIsRefreshing(false);
   };
 
-  // Datos de ejemplo más realistas
+  // Datos del dashboard con las estadísticas reales
   const dashboardData = {
     overview: {
-      totalUsers: 2847,
-      totalEvents: 156,
-      totalRevenue: 125000000,
-      activeEvents: 23,
-      pendingApprovals: 5,
-      growth: {
-        users: 12.5,
-        events: 8.3,
-        revenue: 15.2
-      }
+      totalUsers: stats.totalUsers,
+      totalEvents: stats.totalEvents,
+      totalRevenue: stats.totalRevenue,
+      activeEvents: stats.activeEvents,
+      pendingApprovals: stats.pendingApprovals,
+      growth: growthStats
     },
-    recentActivity: [
-      {
-        id: '1',
-        type: 'user_registration' as const,
-        description: 'Nuevo usuario registrado: María García',
-        timestamp: 'Hace 2 horas',
-        severity: 'low' as const
-      },
-      {
-        id: '2',
-        type: 'event_created' as const,
-        description: 'Evento creado: "Feria Agropecuaria Nacional 2024"',
-        timestamp: 'Hace 4 horas',
-        severity: 'medium' as const
-      },
-      {
-        id: '3',
-        type: 'payment_received' as const,
-        description: 'Pago recibido: $2,500,000 por evento "Workshop React"',
-        timestamp: 'Hace 6 horas',
-        severity: 'low' as const
-      },
-      {
-        id: '4',
-        type: 'system_alert' as const,
-        description: 'Alto tráfico detectado en el servidor',
-        timestamp: 'Hace 8 horas',
-        severity: 'high' as const
-      }
-    ],
-    topOrganizers: [
-      {
-        id: '1',
-        name: 'Juan Pérez',
-        events: 12,
-        revenue: 15000000,
-        rating: 4.8
-      },
-      {
-        id: '2',
-        name: 'Ana López',
-        events: 8,
-        revenue: 12000000,
-        rating: 4.9
-      },
-      {
-        id: '3',
-        name: 'Carlos Ruiz',
-        events: 6,
-        revenue: 8500000,
-        rating: 4.7
-      }
-    ],
+    recentActivity: recentActivities,
+    topOrganizers: topOrganizers,
     deviceStats: {
       desktop: 65,
       mobile: 30,
       tablet: 5
     },
-    locationStats: {
-      'Bogotá': 35,
-      'Medellín': 25,
-      'Cali': 20,
-      'Barranquilla': 12,
-      'Otras ciudades': 8
-    }
+    locationStats: locationStats
   };
 
   const formatCurrency = (amount: number) => {

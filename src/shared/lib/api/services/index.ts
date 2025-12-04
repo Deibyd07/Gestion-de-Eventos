@@ -17,6 +17,7 @@ export { AdminStatsService } from './AdminStats.service';
 export { RecentActivityService } from './RecentActivity.service';
 export { TopOrganizersService } from './TopOrganizers.service';
 export { LocationStatsService } from './LocationStats.service';
+export { FinanceService } from './Finance.service';
 
 // Mantener compatibilidad con el archivo original
 export { UserService as ServicioUsuarios } from './User.service';

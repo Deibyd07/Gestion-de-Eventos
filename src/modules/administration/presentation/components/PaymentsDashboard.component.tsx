@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   CreditCard, 
   DollarSign, 
@@ -18,25 +18,25 @@ import {
   BarChart3,
   Globe
 } from 'lucide-react';
+import { FinanceService } from '@shared/lib/api/services/Finance.service';
 
 export const PaymentsDashboard: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'overview' | 'transactions' | 'methods'>('overview');
   const [statusFilter, setStatusFilter] = useState<string>('all');
-
-  // Datos de ejemplo
-  const paymentsData = {
+  const [isLoading, setIsLoading] = useState(true);
+  const [paymentsData, setPaymentsData] = useState({
     overview: {
-      totalRevenue: 125000000,
-      monthlyRevenue: 15000000,
-      pendingPayments: 2500000,
-      failedPayments: 500000,
-      avgTransactionValue: 45000,
-      totalTransactions: 3247,
-      successRate: 96.5,
+      totalRevenue: 0,
+      monthlyRevenue: 0,
+      pendingPayments: 0,
+      failedPayments: 0,
+      avgTransactionValue: 0,
+      totalTransactions: 0,
+      successRate: 0,
       growth: {
-        revenue: 15.2,
-        transactions: 8.7,
-        successRate: 2.1
+        revenue: 0,
+        transactions: 0,
+        successRate: 0
       }
     },
     transactions: [
@@ -140,6 +140,31 @@ export const PaymentsDashboard: React.FC = () => {
         color: 'text-orange-600 bg-orange-100'
       }
     ]
+  });
+
+  // Cargar datos al montar el componente
+  useEffect(() => {
+    loadFinanceData();
+  }, []);
+
+  const loadFinanceData = async () => {
+    try {
+      setIsLoading(true);
+      const financeData = await FinanceService.getFinanceOverview();
+      
+      setPaymentsData(prev => ({
+        ...prev,
+        overview: financeData
+      }));
+    } catch (error) {
+      console.error('Error al cargar datos financieros:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleRefresh = async () => {
+    await loadFinanceData();
   };
 
   const formatCurrency = (amount: number) => {
@@ -198,6 +223,16 @@ export const PaymentsDashboard: React.FC = () => {
 
   return (
     <div className="space-y-4 md:space-y-6 w-full max-w-full">
+      {/* Loading State */}
+      {isLoading && (
+        <div className="flex items-center justify-center py-8">
+          <div className="flex flex-col items-center space-y-3">
+            <RefreshCw className="w-8 h-8 text-blue-600 animate-spin" />
+            <p className="text-sm text-gray-600">Cargando datos financieros...</p>
+          </div>
+        </div>
+      )}
+
       {/* Controls */}
       <div className="flex justify-end items-center">
         <div className="flex flex-row-reverse sm:flex-row gap-2 sm:gap-3">
@@ -205,9 +240,13 @@ export const PaymentsDashboard: React.FC = () => {
             <Download className="w-4 h-4" />
             <span>Exportar</span>
           </button>
-          <button className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-xl hover:from-orange-600 hover:to-red-700 transition-all duration-200 shadow-sm">
-            <RefreshCw className="w-4 h-4" />
-            <span>Actualizar</span>
+          <button 
+            onClick={handleRefresh}
+            disabled={isLoading}
+            className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-xl hover:from-orange-600 hover:to-red-700 transition-all duration-200 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
+            <span>{isLoading ? 'Actualizando...' : 'Actualizar'}</span>
           </button>
         </div>
       </div>

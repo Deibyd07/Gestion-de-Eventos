@@ -330,7 +330,7 @@ export const PaymentsDashboard: React.FC = () => {
                 <span className={`text-xs font-medium ${
                   paymentsData.overview.growth.revenue >= 0 ? 'text-green-700' : 'text-red-700'
                 }`}>
-                  {paymentsData.overview.growth.revenue >= 0 ? '+' : ''}{paymentsData.overview.growth.revenue}%
+                  {paymentsData.overview.growth.revenue >= 0 ? '+' : ''}{paymentsData.overview.growth.revenue}% vs el mes anterior
                 </span>
               </div>
             </div>
@@ -350,7 +350,7 @@ export const PaymentsDashboard: React.FC = () => {
                 <span className={`text-xs font-medium ${
                   paymentsData.overview.growth.transactions >= 0 ? 'text-green-700' : 'text-red-700'
                 }`}>
-                  {paymentsData.overview.growth.transactions >= 0 ? '+' : ''}{paymentsData.overview.growth.transactions}%
+                  {paymentsData.overview.growth.transactions >= 0 ? '+' : ''}{paymentsData.overview.growth.transactions}% vs el mes anterior
                 </span>
               </div>
             </div>
@@ -370,7 +370,7 @@ export const PaymentsDashboard: React.FC = () => {
                 <span className={`text-xs font-medium ${
                   paymentsData.overview.growth.successRate >= 0 ? 'text-green-700' : 'text-red-700'
                 }`}>
-                  {paymentsData.overview.growth.successRate >= 0 ? '+' : ''}{paymentsData.overview.growth.successRate}%
+                  {paymentsData.overview.growth.successRate >= 0 ? '+' : ''}{paymentsData.overview.growth.successRate}% vs el mes anterior
                 </span>
               </div>
             </div>

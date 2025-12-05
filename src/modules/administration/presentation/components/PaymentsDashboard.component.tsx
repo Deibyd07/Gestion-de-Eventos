@@ -326,8 +326,12 @@ export const PaymentsDashboard: React.FC = () => {
               <p className="text-xs md:text-sm font-medium text-green-700 truncate">Ingresos Totales</p>
               <p className="text-lg md:text-2xl font-bold text-green-900">{formatCurrency(paymentsData.overview.totalRevenue)}</p>
               <div className="flex items-center mt-1">
-                <TrendingUp className="w-3 h-3 text-green-600 mr-1" />
-                <span className="text-xs text-green-700 font-medium">+{paymentsData.overview.growth.revenue}%</span>
+                <TrendingUp className={`w-3 h-3 mr-1 ${paymentsData.overview.growth.revenue >= 0 ? 'text-green-600' : 'text-red-600'}`} />
+                <span className={`text-xs font-medium ${
+                  paymentsData.overview.growth.revenue >= 0 ? 'text-green-700' : 'text-red-700'
+                }`}>
+                  {paymentsData.overview.growth.revenue >= 0 ? '+' : ''}{paymentsData.overview.growth.revenue}%
+                </span>
               </div>
             </div>
             <div className="p-2 bg-gradient-to-r from-green-500 to-green-600 rounded-lg shadow-sm flex-shrink-0">
@@ -342,8 +346,12 @@ export const PaymentsDashboard: React.FC = () => {
               <p className="text-xs md:text-sm font-medium text-blue-700 truncate">Transacciones</p>
               <p className="text-lg md:text-2xl font-bold text-blue-900">{paymentsData.overview.totalTransactions.toLocaleString()}</p>
               <div className="flex items-center mt-1">
-                <TrendingUp className="w-3 h-3 text-blue-600 mr-1" />
-                <span className="text-xs text-blue-700 font-medium">+{paymentsData.overview.growth.transactions}%</span>
+                <TrendingUp className={`w-3 h-3 mr-1 ${paymentsData.overview.growth.transactions >= 0 ? 'text-green-600' : 'text-red-600'}`} />
+                <span className={`text-xs font-medium ${
+                  paymentsData.overview.growth.transactions >= 0 ? 'text-green-700' : 'text-red-700'
+                }`}>
+                  {paymentsData.overview.growth.transactions >= 0 ? '+' : ''}{paymentsData.overview.growth.transactions}%
+                </span>
               </div>
             </div>
             <div className="p-2 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg shadow-sm flex-shrink-0">
@@ -358,8 +366,12 @@ export const PaymentsDashboard: React.FC = () => {
               <p className="text-xs md:text-sm font-medium text-purple-700 truncate">Tasa de Éxito</p>
               <p className="text-lg md:text-2xl font-bold text-purple-900">{paymentsData.overview.successRate}%</p>
               <div className="flex items-center mt-1">
-                <TrendingUp className="w-3 h-3 text-green-500 mr-1" />
-                <span className="text-xs text-green-600 font-medium">+{paymentsData.overview.growth.successRate}%</span>
+                <TrendingUp className={`w-3 h-3 mr-1 ${paymentsData.overview.growth.successRate >= 0 ? 'text-green-600' : 'text-red-600'}`} />
+                <span className={`text-xs font-medium ${
+                  paymentsData.overview.growth.successRate >= 0 ? 'text-green-700' : 'text-red-700'
+                }`}>
+                  {paymentsData.overview.growth.successRate >= 0 ? '+' : ''}{paymentsData.overview.growth.successRate}%
+                </span>
               </div>
             </div>
             <div className="p-2 bg-gradient-to-r from-purple-500 to-purple-600 rounded-lg shadow-sm flex-shrink-0">

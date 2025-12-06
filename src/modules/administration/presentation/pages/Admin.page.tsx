@@ -10,6 +10,8 @@ import { PaymentsDashboard } from '../components/PaymentsDashboard.component';
 import { AdminProfilePanel } from '../components/AdminProfilePanel.component';
 import { OrganizerProfilePanel } from '../../../organizers/presentation/components/OrganizerProfilePanel.component';
 import { AdminStatsService } from '@shared/lib/api/services/AdminStats.service';
+import { AnalyticsService } from '@shared/lib/api/services/Analytics.service';
+import { ExportReportService } from '@shared/lib/services/ExportReport.service';
 
 export function AdminPage() {
   const { logout } = useAuthStore();
@@ -17,6 +19,8 @@ export function AdminPage() {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [isLoadingStats, setIsLoadingStats] = useState(true);
+  const [isLoadingAnalytics, setIsLoadingAnalytics] = useState(false);
+  const [analyticsData, setAnalyticsData] = useState<any>(null);
   const [adminStats, setAdminStats] = useState({
     totalUsers: 0,
     totalEvents: 0,
@@ -47,6 +51,13 @@ export function AdminPage() {
     loadDashboardStats();
   }, []);
 
+  // Cargar datos de analytics cuando se accede a la pestaña
+  useEffect(() => {
+    if (activeTab === 'analytics' && !analyticsData) {
+      loadAnalyticsData();
+    }
+  }, [activeTab]);
+
   const loadDashboardStats = async () => {
     try {
       setIsLoadingStats(true);
@@ -62,6 +73,18 @@ export function AdminPage() {
       console.error('Error al cargar estadísticas:', error);
     } finally {
       setIsLoadingStats(false);
+    }
+  };
+
+  const loadAnalyticsData = async () => {
+    try {
+      setIsLoadingAnalytics(true);
+      const data = await AnalyticsService.getAdminAnalyticsData();
+      setAnalyticsData(data);
+    } catch (error) {
+      console.error('Error al cargar datos de analytics:', error);
+    } finally {
+      setIsLoadingAnalytics(false);
     }
   };
 
@@ -290,7 +313,28 @@ export function AdminPage() {
               <UserManagement onViewOrganizerProfile={() => setActiveTab('organizer-profile')} />
             )}
             {activeTab === 'analytics' && (
-              <AnalyticsDashboard data={{ totalEvents: adminStats.totalEvents, totalRevenue: adminStats.totalRevenue, totalAttendees: 1250, conversionRate: 12.5, averageTicketPrice: 35000, topEvents: [{ id: '1', title: 'Feria Agropecuaria', revenue: 2500000, attendees: 150, date: '2024-01-15' }, { id: '2', title: 'Festival de Música', revenue: 1800000, attendees: 200, date: '2024-02-20' }], revenueByMonth: [{ month: 'Enero', revenue: 1500000, events: 5 }, { month: 'Febrero', revenue: 2200000, events: 8 }, { month: 'Marzo', revenue: 1800000, events: 6 }], attendanceTrends: [{ date: '2024-01-15', checkIns: 140, noShows: 10 }, { date: '2024-02-20', checkIns: 180, noShows: 20 }], ticketSalesByType: [{ type: 'General', sales: 100, revenue: 2000000 }, { type: 'VIP', sales: 50, revenue: 1500000 }], geographicData: [{ location: 'Bogotá', events: 45, revenue: 15000000 }, { location: 'Medellín', events: 32, revenue: 12000000 }, { location: 'Cali', events: 28, revenue: 10000000 }, { location: 'Barranquilla', events: 20, revenue: 8000000 }] }} onExportReport={(format) => console.log('Exportando reporte:', format)} onFilterChange={(filters) => console.log('Filtros:', filters)} userRole="admin" />
+              isLoadingAnalytics ? (
+                <div className="flex items-center justify-center h-64">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+                </div>
+              ) : analyticsData ? (
+                <AnalyticsDashboard 
+                  data={analyticsData} 
+                  onExportReport={(format, filters) => {
+                    if (format === 'excel') {
+                      ExportReportService.exportToExcel(analyticsData, filters);
+                    } else if (format === 'pdf') {
+                      console.log('Exportación a PDF próximamente');
+                    }
+                  }}
+                  onFilterChange={(filters) => console.log('Filtros:', filters)} 
+                  userRole="admin" 
+                />
+              ) : (
+                <div className="flex items-center justify-center h-64">
+                  <p className="text-gray-500">No se pudieron cargar los datos de análisis</p>
+                </div>
+              )
             )}
             {activeTab === 'payments' && (
               <PaymentsDashboard />

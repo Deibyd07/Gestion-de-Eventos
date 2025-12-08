@@ -60,6 +60,7 @@ import { QRScannerModal } from '../components/QRScannerModal.component';
 import { AnalyticsService } from '@shared/lib/api/services/Analytics.service';
 import { AttendeeService } from '@shared/lib/api/services/Attendee.service';
 import { Toast } from '@shared/ui/components/Toast/Toast.component';
+import { AllActivityModal } from '../components/AllActivityModal.component';
 
 
 // Event interface removed - using store types
@@ -137,6 +138,7 @@ export function OrganizerDashboard() {
 
   // Actividad reciente del organizador
   const [recentActivity, setRecentActivity] = useState<Array<{ type: 'venta' | 'escaneo' | string; timeISO: string; title: string; description: string; badge?: string; eventTitle?: string }>>([]);
+  const [isAllActivityModalOpen, setIsAllActivityModalOpen] = useState(false);
 
   // Estados para el Toast de notificaciones
   const [showSuccessToast, setShowSuccessToast] = useState(false);
@@ -1442,6 +1444,7 @@ export function OrganizerDashboard() {
                     onNavigateToTab={setActiveTab}
                     formatRevenue={formatRevenue}
                     recentActivity={recentActivity}
+                    onViewAllActivity={() => setIsAllActivityModalOpen(true)}
                   />
                 )}
               </>
@@ -2246,6 +2249,14 @@ export function OrganizerDashboard() {
         isOpen={isQRScannerOpen}
         onClose={() => setIsQRScannerOpen(false)}
         eventId={selectedEventId || undefined}
+      />
+
+      {/* Modal de toda la actividad */}
+      <AllActivityModal
+        isOpen={isAllActivityModalOpen}
+        onClose={() => setIsAllActivityModalOpen(false)}
+        activities={recentActivity}
+        onRefresh={loadRecentActivity}
       />
 
       {/* Toast de éxito */}

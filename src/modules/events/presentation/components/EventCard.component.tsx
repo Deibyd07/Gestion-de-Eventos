@@ -1,9 +1,10 @@
-import { MapPin, Users, Clock, Heart, Share2, ShoppingCart } from 'lucide-react';
+import { MapPin, Users, Clock, Heart, Share2, ShoppingCart, ImageIcon } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Event } from '../../../events/infrastructure/store/Event.store';
 import { useCartStore } from '../../../payments/infrastructure/store/Cart.store';
 import { useNotificationStore } from '../../../notifications/infrastructure/store/Notification.store';
 import { formatPriceDisplay } from '@shared/lib/utils/Currency.utils';
+import { parseDateString } from '@shared/lib/utils/Date.utils';
 import { useAuthStore } from '../../../authentication/infrastructure/store/Auth.store';
 import { FollowOrganizerButton } from '@shared/ui/components/FollowOrganizerButton/FollowOrganizerButton.component';
 
@@ -19,7 +20,7 @@ export function EventCard({ event, viewMode = 'grid', isFavorite = false, onTogg
   const { addNotification } = useNotificationStore();
   const { user } = useAuthStore();
   const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
+    const date = parseDateString(dateString);
     return date.toLocaleDateString('es-ES', {
       day: 'numeric',
       month: 'short'
@@ -128,11 +129,17 @@ export function EventCard({ event, viewMode = 'grid', isFavorite = false, onTogg
       <div className="bg-white rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 border border-gray-200 overflow-hidden group">
         <div className="flex">
           <div className="relative w-48 h-32 flex-shrink-0">
-            <img
-              src={event.image}
-              alt={event.title}
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-            />
+            {event.image ? (
+              <img
+                src={event.image}
+                alt={event.title}
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              />
+            ) : (
+              <div className="w-full h-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center">
+                <ImageIcon className="w-12 h-12 text-gray-400" />
+              </div>
+            )}
             <div className="absolute top-2 left-2 bg-white/95 backdrop-blur-sm px-2 py-1 rounded-lg">
               <div className="text-center">
                 <div className="text-sm font-bold text-gray-900">
@@ -244,11 +251,17 @@ export function EventCard({ event, viewMode = 'grid', isFavorite = false, onTogg
   return (
     <div className="bg-white rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 border border-gray-200 overflow-hidden group h-full flex flex-col">
       <div className="relative h-48 overflow-hidden">
-        <img
-          src={event.image}
-          alt={event.title}
-          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-        />
+        {event.image ? (
+          <img
+            src={event.image}
+            alt={event.title}
+            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+          />
+        ) : (
+          <div className="w-full h-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center">
+            <ImageIcon className="w-16 h-16 text-gray-400" />
+          </div>
+        )}
         
         {/* Date Badge */}
         <div className="absolute top-4 left-4 bg-white/95 backdrop-blur-sm px-3 py-2 rounded-lg">

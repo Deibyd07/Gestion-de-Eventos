@@ -279,20 +279,36 @@ export function HomePage() {
               featuredEvents.map((event) => (
                 <div key={event.id} className="bg-gradient-to-br from-white to-indigo-100/98 backdrop-blur-lg shadow-xl border border-white/20 rounded-2xl overflow-hidden hover:shadow-2xl transition-all duration-300 group transform hover:-translate-y-1 flex flex-col h-full">
                   <div className="relative h-48 overflow-hidden flex-shrink-0">
-                    <img
-                      src={event.image}
-                      alt={event.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
+                    {event.image ? (
+                      <img
+                        src={event.image}
+                        alt={event.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center">
+                        <svg className="w-16 h-16 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                      </div>
+                    )}
                     
                     {/* Date Badge */}
                     <div className="absolute top-4 left-4 bg-white rounded-lg shadow-lg px-3 py-2">
                       <div className="text-center">
                         <div className="text-2xl font-bold text-gray-900 leading-none">
-                          {new Date(event.date).getDate()}
+                          {(() => {
+                            const [year, month, day] = event.date.split('-').map(Number);
+                            const date = new Date(year, month - 1, day);
+                            return date.getDate();
+                          })()}
                         </div>
                         <div className="text-xs text-gray-600 uppercase mt-1">
-                          {new Date(event.date).toLocaleDateString('es-ES', { month: 'short' }).replace('.', '')}
+                          {(() => {
+                            const [year, month, day] = event.date.split('-').map(Number);
+                            const date = new Date(year, month - 1, day);
+                            return date.toLocaleDateString('es-ES', { month: 'short' }).replace('.', '');
+                          })()}
                         </div>
                       </div>
                     </div>
@@ -363,49 +379,6 @@ export function HomePage() {
               </button>
             </div>
           )}
-        </div>
-      </section>
-
-      {/* Testimonials Section */}
-      <section className="py-24 bg-gradient-to-br from-gray-50/80 to-blue-50/80">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
-              Lo que dicen nuestros usuarios
-            </h2>
-            <p className="text-xl text-gray-600">
-              Miles de organizadores y asistentes confían en EventHub
-            </p>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {testimonials.map((testimonial, index) => (
-              <div key={index} className="bg-gradient-to-br from-white to-indigo-100/98 backdrop-blur-lg shadow-xl border border-white/20 rounded-2xl p-8 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
-                <div className="flex items-center mb-6">
-                  <div className="relative">
-                    <img 
-                      src={testimonial.image} 
-                      alt={testimonial.name}
-                      className="w-14 h-14 rounded-full mr-4 ring-4 ring-white shadow-lg"
-                    />
-                    <div className="absolute -bottom-1 -right-2 w-6 h-6 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center border-2 border-white">
-                      <Star className="w-3 h-3 text-white fill-current" />
-                    </div>
-                  </div>
-                  <div>
-                    <h4 className="font-bold text-gray-900">{testimonial.name}</h4>
-                    <p className="text-gray-600 text-sm">{testimonial.role}</p>
-                  </div>
-                </div>
-                <p className="text-gray-700 italic leading-relaxed mb-4">"{testimonial.quote}"</p>
-                <div className="flex text-yellow-400">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="w-5 h-5 fill-current" />
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
         </div>
       </section>
 

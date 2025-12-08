@@ -65,7 +65,120 @@ export class EventService {
       throw error;
     }
     console.log('Eventos devueltos por Supabase:', data?.length, 'eventos');
+    
+    // Calcular asistencia real basada en códigos QR escaneados
+    if (data && data.length > 0) {
+      const eventIds = data.map(e => e.id);
+      const { data: qrEscaneados, error: qrError } = await supabase
+        .from('codigos_qr_entradas')
+        .select('id_evento')
+        .in('id_evento', eventIds)
+        .eq('estado', 'usado');
+      
+      if (!qrError && qrEscaneados) {
+        const asistenciasPorEvento = new Map<string, number>();
+        qrEscaneados.forEach(qr => {
+          const count = asistenciasPorEvento.get(qr.id_evento) || 0;
+          asistenciasPorEvento.set(qr.id_evento, count + 1);
+        });
+        
+        // Actualizar cada evento con la asistencia real
+        data.forEach(evento => {
+          evento.asistentes_reales = asistenciasPorEvento.get(evento.id) || 0;
+        });
+      }
+    }
+    
     return data;
+  }
+
+  // Obtener los 3 eventos con mayor actividad reciente (compras + asistencias)
+  static async obtenerEventosDestacados(limite: number = 3) {
+    try {
+      // 1. Obtener todos los eventos publicados
+      const { data: eventos, error: eventosError } = await supabase
+        .from('eventos')
+        .select(`
+          *,
+          tipos_entrada (*),
+          analiticas_eventos (*)
+        `)
+        .eq('estado', 'publicado')
+        .order('fecha_evento', { ascending: true });
+
+      if (eventosError) throw eventosError;
+      if (!eventos || eventos.length === 0) return [];
+
+      const eventIds = eventos.map(e => e.id);
+
+      // 2. Obtener conteo de compras por evento (últimos 30 días)
+      const treintaDiasAtras = new Date();
+      treintaDiasAtras.setDate(treintaDiasAtras.getDate() - 30);
+
+      const { data: compras, error: comprasError } = await supabase
+        .from('compras')
+        .select('id_evento')
+        .in('id_evento', eventIds)
+        .eq('estado', 'completada')
+        .gte('fecha_creacion', treintaDiasAtras.toISOString());
+
+      if (comprasError) console.error('Error obteniendo compras:', comprasError);
+
+      // 3. Obtener conteo de asistencias por evento (últimos 30 días)
+      const { data: asistencias, error: asistenciasError } = await supabase
+        .from('codigos_qr_entradas')
+        .select('id_evento')
+        .in('id_evento', eventIds)
+        .eq('estado', 'usado')
+        .gte('fecha_escaneado', treintaDiasAtras.toISOString());
+
+      if (asistenciasError) console.error('Error obteniendo asistencias:', asistenciasError);
+
+      // 4. Calcular actividad por evento
+      const actividadPorEvento = new Map<string, number>();
+
+      // Contar compras
+      (compras || []).forEach(c => {
+        const count = actividadPorEvento.get(c.id_evento) || 0;
+        actividadPorEvento.set(c.id_evento, count + 1);
+      });
+
+      // Contar asistencias
+      (asistencias || []).forEach(a => {
+        const count = actividadPorEvento.get(a.id_evento) || 0;
+        actividadPorEvento.set(a.id_evento, count + 1);
+      });
+
+      // 5. Calcular asistencia real por evento
+      const { data: todosQrEscaneados, error: todosQrError } = await supabase
+        .from('codigos_qr_entradas')
+        .select('id_evento')
+        .in('id_evento', eventIds)
+        .eq('estado', 'usado');
+
+      const asistenciaRealPorEvento = new Map<string, number>();
+      if (!todosQrError && todosQrEscaneados) {
+        todosQrEscaneados.forEach(qr => {
+          const count = asistenciaRealPorEvento.get(qr.id_evento) || 0;
+          asistenciaRealPorEvento.set(qr.id_evento, count + 1);
+        });
+      }
+
+      // 6. Ordenar eventos por actividad y tomar los top 3
+      const eventosConActividad = eventos
+        .map(evento => ({
+          ...evento,
+          actividad: actividadPorEvento.get(evento.id) || 0,
+          asistentes_reales: asistenciaRealPorEvento.get(evento.id) || 0
+        }))
+        .sort((a, b) => b.actividad - a.actividad)
+        .slice(0, limite);
+
+      return eventosConActividad;
+    } catch (error) {
+      console.error('Error obteniendo eventos destacados:', error);
+      throw error;
+    }
   }
 
   static async obtenerCategorias() {

@@ -49,8 +49,7 @@ export class AnalyticsService {
       .from('compras')
       .select('id, id_evento, cantidad, total_pagado, estado, fecha_creacion')
       .in('id_evento', eventIds)
-      .order('fecha_creacion', { ascending: false })
-      .limit(8);
+      .order('fecha_creacion', { ascending: false });
     if (comprasError) throw comprasError;
 
     // 3) Últimos escaneos (asistencias registradas vía QR)
@@ -59,8 +58,7 @@ export class AnalyticsService {
       .select('id_evento, estado, fecha_escaneado')
       .in('id_evento', eventIds)
       .eq('estado', 'usado')
-      .order('fecha_escaneado', { ascending: false })
-      .limit(8);
+      .order('fecha_escaneado', { ascending: false });
     if (scansError) throw scansError;
 
     // Normalizar
@@ -86,8 +84,7 @@ export class AnalyticsService {
 
     // Combinar por fecha
     const combined = [...comprasItems, ...scanItems]
-      .sort((a, b) => new Date(b.timeISO).getTime() - new Date(a.timeISO).getTime())
-      .slice(0, 10);
+      .sort((a, b) => new Date(b.timeISO).getTime() - new Date(a.timeISO).getTime());
 
     return combined;
   }

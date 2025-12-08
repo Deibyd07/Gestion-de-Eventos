@@ -188,14 +188,14 @@ const convertSupabaseEventToEvent = (supabaseEvent: any): Event => {
     id: supabaseEvent.id,
     title: supabaseEvent.titulo,
     description: supabaseEvent.descripcion,
-    image: supabaseEvent.imagen || 'https://images.pexels.com/photos/2608517/pexels-photo-2608517.jpeg?auto=compress&cs=tinysrgb&w=800',
+    image: supabaseEvent.url_imagen || '',
     date: supabaseEvent.fecha_evento,
     time: supabaseEvent.hora_evento,
     location: supabaseEvent.ubicacion,
     category: supabaseEvent.categoria,
     price: precioPorDefecto, // Usar el precio de la entrada general
-    maxAttendees: supabaseEvent.capacidad_maxima || 100,
-    currentAttendees: supabaseEvent.asistentes_actuales || 0,
+    maxAttendees: supabaseEvent.maximo_asistentes || 100,
+    currentAttendees: supabaseEvent.asistentes_reales ?? supabaseEvent.asistentes_actuales ?? 0,
     organizerId: supabaseEvent.id_organizador,
     organizerName: supabaseEvent.nombre_organizador || 'Organizador',
     status: supabaseEvent.estado || 'upcoming',
@@ -418,16 +418,23 @@ export const useEventStore = create<EventState>((set, get) => ({
   loadFeaturedEvents: async () => {
     try {
       set({ loading: true, error: null });
-      const supabaseEvents = await ServicioEventos.obtenerEventos();
       
-      if (supabaseEvents && supabaseEvents.length > 0) {
-        const convertedEvents = supabaseEvents.map(convertSupabaseEventToEvent);
-        // Tomar los primeros 3 eventos como destacados
-        const featured = convertedEvents.slice(0, 3);
-        set({ featuredEvents: featured });
+      // Obtener los 3 eventos con mayor actividad reciente
+      const eventosDestacados = await ServicioEventos.obtenerEventosDestacados(3);
+      
+      if (eventosDestacados && eventosDestacados.length > 0) {
+        const convertedEvents = eventosDestacados.map(convertSupabaseEventToEvent);
+        set({ featuredEvents: convertedEvents });
       } else {
-        // Fallback a eventos mock
-        set({ featuredEvents: mockEvents.slice(0, 3) });
+        // Fallback a eventos normales si no hay actividad
+        const supabaseEvents = await ServicioEventos.obtenerEventos();
+        if (supabaseEvents && supabaseEvents.length > 0) {
+          const convertedEvents = supabaseEvents.map(convertSupabaseEventToEvent);
+          set({ featuredEvents: convertedEvents.slice(0, 3) });
+        } else {
+          // Fallback final a eventos mock
+          set({ featuredEvents: mockEvents.slice(0, 3) });
+        }
       }
     } catch (error) {
       console.error('Error loading featured events:', error);

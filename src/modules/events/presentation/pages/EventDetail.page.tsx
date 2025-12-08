@@ -4,6 +4,7 @@ import { Calendar, MapPin, Clock, Users, Share2, Heart, Plus, Minus, ArrowLeft }
 import { useEventStore } from '../../../events/infrastructure/store/Event.store';
 import { useCartStore } from '../../../payments/infrastructure/store/Cart.store';
 import { formatPriceDisplay } from '@shared/lib/utils/Currency.utils';
+import { parseDateString } from '@shared/lib/utils/Date.utils';
 
 export function EventDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -29,7 +30,7 @@ export function EventDetailPage() {
   }
 
   const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
+    const date = parseDateString(dateString);
     return date.toLocaleDateString('es-ES', {
       weekday: 'long',
       year: 'numeric',

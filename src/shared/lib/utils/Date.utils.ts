@@ -153,6 +153,36 @@ export function fromDatabaseDate(isoString: string): Date {
 }
 
 /**
+ * Parsea una fecha en formato YYYY-MM-DD de la base de datos correctamente
+ * evitando el problema de zona horaria que causa mostrar un día anterior
+ * @param dateString - String de fecha en formato YYYY-MM-DD
+ * @returns Date object con la fecha correcta
+ */
+export function parseDateString(dateString: string): Date {
+  // Si la fecha viene con hora, usar Date directamente
+  if (dateString.includes('T') || dateString.includes(' ')) {
+    return new Date(dateString);
+  }
+  
+  // Para fechas en formato YYYY-MM-DD, parsear manualmente
+  const [year, month, day] = dateString.split('-').map(Number);
+  return new Date(year, month - 1, day);
+}
+
+/**
+ * Formatea una fecha de base de datos para mostrar día y mes corto
+ * @param dateString - String de fecha en formato YYYY-MM-DD
+ * @returns String formateado como "15 ene"
+ */
+export function formatDateShort(dateString: string): string {
+  const date = parseDateString(dateString);
+  return date.toLocaleDateString('es-ES', {
+    day: 'numeric',
+    month: 'short'
+  });
+}
+
+/**
  * Convierte una fecha a formato de base de datos
  * @param date - Fecha a convertir
  * @returns String ISO para base de datos

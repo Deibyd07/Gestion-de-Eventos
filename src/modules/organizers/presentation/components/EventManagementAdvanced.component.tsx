@@ -176,18 +176,19 @@ export const EventManagementAdvanced: React.FC<EventManagementAdvancedProps> = (
       </div>
 
       {/* Events Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4 md:gap-6 w-full">
+      <div className="grid grid-cols-1 gap-3 sm:gap-4 md:gap-6 w-full">
         {sortedEvents.map((event) => {
           const StatusIcon = getStatusIcon(event.status);
           return (
             <div key={event.id} className="bg-gradient-to-br from-white to-indigo-100/98 backdrop-blur-lg shadow-xl border border-white/20 rounded-2xl hover:shadow-2xl transition-all duration-200">
               {/* Event Image */}
-              <div className="relative h-48 bg-gradient-to-br from-blue-500 to-purple-600 rounded-t-2xl">
+              <div className="relative h-48 bg-gradient-to-br from-gray-200 to-gray-300 rounded-t-2xl">
                 {event.image ? (
                   <img src={event.image} alt={event.title} className="w-full h-full object-cover rounded-t-2xl" />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <Image className="w-12 h-12 text-white/50" />
+                  <div className="w-full h-full flex flex-col items-center justify-center">
+                    <Image className="w-16 h-16 text-gray-400 mb-2" />
+                    <span className="text-sm text-gray-500 font-medium">Sin imagen</span>
                   </div>
                 )}
                 <div className="absolute top-4 right-4">

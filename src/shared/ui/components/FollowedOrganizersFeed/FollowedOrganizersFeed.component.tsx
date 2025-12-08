@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { OrganizerFollowService } from '@shared/lib/api/services/OrganizerFollow.service';
 import { EventService } from '@shared/lib/api/services/Event.service';
+import { parseDateString } from '@shared/lib/utils/Date.utils';
 
 interface FollowedOrganizersFeedProps {
   currentUserId: string;
@@ -60,7 +61,7 @@ export const FollowedOrganizersFeed: React.FC<FollowedOrganizersFeedProps> = ({
           });
         }
         // Ordenar por fecha creación descendente si existe, fallback a fecha_evento
-        allEvents.sort((a, b) => new Date(a.fecha_evento).getTime() < new Date(b.fecha_evento).getTime() ? 1 : -1);
+        allEvents.sort((a, b) => parseDateString(a.fecha_evento).getTime() < parseDateString(b.fecha_evento).getTime() ? 1 : -1);
         if (mounted) {
           setEvents(allEvents);
           setEmpty(allEvents.length === 0);
@@ -103,7 +104,7 @@ export const FollowedOrganizersFeed: React.FC<FollowedOrganizersFeedProps> = ({
                   <p className="text-sm text-gray-500 mb-1">{ev.nombre_organizador}</p>
                   <h4 className="text-base font-semibold text-gray-900 truncate">{ev.titulo}</h4>
                   <p className="text-xs text-gray-600 mt-1">
-                    {new Date(ev.fecha_evento).toLocaleDateString('es-ES')} • {ev.hora_evento}
+                    {parseDateString(ev.fecha_evento).toLocaleDateString('es-ES')} • {ev.hora_evento}
                   </p>
                 </div>
                 {ev.url_imagen && (

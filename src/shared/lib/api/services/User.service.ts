@@ -79,23 +79,23 @@ export class UserService {
         .from('usuarios')
         .select('*')
         .eq('correo_electronico', email)
-        .single();
+        .maybeSingle(); // evita 406 cuando no hay filas
 
-      if (error || !data) {
-        throw error || new Error('Usuario no encontrado');
-      }
+      if (error) throw error;
+      if (!data) return null; // no encontrado aún (trigger puede no haber corrido)
       
       // Mapear los campos de la base de datos al formato esperado
       const mappedData = {
         id: (data as any).id,
         correo_electronico: (data as any).correo_electronico,
         nombre: (data as any).nombre_completo, // Mapear nombre_completo a nombre
-        tipo_usuario: (data as any).rol, // Mapear rol a tipo_usuario
+        tipo_usuario: (data as any).tipo_usuario || (data as any).rol, // fallback rol si existe
         ubicacion: (data as any).ubicacion || 'Colombia',
         url_avatar: (data as any).url_avatar,
         preferencias: (data as any).preferencias,
         fecha_creacion: (data as any).fecha_creacion,
-        fecha_actualizacion: (data as any).fecha_actualizacion
+        fecha_actualizacion: (data as any).fecha_actualizacion,
+        email_verified: (data as any).email_verified,
       };
       
       return mappedData;

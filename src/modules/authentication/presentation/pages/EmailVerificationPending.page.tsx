@@ -33,31 +33,72 @@ export const EmailVerificationPendingPage = () => {
     })();
   }, [location.search]);
 
-  // Verificar cada 2 segundos si el email_verified está en true en la BD
+  // Verificar cada 2 segundos si el email fue verificado
   useEffect(() => {
     if (!userEmail) return;
 
+    let intervalId: NodeJS.Timeout;
+    let mounted = true;
+
     const checkEmailVerified = async () => {
       try {
-        // Consultar directamente la tabla usuarios para verificar email_verified
-        const { data, error } = await supabase
-          .from('usuarios')
-          .select('email_verified, id, correo_electronico')
-          .eq('correo_electronico', userEmail)
-          .single();
+        // Primero verificar si hay sesión activa en Supabase Auth
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (session?.user) {
+          // Hay sesión activa, verificar si el email está confirmado en Auth
+          const emailConfirmed = session.user.email_confirmed_at !== null;
+          
+          if (emailConfirmed) {
+            console.log('[EmailVerificationPending] Email confirmado en Auth, verificando usuario en BD...');
+            
+            // Esperar un momento para que el trigger cree el usuario (si está configurado)
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            // Ahora verificar si el usuario existe en la tabla usuarios
+            const { data, error } = await supabase
+              .from('usuarios')
+              .select('email_verified, id, correo_electronico')
+              .eq('correo_electronico', userEmail)
+              .maybeSingle(); // Usar maybeSingle() en lugar de single() para evitar error si no existe
 
-        if (error) {
-          console.error('Error verificando email_verified:', error);
-          return;
-        }
+            if (data && (data as any).email_verified === true) {
+              // Usuario encontrado y verificado
+              console.log('[EmailVerificationPending] Usuario verificado en BD, iniciando sesión...');
+              if (mounted) {
+                clearInterval(intervalId);
+                await loginUserAndRedirect((data as any).correo_electronico);
+              }
+              return;
+            }
+            
+            // Si no existe el usuario pero el email está confirmado, esperar más tiempo
+            // El trigger podría estar tardando en ejecutarse
+            if (!data && emailConfirmed) {
+              console.log('[EmailVerificationPending] Email confirmado pero usuario aún no creado, esperando trigger...');
+            }
+          }
+        } else {
+          // No hay sesión activa, solo verificar la tabla usuarios
+          const { data, error } = await supabase
+            .from('usuarios')
+            .select('email_verified, id, correo_electronico')
+            .eq('correo_electronico', userEmail)
+            .maybeSingle();
 
-        if (data && (data as any).email_verified === true) {
-          // Email verificado en la base de datos, iniciar sesión y redirigir
-          console.log('Email verificado detectado en BD, iniciando sesión...');
-          await loginUserAndRedirect((data as any).correo_electronico);
+          if (!error && data && (data as any).email_verified === true) {
+            console.log('[EmailVerificationPending] Usuario verificado pero sin sesión, redirigiendo a login...');
+              if (mounted) {
+                clearInterval(intervalId);
+                setError('¡Email verificado! Inicia sesión para continuar.');
+                setTimeout(() => {
+                  navigate('/auth/login', { replace: true });
+                }, 2000);
+              }
+          }
         }
       } catch (err) {
-        console.error('Error en checkEmailVerified:', err);
+        console.error('[EmailVerificationPending] Error en checkEmailVerified:', err);
       }
     };
 
@@ -65,10 +106,13 @@ export const EmailVerificationPendingPage = () => {
     checkEmailVerified();
 
     // Luego verificar cada 2 segundos
-    const interval = setInterval(checkEmailVerified, 2000);
+    intervalId = setInterval(checkEmailVerified, 2000);
     
     // Limpiar intervalo al desmontar
-    return () => clearInterval(interval);
+    return () => {
+      mounted = false;
+      clearInterval(intervalId);
+    };
   }, [userEmail, navigate]);
 
   const handleResendEmail = async () => {
@@ -107,39 +151,47 @@ export const EmailVerificationPendingPage = () => {
       console.log('[EmailVerificationPending] Email verificado detectado para:', email);
       
       // IMPORTANTE: Verificar si ya hay una sesión activa de Supabase
-      // La sesión se establece cuando el usuario hace clic en el enlace del correo (AuthCallback)
       const { data: { session } } = await supabase.auth.getSession();
       console.log('[EmailVerificationPending] Sesión de Supabase:', session ? 'Activa' : 'No activa');
 
       if (!session) {
-        // No hay sesión de Supabase, lo cual significa que:
-        // 1. El usuario verificó desde otro dispositivo/navegador
-        // 2. La pestaña del callback se cerró antes de establecer la sesión
-        // 3. El token de sesión expiró
+        // No hay sesión de Supabase, el usuario debe iniciar sesión manualmente
         console.log('[EmailVerificationPending] No hay sesión de Supabase activa');
-        console.log('[EmailVerificationPending] El usuario debe iniciar sesión manualmente');
+        setError('¡Email verificado! Inicia sesión con tu email y contraseña para continuar.');
         
-        setError('¡Email verificado! Por favor, inicia sesión con tu email y contraseña para continuar.');
-        
-        // Redirigir al home después de 4 segundos para que puedan leer el mensaje
         setTimeout(() => {
-          navigate('/', { replace: true });
-        }, 4000);
+          navigate('/auth/login', { replace: true });
+        }, 3000);
         return;
       }
 
-      // Si hay sesión activa, obtener datos del usuario y actualizar el store
+      // Si hay sesión activa, obtener datos del usuario
       console.log('[EmailVerificationPending] Sesión activa, obteniendo datos del usuario...');
       
-      const userData = await ServicioUsuarios.obtenerUsuarioPorEmail(email);
+      // Intentar obtener el usuario, con reintentos si no existe todavía
+      let userData = null;
+      let retries = 3;
+      
+      while (!userData && retries > 0) {
+        userData = await ServicioUsuarios.obtenerUsuarioPorEmail(email);
+        
+        if (!userData) {
+          console.log(`[EmailVerificationPending] Usuario no encontrado, reintentando... (${retries} intentos restantes)`);
+          retries--;
+          if (retries > 0) {
+            await new Promise(resolve => setTimeout(resolve, 2000)); // Esperar 2 segundos
+          }
+        }
+      }
+      
       console.log('[EmailVerificationPending] Datos del usuario desde BD:', userData);
       
       if (!userData) {
-        console.error('[EmailVerificationPending] Usuario no encontrado en la base de datos');
-        setError('Usuario no encontrado. Por favor, inicia sesión manualmente.');
+        console.error('[EmailVerificationPending] Usuario no encontrado después de reintentos');
+        setError('El usuario está verificado pero aún no se creó en la base de datos. Por favor, inicia sesión en unos momentos.');
         setTimeout(() => {
           navigate('/', { replace: true });
-        }, 3000);
+        }, 5000);
         return;
       }
 
@@ -150,9 +202,9 @@ export const EmailVerificationPendingPage = () => {
         'asistente': 'attendee',
       };
       
-      const userRole = roleMapping[userData.tipo_usuario?.toLowerCase()] || 'attendee';
+      const userRole = roleMapping[userData.tipo_usuario?.toLowerCase() || userData.rol?.toLowerCase()] || 'attendee';
 
-      // IMPORTANTE: Limpiar localStorage anterior antes de establecer el nuevo usuario
+      // Limpiar localStorage anterior
       localStorage.removeItem('auth-storage');
       
       // Actualizar el store con los datos completos del nuevo usuario
@@ -172,14 +224,21 @@ export const EmailVerificationPendingPage = () => {
         token: `auth-token-${userData.id}`
       });
 
-      console.log('[EmailVerificationPending] Store actualizado con sesión activa de Supabase');
-      console.log('[EmailVerificationPending] Redirigiendo a /events');
-      navigate('/events', { replace: true });
+      console.log('[EmailVerificationPending] Store actualizado, redirigiendo...');
+      
+      // Redirigir según el rol
+      if (userRole === 'organizer') {
+        navigate('/organizer/dashboard', { replace: true });
+      } else if (userRole === 'admin') {
+        navigate('/admin', { replace: true });
+      } else {
+        navigate('/events', { replace: true });
+      }
     } catch (err) {
       console.error('[EmailVerificationPending] Error al procesar verificación:', err);
-      setError('Email verificado. Por favor, inicia sesión para continuar.');
+      setError('Email verificado. Inicia sesión para continuar.');
       setTimeout(() => {
-        navigate('/', { replace: true });
+        navigate('/auth/login', { replace: true });
       }, 3000);
     }
   };
@@ -283,6 +342,14 @@ export const EmailVerificationPendingPage = () => {
             <div className="inline-flex items-center text-sm text-gray-500">
               <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-purple-600 mr-2"></div>
               Verificando automáticamente...
+            </div>
+            <div className="mt-3">
+              <button
+                onClick={() => navigate('/auth/login')}
+                className="text-sm font-semibold text-purple-700 hover:text-purple-800 underline"
+              >
+                Ir a iniciar sesión
+              </button>
             </div>
           </div>
         </div>

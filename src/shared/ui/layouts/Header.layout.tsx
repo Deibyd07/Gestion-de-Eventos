@@ -66,9 +66,9 @@ export function Header() {
             
             {isAuthenticated && user?.role === 'organizer' && (
               <Link 
-                to="/dashboard" 
+                to="/organizer/dashboard" 
                 className={`flex items-center space-x-1 px-4 py-2 rounded-xl backdrop-blur-sm transition-all duration-200 ${
-                  isActive('/dashboard')
+                  isActive('/organizer/dashboard')
                     ? 'text-white bg-white/20 font-medium shadow-lg border border-white/30'
                     : 'text-white/80 hover:text-white hover:bg-white/10 hover:shadow-lg hover:border hover:border-white/20'
                 }`}
@@ -237,9 +237,9 @@ export function Header() {
               
               {isAuthenticated && user?.role === 'organizer' && (
                 <Link 
-                  to="/dashboard"
+                  to="/organizer/dashboard"
                   className={`block px-4 py-3 rounded-xl text-base font-medium transition-all duration-200 backdrop-blur-sm ${
-                    isActive('/dashboard')
+                    isActive('/organizer/dashboard')
                       ? 'text-white bg-white/20 shadow-lg border border-white/30'
                       : 'text-white/80 hover:text-white hover:bg-white/10 hover:shadow-lg hover:border hover:border-white/20'
                   }`}

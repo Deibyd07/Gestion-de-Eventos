@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Search, Filter, MapPin, Calendar, Users, Clock, Star, TrendingUp, Eye, Heart, Share2 } from 'lucide-react';
+import { Search, Filter, MapPin, Calendar, Users, Clock, Star, TrendingUp, Eye, Share2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useEventStore } from '../../../events/infrastructure/store/Event.store';
 import { useCartStore } from '../../../payments/infrastructure/store/Cart.store';
@@ -10,7 +10,6 @@ export function EventsPage() {
   const [showFilters, setShowFilters] = useState(false);
   const [sortBy, setSortBy] = useState('date');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const [favorites, setFavorites] = useState<string[]>([]);
   const {
     filteredEvents,
     searchQuery,
@@ -41,14 +40,6 @@ export function EventsPage() {
 
   const handleSortChange = (newSortBy: string) => {
     setSortBy(newSortBy);
-  };
-
-  const handleToggleFavorite = (eventId: string) => {
-    setFavorites(prev => 
-      prev.includes(eventId) 
-        ? prev.filter(id => id !== eventId)
-        : [...prev, eventId]
-    );
   };
 
   const handleViewModeChange = (mode: 'grid' | 'list') => {
@@ -283,8 +274,6 @@ export function EventsPage() {
               key={event.id} 
               event={event} 
               viewMode={viewMode}
-              isFavorite={favorites.includes(event.id)}
-              onToggleFavorite={() => handleToggleFavorite(event.id)}
             />
           ))}
         </div>

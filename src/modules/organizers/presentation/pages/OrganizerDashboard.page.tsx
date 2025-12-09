@@ -428,6 +428,7 @@ export function OrganizerDashboard() {
   // Usar datos reales del store
   const { events: storeEvents, setEvents } = useEventStore();
   const [isLoadingEvents, setIsLoadingEvents] = useState(true);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
   
   // Cargar eventos reales del organizador desde Supabase
   useEffect(() => {
@@ -506,7 +507,7 @@ export function OrganizerDashboard() {
   }
   
   // Métricas reales agregadas del organizador
-  const [metricsLoading, setMetricsLoading] = useState(false);
+  const [metricsLoading, setMetricsLoading] = useState(true);
   const [metricsError, setMetricsError] = useState<string | null>(null);
   const [quickStats, setQuickStats] = useState<QuickStats>({
     totalEvents: 0,
@@ -598,6 +599,9 @@ export function OrganizerDashboard() {
       setMetricsError(err.message || 'Error al cargar métricas');
     } finally {
       setMetricsLoading(false);
+      if (isInitialLoad) {
+        setIsInitialLoad(false);
+      }
     }
   };
 
@@ -1178,6 +1182,26 @@ export function OrganizerDashboard() {
       description: 'Gestionar participantes'
     }
   ];
+
+  // Mostrar loader solo en la carga inicial
+  if (isInitialLoad && (isLoadingEvents || metricsLoading)) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="inline-flex items-center justify-center w-20 h-20 mb-6 bg-gradient-to-br from-blue-600 to-purple-600 rounded-2xl shadow-2xl animate-pulse">
+            <Calendar className="w-10 h-10 text-white" />
+          </div>
+          <h2 className="text-2xl font-bold text-gray-800 mb-2">Cargando Dashboard</h2>
+          <p className="text-gray-600 mb-6">Preparando tus eventos y estadísticas...</p>
+          <div className="flex justify-center items-center space-x-2">
+            <div className="w-3 h-3 bg-blue-600 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+            <div className="w-3 h-3 bg-purple-600 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+            <div className="w-3 h-3 bg-pink-600 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 flex overflow-hidden w-full max-w-full">

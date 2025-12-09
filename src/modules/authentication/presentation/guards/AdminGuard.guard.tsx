@@ -16,7 +16,7 @@ export const AdminGuard: React.FC<AdminGuardProps> = ({ children }) => {
         // Si no es admin, redirigir según su rol
         switch (user.role) {
           case 'organizer':
-            navigate('/dashboard');
+            navigate('/organizer/dashboard');
             break;
           case 'attendee':
           default:

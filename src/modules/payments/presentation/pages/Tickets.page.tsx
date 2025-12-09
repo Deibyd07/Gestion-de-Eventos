@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useLocation, Link } from 'react-router-dom';
-import { Calendar, Search, Filter, Download, QrCode, MapPin, Clock, Users, Eye, Ticket, Star, Share2 } from 'lucide-react';
+import { Calendar, Search, Filter, QrCode, MapPin, Clock, Users, Eye, Ticket, Star } from 'lucide-react';
 import { usePurchaseStore } from '../../../payments/infrastructure/store/Purchase.store';
 import { useAuthStore } from '../../../authentication/infrastructure/store/Auth.store';
 import { useEventStore } from '../../../events/infrastructure/store/Event.store';
@@ -337,18 +337,6 @@ export function TicketsPage() {
               <Filter className="w-4 h-4" />
             </button>
           </div>
-
-          {/* Quick Actions */}
-          <div className="flex gap-2">
-            <button className="px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2">
-              <Download className="w-4 h-4" />
-              <span>Descargar Todo</span>
-            </button>
-            <button className="px-4 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors flex items-center space-x-2">
-              <Share2 className="w-4 h-4" />
-              <span>Compartir</span>
-            </button>
-          </div>
         </div>
       </div>
 
@@ -462,25 +450,6 @@ export function TicketsPage() {
                 Limpiar Filtros
               </button>
             )}
-            {/* Panel de diagnóstico cuando no hay resultados */}
-            {!loadingPurchases && purchases.length === 0 && (
-              <div className="w-full max-w-2xl mx-auto bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-left">
-                <div className="font-semibold text-yellow-800 mb-1">Diagnóstico rápido</div>
-                <div className="text-sm text-yellow-700">
-                  <div>UID autenticado: {authUid || 'sin sesión'}</div>
-                  <div>QRs cargados: {qrTickets.length}</div>
-                  <div>Compras cargadas: {purchases.length}</div>
-                </div>
-                <div className="mt-3">
-                  <button
-                    onClick={() => { loadUserQRTickets(); loadUserPurchases(); }}
-                    className="px-4 py-2 bg-yellow-600 text-white rounded-md hover:bg-yellow-700"
-                  >
-                    Reintentar carga
-                  </button>
-                </div>
-              </div>
-            )}
           </div>
         </div>
       )}
@@ -515,24 +484,6 @@ export function TicketsPage() {
           </div>
         </div>
       )}
-
-        {/* Download All Button */}
-        {Object.keys(qrTicketsByEvent).length > 0 && (
-          <div className="text-center mt-12">
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
-              <h3 className="text-xl font-semibold text-gray-900 mb-4">
-                ¿Necesitas todas tus entradas?
-              </h3>
-              <p className="text-gray-600 mb-6">
-                Descarga todas tus entradas en un solo archivo para tenerlas siempre disponibles.
-              </p>
-              <button className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105">
-                <Download className="w-5 h-5 mr-2" />
-                Descargar Todas las Entradas
-              </button>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );

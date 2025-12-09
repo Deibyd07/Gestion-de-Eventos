@@ -29,23 +29,19 @@ export const AuthRedirect: React.FC<AuthRedirectProps> = ({ children }) => {
 
       // Solo redirigir si estamos en la página principal y no hay navegación activa
       if (location.pathname === '/' && !location.state?.fromNavigation) {
-        // Delay para permitir navegación normal
-        const timer = setTimeout(() => {
-          switch (user.role) {
-            case 'admin':
-              navigate('/admin', { replace: true });
-              break;
-            case 'organizer':
-              navigate('/dashboard', { replace: true });
-              break;
-            case 'attendee':
-            default:
-              navigate('/events', { replace: true });
-              break;
-          }
-        }, 3000); // 3 segundos de delay
-        
-        return () => clearTimeout(timer);
+        // Redirigir inmediatamente según el rol
+        switch (user.role) {
+          case 'admin':
+            navigate('/admin', { replace: true });
+            break;
+          case 'organizer':
+            navigate('/organizer/dashboard', { replace: true });
+            break;
+          case 'attendee':
+          default:
+            navigate('/events', { replace: true });
+            break;
+        }
       }
     };
 

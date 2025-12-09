@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { PromoCode, PromoCodeService } from '@shared/lib/api/services/PromoCode.service';
 
 export interface CartItem {
   eventId: string;
@@ -13,11 +14,16 @@ export interface CartItem {
 interface CartState {
   items: CartItem[];
   total: number;
+  promoCode: PromoCode | null;
+  discount: number;
+  finalTotal: number;
   addItem: (item: Omit<CartItem, 'quantity'> & { quantity?: number }) => void;
   removeItem: (eventId: string, ticketTypeId: string) => void;
   updateQuantity: (eventId: string, ticketTypeId: string, quantity: number) => void;
   clearCart: () => void;
   calculateTotal: () => void;
+  applyPromoCode: (codigo: string, eventId: string) => Promise<{ success: boolean; message: string }>;
+  removePromoCode: () => void;
 }
 
 export const useCartStore = create<CartState>()(
@@ -25,6 +31,9 @@ export const useCartStore = create<CartState>()(
     (set, get) => ({
       items: [],
       total: 0,
+      promoCode: null,
+      discount: 0,
+      finalTotal: 0,
 
       addItem: (item) => {
         console.log('🛒 CartStore.addItem llamado:', item);
@@ -80,13 +89,46 @@ export const useCartStore = create<CartState>()(
       },
 
       clearCart: () => {
-        set({ items: [], total: 0 });
+        set({ items: [], total: 0, promoCode: null, discount: 0, finalTotal: 0 });
       },
 
       calculateTotal: () => {
-        const { items } = get();
+        const { items, promoCode } = get();
         const total = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-        set({ total });
+        
+        let discount = 0;
+        let finalTotal = total;
+
+        if (promoCode) {
+          const result = PromoCodeService.calcularDescuento(total, promoCode);
+          discount = result.descuento;
+          finalTotal = result.precioFinal;
+        }
+
+        set({ total, discount, finalTotal });
+      },
+
+      applyPromoCode: async (codigo: string, eventId: string) => {
+        const resultado = await PromoCodeService.validarCodigo(codigo, eventId);
+
+        if (resultado.valido && resultado.codigo) {
+          set({ promoCode: resultado.codigo });
+          get().calculateTotal();
+          return {
+            success: true,
+            message: resultado.mensaje || 'Código aplicado correctamente'
+          };
+        }
+
+        return {
+          success: false,
+          message: resultado.mensaje || 'Código inválido'
+        };
+      },
+
+      removePromoCode: () => {
+        set({ promoCode: null, discount: 0 });
+        get().calculateTotal();
       }
     }),
     {

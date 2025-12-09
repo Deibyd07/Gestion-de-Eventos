@@ -70,7 +70,8 @@ Tabla EVENTOS:
 | `preferencias` | `jsonb` | Preferencias del usuario en formato JSON |
 | `fecha_creacion` | `timestamptz` | Fecha de creación del registro |
 | `fecha_actualizacion` | `timestamptz` | Fecha de última actualización |
-| `contraseña` | `text` | Contraseña del usuario (hash) |
+
+> Las credenciales se gestionan en Supabase Auth; la tabla `usuarios` no almacena contraseñas.
 
 **Relaciones:**
 - Referenciada por: 

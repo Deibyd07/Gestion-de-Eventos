@@ -8,9 +8,11 @@ import { formatPriceDisplay, formatPrice } from '@shared/lib/utils/Currency.util
 import { useAuthStore } from '../../../authentication/infrastructure/store/Auth.store';
 import { PurchaseService } from '@shared/lib/api/services/Purchase.service';
 import { PaymentMethodService } from '@shared/lib/api/services/PaymentMethod.service';
+import { PromoCodeInput } from '../components/PromoCodeInput.component';
+import { PromoCodeService } from '@shared/lib/api/services/PromoCode.service';
 
 export function CheckoutPage() {
-  const { items, total, updateQuantity, removeItem, clearCart } = useCartStore();
+  const { items, total, discount, finalTotal, promoCode, updateQuantity, removeItem, clearCart } = useCartStore();
   const { addNotification } = useNotificationStore();
   const [isProcessing, setIsProcessing] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState('');
@@ -80,28 +82,45 @@ export function CheckoutPage() {
       console.log('🛒 Iniciando checkout...');
       console.log('👤 Usuario:', user);
       console.log('🎫 Items del carrito:', items);
+      console.log('🎟️ Código promocional:', promoCode);
+
+      // Incrementar uso del código promocional si existe
+      if (promoCode) {
+        console.log('📝 Incrementando uso del código promocional...');
+        await PromoCodeService.incrementarUso(promoCode.id);
+      }
 
       // Simular procesamiento de pago
       await new Promise(resolve => setTimeout(resolve, 1200));
 
+      // Calcular el precio con descuento por item
+      const precioConDescuento = discount > 0 ? finalTotal / items.reduce((sum, item) => sum + item.quantity, 0) : 0;
+
       // Crear compras en la BD (una por cada item del carrito)
       const createOrderId = () => `ORD_${new Date().toISOString().replace(/[-:.TZ]/g, '')}_${Math.random().toString(36).slice(2, 10)}`;
-      const createPurchaseQRCode = () => `PURCHASE_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
 
       const purchasePromises = items.map(async (item, index) => {
         const numero_orden = createOrderId();
+        
+        // Calcular precio con descuento proporcional
+        const precioUnitarioFinal = discount > 0 
+          ? (item.price * item.quantity * finalTotal) / total
+          : item.price * item.quantity;
+
         const insert = {
           id_usuario: user.id,
           id_evento: item.eventId,
           id_tipo_entrada: item.ticketTypeId,
           cantidad: item.quantity,
           precio_unitario: Number(item.price),
-          total_pagado: Number(item.price * item.quantity),
+          total_pagado: Number(precioUnitarioFinal),
           estado: 'completada' as const,
           numero_orden,
-          // Algunas bases de datos tienen NOT NULL en codigo_qr; generamos uno único a nivel de compra
-          codigo_qr: createPurchaseQRCode()
-          // codigo_qr se genera automáticamente o se deja null
+          codigo_descuento: promoCode?.codigo || null,
+          descuento_aplicado: discount > 0 ? Number((discount * item.quantity * item.price) / total) : 0,
+          metodo_pago: paymentMethod || 'tarjeta',
+          estado_pago: 'completado',
+          id_transaccion: `TXN_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`
         };
         
         console.log(`📝 Insertando compra ${index + 1}/${items.length}:`, insert);
@@ -277,20 +296,29 @@ export function CheckoutPage() {
                 </div>
                 <h3 className="text-xl font-semibold text-gray-900">Resumen del Pedido</h3>
               </div>
+
+              {/* Código Promocional */}
+              {items.length > 0 && (
+                <div className="mb-6">
+                  <PromoCodeInput eventId={items[0].eventId} />
+                </div>
+              )}
             
             <div className="space-y-3 mb-6">
               <div className="flex justify-between text-gray-600">
                 <span>Subtotal</span>
                 <span>{formatPriceDisplay(total)}</span>
               </div>
-              <div className="flex justify-between text-gray-600">
-                <span>Tasas de servicio</span>
-                <span>{formatPriceDisplay(total * 0.05)}</span>
-              </div>
+              {discount > 0 && (
+                <div className="flex justify-between text-green-600 font-medium">
+                  <span>Descuento</span>
+                  <span>-{formatPriceDisplay(discount)}</span>
+                </div>
+              )}
               <div className="border-t border-gray-200 pt-3">
                 <div className="flex justify-between text-lg font-semibold text-gray-900">
                   <span>Total</span>
-                  <span>{formatPriceDisplay(total + total * 0.05)}</span>
+                  <span>{formatPriceDisplay(discount > 0 ? finalTotal : total)}</span>
                 </div>
               </div>
             </div>
@@ -394,7 +422,7 @@ export function CheckoutPage() {
                     Procesando...
                   </span>
                 ) : (
-                  `Pagar ${formatPriceDisplay(total + total * 0.05)}`
+                  `Pagar ${formatPriceDisplay(discount > 0 ? finalTotal : total)}`
                 )}
               </button>
 

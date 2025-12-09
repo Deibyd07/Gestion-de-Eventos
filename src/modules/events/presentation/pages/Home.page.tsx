@@ -62,7 +62,7 @@ export function HomePage() {
       if (user?.role === 'admin') {
         navigate('/admin', { state: { fromNavigation: true } });
       } else if (user?.role === 'organizer') {
-        navigate('/dashboard', { state: { fromNavigation: true } });
+        navigate('/organizer/dashboard', { state: { fromNavigation: true } });
       } else {
         navigate('/events', { state: { fromNavigation: true } });
       }

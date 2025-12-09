@@ -43,28 +43,34 @@ export function LoginRequiredModal({
   useEffect(() => {
     if (isLoggingIn && isAuthenticated && user) {
       setIsAuthenticating(true);
-      // Para organizadores, esperar un poco más antes de marcar como redirigiendo
-      const delay = user.role === 'organizer' ? 1000 : 500;
+      // Redirigir inmediatamente según el rol
       const timer = setTimeout(() => {
         setIsRedirecting(true);
-      }, delay);
+        // Navegar según el rol del usuario
+        if (user.role === 'organizer') {
+          navigate('/organizer/dashboard');
+        } else if (user.role === 'admin') {
+          navigate('/admin');
+        } else {
+          navigate('/events');
+        }
+      }, 300);
       
       return () => clearTimeout(timer);
     }
-  }, [isLoggingIn, isRegistering, isAuthenticated, user]);
+  }, [isLoggingIn, isRegistering, isAuthenticated, user, navigate]);
 
   // Efecto para cerrar el modal cuando la redirección se complete
   useEffect(() => {
     if (isRedirecting) {
-      // Esperar más tiempo para organizadores ya que tienen redirección más compleja
-      const delay = user?.role === 'organizer' ? 4000 : 2500;
+      // Cerrar el modal después de un breve delay
       const timer = setTimeout(() => {
         onClose();
-      }, delay);
+      }, 1500);
       
       return () => clearTimeout(timer);
     }
-  }, [isRedirecting, onClose, user?.role]);
+  }, [isRedirecting, onClose]);
 
   // Efecto para abrir directamente el formulario de registro si defaultToRegister es true
   useEffect(() => {

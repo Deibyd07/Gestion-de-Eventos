@@ -73,8 +73,7 @@ CREATE TABLE usuarios (
     url_avatar TEXT,
     preferencias JSONB DEFAULT '{}',
     fecha_creacion TIMESTAMPTZ DEFAULT NOW(),
-    fecha_actualizacion TIMESTAMPTZ DEFAULT NOW(),
-    contraseña TEXT NOT NULL
+    fecha_actualizacion TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- Tabla de eventos
@@ -638,13 +637,11 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 INSERT INTO usuarios (
     correo_electronico, 
     nombre_completo, 
-    rol, 
-    contraseña
+    rol
 ) VALUES (
     'admin@eventhub.com',
     'Administrador del Sistema',
-    'administrador',
-    '$2a$10$rQZ8K9mN2pL3sT4uV5wX6yZ7A8B9C0D1E2F3G4H5I6J7K8L9M0N1O2P3Q4R5S6T7U8V9W0X1Y2Z3'
+    'administrador'
 );
 
 -- Insertar configuraciones del sistema

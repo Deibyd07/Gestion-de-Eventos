@@ -12,6 +12,7 @@
 DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 DROP FUNCTION IF EXISTS public.handle_new_user();
 DROP FUNCTION IF EXISTS public.migrar_usuario_a_auth(TEXT, TEXT);
+DROP FUNCTION IF EXISTS public.migrar_usuario_a_auth(TEXT);
 DROP FUNCTION IF EXISTS public.sincronizar_id_con_auth(TEXT);
 DROP FUNCTION IF EXISTS public.finalizar_migracion_auth();
 DROP VIEW IF EXISTS public.estado_migracion_usuarios;
@@ -62,9 +63,9 @@ BEGIN
   -- Si existe una fila legacy con el mismo correo pero distinto id (caso migración), actualizarla al nuevo id.
   UPDATE public.usuarios
     SET id = NEW.id,
-        telefono = COALESCE(NEW.phone, NEW.raw_user_meta_data->>'telefono', usuarios.telefono),
-        ubicacion = COALESCE(NEW.raw_user_meta_data->>'ubicacion', usuarios.ubicacion, 'Colombia'),
-        fecha_actualizacion = NOW()
+      telefono = COALESCE(NEW.phone, NEW.raw_user_meta_data->>'telefono', usuarios.telefono),
+      ubicacion = COALESCE(NEW.raw_user_meta_data->>'ubicacion', usuarios.ubicacion, 'Colombia'),
+      fecha_actualizacion = NOW()
   WHERE correo_electronico = v_email AND id <> NEW.id;
 
   RETURN NEW;
@@ -101,8 +102,8 @@ ALTER TABLE usuarios ALTER COLUMN id SET NOT NULL;
 -- Paso 3.5: Recrear la primary key
 ALTER TABLE usuarios ADD PRIMARY KEY (id);
 
--- Paso 3.6: Hacer el campo contraseña NULLABLE (para migración gradual)
-ALTER TABLE usuarios ALTER COLUMN contraseña DROP NOT NULL;
+-- Paso 3.6: Eliminar el campo contraseña (legacy)
+ALTER TABLE usuarios DROP COLUMN IF EXISTS contraseña;
 
 COMMENT ON COLUMN usuarios.id IS 'ID sincronizado con auth.users - El mismo UUID de Supabase Auth';
 
@@ -114,10 +115,9 @@ ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS migrado_a_auth BOOLEAN DEFAULT FAL
 -- =====================================================
 -- Esta función migra un usuario existente creando su cuenta en Auth y actualizando su ID
 -- Asegurar recreación limpia
-DROP FUNCTION IF EXISTS public.migrar_usuario_a_auth(TEXT, TEXT);
+DROP FUNCTION IF EXISTS public.migrar_usuario_a_auth(TEXT);
 CREATE OR REPLACE FUNCTION public.migrar_usuario_a_auth(
-  p_email TEXT,
-  p_password TEXT
+  p_email TEXT
 ) RETURNS TEXT AS $$
 DECLARE
   v_old_user_id UUID;
@@ -133,8 +133,7 @@ BEGIN
   -- Nota: La creación en auth.users debe hacerse desde la aplicación
   -- Esta función solo marca el usuario como migrado
   UPDATE usuarios 
-  SET migrado_a_auth = TRUE, 
-      contraseña = NULL  -- Limpiar contraseña en texto plano
+  SET migrado_a_auth = TRUE
   WHERE correo_electronico = p_email;
   
   RETURN FORMAT('Usuario %s marcado como migrado. Debe crear/vincular cuenta en Supabase Auth.', p_email);
@@ -177,8 +176,7 @@ BEGIN
   -- NOTA: Esto puede fallar si hay foreign keys. En ese caso hay que actualizarlas primero
   UPDATE usuarios 
   SET id = v_auth_id,
-      migrado_a_auth = TRUE,
-      contraseña = NULL
+      migrado_a_auth = TRUE
   WHERE correo_electronico = p_email;
   
   GET DIAGNOSTICS v_affected = ROW_COUNT;
@@ -207,10 +205,6 @@ SELECT
     WHEN au.id IS NOT NULL AND u.id != au.id THEN 'ID NO coincide (requiere migración)'
     ELSE 'No existe en Auth'
   END as estado_auth,
-  CASE 
-    WHEN u.contraseña IS NOT NULL THEN 'Tiene contraseña en texto plano'
-    ELSE 'Sin contraseña en tabla'
-  END as estado_password,
   au.id as auth_user_id
 FROM usuarios u
 LEFT JOIN auth.users au ON u.correo_electronico = au.email;
@@ -262,6 +256,6 @@ $$ LANGUAGE plpgsql;
 
 -- Comentarios de metadata
 COMMENT ON FUNCTION public.handle_new_user() IS 'Sincroniza automáticamente usuarios de auth.users a public.usuarios';
-COMMENT ON FUNCTION public.migrar_usuario_a_auth(TEXT, TEXT) IS 'Migra un usuario existente a Supabase Auth (debe ejecutarse con la contraseña del usuario)';
+COMMENT ON FUNCTION public.migrar_usuario_a_auth(TEXT) IS 'Marca a un usuario existente como migrado y sincronizado con Supabase Auth.';
 COMMENT ON FUNCTION public.finalizar_migracion_auth() IS 'Elimina columnas de contraseña cuando todos los usuarios estén migrados';
 COMMENT ON VIEW public.estado_migracion_usuarios IS 'Vista para monitorear el progreso de la migración a Supabase Auth';

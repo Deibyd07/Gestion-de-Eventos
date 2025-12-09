@@ -1,6 +1,7 @@
 import QRCode from 'qrcode';
 import { supabase } from '../api/supabase';
 import crypto from 'crypto-js';
+import { getCurrentColombiaISOString } from '../utils/Date.utils';
 
 export interface QRTicketData {
   ticketId: string;
@@ -146,6 +147,7 @@ export class QRCodeService {
         id_usuario: data.userId,
         codigo_qr: secureCode,
         numero_entrada: data.ticketNumber,
+        fecha_generacion: getCurrentColombiaISOString(), // Usar hora de Colombia
         datos_qr: {
           ticket_id: data.ticketId,
           event_title: data.eventTitle,

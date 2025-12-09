@@ -32,6 +32,8 @@
     "@types/three": "^0.180.0",
     "crypto-js": "^4.2.0",
     "html5-qrcode": "^2.3.8",
+    "jspdf": "^2.5.2",
+    "jspdf-autotable": "^3.8.4",
     "jsqr": "^1.4.0",
     "lucide-react": "^0.344.0",
     "qrcode": "^1.5.4",

@@ -58,7 +58,7 @@ import { formatRevenue } from '@shared/lib/utils/Currency.utils';
 import { EventService } from '@shared/lib/api/services/Event.service';
 import { QRScannerModal } from '../components/QRScannerModal.component';
 import { AnalyticsService } from '@shared/lib/api/services/Analytics.service';
-import { AttendeeService } from '@shared/lib/api/services/Attendee.service';
+import { AttendeeService, type AttendeeRow } from '@shared/lib/api/services/Attendee.service';
 import { Toast } from '@shared/ui/components/Toast/Toast.component';
 import { AllActivityModal } from '../components/AllActivityModal.component';
 
@@ -135,6 +135,7 @@ export function OrganizerDashboard() {
     attendanceRate: 0,
     recentScans: [] as Array<{ name: string; time: string }>
   });
+  const [isExportingReport, setIsExportingReport] = useState<string | null>(null);
 
   // Actividad reciente del organizador
   const [recentActivity, setRecentActivity] = useState<Array<{ type: 'venta' | 'escaneo' | string; timeISO: string; title: string; description: string; badge?: string; eventTitle?: string }>>([]);
@@ -745,6 +746,262 @@ export function OrganizerDashboard() {
       });
     } catch (error) {
       console.error('Error al cargar estadísticas de asistencia:', error);
+    }
+  };
+
+  const formatDateTime = (iso?: string | null) => {
+    if (!iso) return '—';
+    const date = new Date(iso);
+    if (Number.isNaN(date.getTime())) return '—';
+    return date.toLocaleString('es-CO', { dateStyle: 'short', timeStyle: 'short' });
+  };
+
+  const formatCurrency = (value?: number | null) => {
+    const amount = typeof value === 'number' && !Number.isNaN(value) ? value : 0;
+    return new Intl.NumberFormat('es-CO', {
+      style: 'currency',
+      currency: 'COP',
+      minimumFractionDigits: 0
+    }).format(amount);
+  };
+
+  const revenuePerAttendee = (attendee: AttendeeRow) => {
+    const quantity = attendee.purchaseQuantity && attendee.purchaseQuantity > 0 ? attendee.purchaseQuantity : 1;
+    if (typeof attendee.purchaseTotalPaid === 'number' && quantity > 0) {
+      return attendee.purchaseTotalPaid / quantity;
+    }
+    if (typeof attendee.ticketPrice === 'number') {
+      return attendee.ticketPrice;
+    }
+    return 0;
+  };
+
+  const fetchAttendeesForSelectedEvent = async () => {
+    if (!user?.id) throw new Error('No hay usuario autenticado');
+    if (!selectedEventId) throw new Error('Selecciona un evento para exportar');
+    const attendees = await AttendeeService.getOrganizerAttendees(user.id, selectedEventId);
+    if (!attendees || attendees.length === 0) {
+      throw new Error('No hay asistentes para este evento');
+    }
+    return attendees;
+  };
+
+  const exportToExcel = async (sheets: Array<{ name: string; rows: Record<string, any>[] }>, fileName: string) => {
+    const XLSX = await import('xlsx');
+    const workbook = XLSX.utils.book_new();
+
+    sheets.forEach((sheet) => {
+      const sanitizedRows = sheet.rows.length > 0 ? sheet.rows : [{ Nota: 'Sin datos disponibles' }];
+      const worksheet = XLSX.utils.json_to_sheet(sanitizedRows);
+      XLSX.utils.book_append_sheet(workbook, worksheet, sheet.name);
+    });
+
+    XLSX.writeFile(workbook, fileName);
+  };
+
+  const exportTablesToPdf = async (
+    title: string,
+    tables: Array<{ headers: string[]; rows: Array<Array<string | number>> }>,
+    fileName: string
+  ) => {
+    const { jsPDF } = await import('jspdf');
+    const autoTable = (await import('jspdf-autotable')).default;
+    const doc = new jsPDF();
+
+    doc.setFontSize(14);
+    doc.text(title, 14, 16);
+
+    let startY = 22;
+    tables.forEach((table) => {
+      const tableRows = table.rows.length > 0 ? table.rows : [['Sin datos', '—']];
+      autoTable(doc, {
+        startY,
+        head: [table.headers],
+        body: tableRows,
+        styles: { fontSize: 8 }
+      });
+      const lastTable = (doc as any).lastAutoTable;
+      startY = lastTable?.finalY ? lastTable.finalY + 10 : startY + 10;
+    });
+
+    doc.save(fileName);
+  };
+
+  const buildTicketBreakdown = (attendees: AttendeeRow[]) => {
+    const map = new Map<string, { ticketType: string; asistentes: number; escaneados: number; revenue: number }>();
+
+    attendees.forEach((att) => {
+      const key = att.ticketType || 'Sin tipo';
+      const current = map.get(key) || { ticketType: key, asistentes: 0, escaneados: 0, revenue: 0 };
+      current.asistentes += 1;
+      if (att.estado_qr === 'usado') current.escaneados += 1;
+      current.revenue += revenuePerAttendee(att);
+      map.set(key, current);
+    });
+
+    return Array.from(map.values());
+  };
+
+  const handleExportAttendanceReport = async (
+    type: 'event' | 'general' | 'financial',
+    format: 'pdf' | 'excel'
+  ) => {
+    try {
+      setIsExportingReport(`${type}-${format}`);
+      const attendees = await fetchAttendeesForSelectedEvent();
+      const eventTitle = selectedEvent?.title || attendees[0]?.eventTitle || 'evento';
+      const fileSafeTitle = eventTitle.replace(/[^a-zA-Z0-9-_]+/g, '_');
+
+      const total = attendees.length;
+      const checkedIn = attendees.filter((a) => a.estado_qr === 'usado').length;
+      const pending = attendees.filter((a) => a.estado_qr === 'activo').length;
+      const canceled = attendees.filter((a) => a.estado_qr === 'cancelado' || a.estado_qr === 'expirado').length;
+      const ticketBreakdown = buildTicketBreakdown(attendees);
+
+      if (type === 'event') {
+        const rows = attendees.map((a) => ({
+          Evento: eventTitle,
+          Nombre: a.name || 'Sin nombre',
+          Correo: a.email || 'Sin correo',
+          Estado: a.estado_qr,
+          'Tipo de entrada': a.ticketType || 'N/A',
+          Precio: revenuePerAttendee(a),
+          'N.º Orden': a.purchaseOrderNumber || '—',
+          'Fecha compra': formatDateTime(a.purchaseDate),
+          'Fecha escaneo': a.fecha_escaneado ? formatDateTime(a.fecha_escaneado) : 'No escaneado'
+        }));
+
+        if (format === 'excel') {
+          await exportToExcel([{ name: 'Asistentes', rows }], `reporte_evento_${fileSafeTitle}.xlsx`);
+        } else {
+          await exportTablesToPdf(
+            `Reporte por evento - ${eventTitle}`,
+            [
+              {
+                headers: ['Nombre', 'Correo', 'Estado', 'Entrada', 'Orden', 'Compra', 'Escaneo'],
+                rows: rows.map((r) => [
+                  r.Nombre,
+                  r.Correo,
+                  r.Estado,
+                  r['Tipo de entrada'],
+                  r['N.º Orden'],
+                  r['Fecha compra'],
+                  r['Fecha escaneo']
+                ])
+              }
+            ],
+            `reporte_evento_${fileSafeTitle}.pdf`
+          );
+        }
+      } else if (type === 'general') {
+        const summaryRows = [
+          { Indicador: 'Total asistentes', Valor: total },
+          { Indicador: 'Check-ins', Valor: checkedIn },
+          { Indicador: 'Pendientes', Valor: pending },
+          { Indicador: 'Cancelados / expirados', Valor: canceled },
+          { Indicador: 'Tasa de asistencia', Valor: total > 0 ? `${Math.round((checkedIn / total) * 100)}%` : '0%' }
+        ];
+
+        if (format === 'excel') {
+          await exportToExcel(
+            [
+              { name: 'Resumen', rows: summaryRows },
+              {
+                name: 'Por tipo de entrada',
+                rows: ticketBreakdown.map((t) => ({
+                  'Tipo de entrada': t.ticketType,
+                  Asistentes: t.asistentes,
+                  Escaneados: t.escaneados,
+                  Participacion: total > 0 ? `${((t.asistentes / total) * 100).toFixed(1)}%` : '0%'
+                }))
+              }
+            ],
+            `estadisticas_generales_${fileSafeTitle}.xlsx`
+          );
+        } else {
+          await exportTablesToPdf(
+            `Estadísticas de asistencia - ${eventTitle}`,
+            [
+              {
+                headers: ['Indicador', 'Valor'],
+                rows: summaryRows.map((r) => [r.Indicador, String(r.Valor)])
+              },
+              {
+                headers: ['Tipo de entrada', 'Asistentes', 'Escaneados', 'Participación'],
+                rows: ticketBreakdown.map((t) => [
+                  t.ticketType,
+                  t.asistentes,
+                  t.escaneados,
+                  total > 0 ? `${((t.asistentes / total) * 100).toFixed(1)}%` : '0%'
+                ])
+              }
+            ],
+            `estadisticas_generales_${fileSafeTitle}.pdf`
+          );
+        }
+      } else {
+        const totalRevenue = attendees.reduce((sum, a) => sum + revenuePerAttendee(a), 0);
+        const validatedRevenue = attendees
+          .filter((a) => a.estado_qr === 'usado')
+          .reduce((sum, a) => sum + revenuePerAttendee(a), 0);
+        const pendingRevenue = totalRevenue - validatedRevenue;
+
+        const financialRows = [
+          { Indicador: 'Total vendido', Valor: formatCurrency(totalRevenue) },
+          { Indicador: 'Ingresos validados (check-in)', Valor: formatCurrency(validatedRevenue) },
+          { Indicador: 'Ingresos pendientes', Valor: formatCurrency(pendingRevenue) },
+          { Indicador: 'Asistentes con check-in', Valor: checkedIn },
+          { Indicador: 'Asistentes sin escanear', Valor: pending },
+          { Indicador: 'Ticket promedio', Valor: formatCurrency(total > 0 ? totalRevenue / total : 0) }
+        ];
+
+        if (format === 'excel') {
+          await exportToExcel(
+            [
+              { name: 'Resumen financiero', rows: financialRows },
+              {
+                name: 'Ingresos por entrada',
+                rows: ticketBreakdown.map((t) => ({
+                  'Tipo de entrada': t.ticketType,
+                  Asistentes: t.asistentes,
+                  Escaneados: t.escaneados,
+                  'Ingreso estimado': Number(t.revenue.toFixed(2))
+                }))
+              }
+            ],
+            `reporte_financiero_${fileSafeTitle}.xlsx`
+          );
+        } else {
+          await exportTablesToPdf(
+            `Reporte financiero - ${eventTitle}`,
+            [
+              {
+                headers: ['Indicador', 'Valor'],
+                rows: financialRows.map((r) => [r.Indicador, String(r.Valor)])
+              },
+              {
+                headers: ['Tipo de entrada', 'Asistentes', 'Escaneados', 'Ingreso estimado'],
+                rows: ticketBreakdown.map((t) => [
+                  t.ticketType,
+                  t.asistentes,
+                  t.escaneados,
+                  formatCurrency(t.revenue)
+                ])
+              }
+            ],
+            `reporte_financiero_${fileSafeTitle}.pdf`
+          );
+        }
+      }
+
+      setToastMessage('Reporte generado correctamente');
+      setShowSuccessToast(true);
+    } catch (error: any) {
+      console.error('Error al exportar reporte:', error);
+      setToastMessage(error?.message || 'No se pudo generar el reporte');
+      setShowErrorToast(true);
+    } finally {
+      setIsExportingReport(null);
     }
   };
 
@@ -2026,35 +2283,73 @@ export function OrganizerDashboard() {
                 <div className="bg-gradient-to-br from-white to-indigo-100/98 backdrop-blur-lg shadow-xl border border-white/20 rounded-xl md:rounded-2xl p-4 md:p-6">
                   <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-4">
                     <h4 className="font-semibold text-gray-900 text-sm md:text-base">Reportes de Asistencia</h4>
-                    <button className="w-full sm:w-auto inline-flex items-center justify-center px-3 md:px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-600 text-white text-xs md:text-sm rounded-lg md:rounded-xl hover:from-purple-600 hover:to-pink-700 transition-all duration-200">
-                      <FileBarChart className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" />
-                      <span className="truncate">Generar Reporte</span>
-                    </button>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
                       <h5 className="font-medium text-gray-900 mb-2">Reporte por Evento</h5>
                       <p className="text-sm text-gray-600 mb-3">Lista detallada de asistentes por evento</p>
-                      <button className="w-full px-3 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-xl hover:from-blue-600 hover:to-purple-700 transition-all duration-200 text-sm">
-                        <Download className="w-4 h-4 mr-1" />
-                        Descargar
-                      </button>
+                      <div className="grid grid-cols-2 gap-2">
+                        <button
+                          onClick={() => handleExportAttendanceReport('event', 'pdf')}
+                          disabled={!selectedEventId || isExportingReport === 'event-pdf'}
+                          className="px-3 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-xl hover:from-blue-600 hover:to-purple-700 transition-all duration-200 text-sm disabled:opacity-60 disabled:cursor-not-allowed"
+                        >
+                          <Download className="w-4 h-4 mr-1 inline" />
+                          {isExportingReport === 'event-pdf' ? 'Generando...' : 'PDF'}
+                        </button>
+                        <button
+                          onClick={() => handleExportAttendanceReport('event', 'excel')}
+                          disabled={!selectedEventId || isExportingReport === 'event-excel'}
+                          className="px-3 py-2 bg-white text-blue-700 border border-blue-200 rounded-xl hover:bg-blue-50 transition-all duration-200 text-sm disabled:opacity-60 disabled:cursor-not-allowed"
+                        >
+                          <Download className="w-4 h-4 mr-1 inline" />
+                          {isExportingReport === 'event-excel' ? 'Generando...' : 'Excel'}
+                        </button>
+                      </div>
                   </div>
                     <div className="p-4 bg-green-50 rounded-lg border border-green-200">
                       <h5 className="font-medium text-gray-900 mb-2">Estadísticas Generales</h5>
                       <p className="text-sm text-gray-600 mb-3">Métricas y análisis de asistencia</p>
-                      <button className="w-full px-3 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl hover:from-green-600 hover:to-emerald-700 transition-all duration-200 text-sm">
-                        <Download className="w-4 h-4 mr-1" />
-                        Descargar
-                      </button>
+                      <div className="grid grid-cols-2 gap-2">
+                        <button
+                          onClick={() => handleExportAttendanceReport('general', 'pdf')}
+                          disabled={!selectedEventId || isExportingReport === 'general-pdf'}
+                          className="px-3 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl hover:from-green-600 hover:to-emerald-700 transition-all duration-200 text-sm disabled:opacity-60 disabled:cursor-not-allowed"
+                        >
+                          <Download className="w-4 h-4 mr-1 inline" />
+                          {isExportingReport === 'general-pdf' ? 'Generando...' : 'PDF'}
+                        </button>
+                        <button
+                          onClick={() => handleExportAttendanceReport('general', 'excel')}
+                          disabled={!selectedEventId || isExportingReport === 'general-excel'}
+                          className="px-3 py-2 bg-white text-green-700 border border-green-200 rounded-xl hover:bg-green-50 transition-all duration-200 text-sm disabled:opacity-60 disabled:cursor-not-allowed"
+                        >
+                          <Download className="w-4 h-4 mr-1 inline" />
+                          {isExportingReport === 'general-excel' ? 'Generando...' : 'Excel'}
+                        </button>
+                      </div>
                     </div>
                     <div className="p-4 bg-purple-50 rounded-lg border border-purple-200">
                       <h5 className="font-medium text-gray-900 mb-2">Reporte Financiero</h5>
                       <p className="text-sm text-gray-600 mb-3">Reconciliación de ingresos vs asistencia</p>
-                      <button className="w-full px-3 py-2 bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-xl hover:from-orange-600 hover:to-red-700 transition-all duration-200 text-sm">
-                        <Download className="w-4 h-4 mr-1" />
-                        Descargar
-                      </button>
+                      <div className="grid grid-cols-2 gap-2">
+                        <button
+                          onClick={() => handleExportAttendanceReport('financial', 'pdf')}
+                          disabled={!selectedEventId || isExportingReport === 'financial-pdf'}
+                          className="px-3 py-2 bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-xl hover:from-orange-600 hover:to-red-700 transition-all duration-200 text-sm disabled:opacity-60 disabled:cursor-not-allowed"
+                        >
+                          <Download className="w-4 h-4 mr-1 inline" />
+                          {isExportingReport === 'financial-pdf' ? 'Generando...' : 'PDF'}
+                        </button>
+                        <button
+                          onClick={() => handleExportAttendanceReport('financial', 'excel')}
+                          disabled={!selectedEventId || isExportingReport === 'financial-excel'}
+                          className="px-3 py-2 bg-white text-orange-700 border border-orange-200 rounded-xl hover:bg-orange-50 transition-all duration-200 text-sm disabled:opacity-60 disabled:cursor-not-allowed"
+                        >
+                          <Download className="w-4 h-4 mr-1 inline" />
+                          {isExportingReport === 'financial-excel' ? 'Generando...' : 'Excel'}
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>

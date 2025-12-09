@@ -82,7 +82,7 @@ export const OrganizerProfilePanel: React.FC = () => {
             name: dbUser.nombre_completo || user.name || '',
             email: dbUser.correo_electronico || user.email || '',
             location: dbUser.ubicacion || user.preferences?.location || '',
-            organization: dbUser.organizacion || '',
+            organization: user.preferences?.organization || '',
             bio: dbUser.bio || ''
           });
         }
@@ -100,13 +100,15 @@ export const OrganizerProfilePanel: React.FC = () => {
     if (!user?.id) return;
     setIsSaving(true);
     try {
-      const updated = await UserService.actualizarUsuario(user.id, {
+      // Solo enviamos columnas existentes en la tabla usuarios (bio no existe en schema actual)
+      const payload: any = {
         nombre_completo: formData.name,
         correo_electronico: formData.email,
         ubicacion: formData.location,
-        organizacion: formData.organization,
         bio: formData.bio
-      } as any);
+      };
+
+      const updated = await UserService.actualizarUsuario(user.id, payload);
 
       if (updated) {
         updateProfile({
@@ -114,7 +116,7 @@ export const OrganizerProfilePanel: React.FC = () => {
           email: updated.correo_electronico || formData.email,
           preferences: {
             location: updated.ubicacion || formData.location,
-            organization: updated.organizacion || formData.organization,
+            organization: formData.organization,
             bio: updated.bio || formData.bio,
             categories: []
           }

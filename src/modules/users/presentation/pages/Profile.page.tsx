@@ -112,25 +112,53 @@ export function ProfilePage() {
     setIsSaving(true);
     setError(null);
     try {
-      const updated = await UserService.actualizarUsuario(user.id, {
+      const trimmedEmail = formData.email.trim();
+      if (!trimmedEmail) {
+        setError('El correo no puede estar vacío.');
+        setIsSaving(false);
+        return;
+      }
+
+      let emailUpdatePendingConfirmation = false;
+      // Primero intentamos actualizar el email en Supabase Auth; si requiere confirmación, no mostrar error de inmediato
+      if (trimmedEmail !== user.email) {
+        const { data: authData, error: authUpdateError } = await supabase.auth.updateUser({ email: trimmedEmail });
+        if (authUpdateError) {
+          console.warn('No se pudo actualizar email en auth:', authUpdateError.message);
+          setError(authUpdateError.message || 'No se pudo actualizar el email en auth');
+          setIsSaving(false);
+          return;
+        }
+        // Si no hay email_confirmed_at en la respuesta, asumimos que espera confirmación por correo
+        emailUpdatePendingConfirmation = !authData?.user?.email_confirmed_at;
+      }
+
+      const payload: any = {
         nombre_completo: formData.name,
-        correo_electronico: formData.email,
-        ubicacion: formData.location,
-        telefono: formData.phone,
-        organizacion: formData.organization,
+        correo_electronico: trimmedEmail,
         bio: formData.bio
-      } as any);
+      };
+
+      if (formData.location) payload.ubicacion = formData.location;
+      if (formData.phone) payload.telefono = formData.phone;
+
+      const updated = await UserService.actualizarUsuario(user.id, payload);
 
       if (updated) {
         updateProfile({
           name: (updated as any).nombre_completo || formData.name,
-          email: (updated as any).correo_electronico || formData.email,
+          email: (updated as any).correo_electronico || trimmedEmail,
           preferences: {
             location: (updated as any).ubicacion || formData.location,
             categories: []
           }
         });
         setProfileData(updated);
+        // Normalizar email en el formulario tras guardado
+        setFormData((prev) => ({ ...prev, email: trimmedEmail }));
+        if (emailUpdatePendingConfirmation) {
+          setShowSuccess(true);
+        }
       }
       setShowSuccess(true);
       setTimeout(() => setShowSuccess(false), 3000);
@@ -257,6 +285,11 @@ export function ProfilePage() {
     }
   };
 
+  const memberSince = useMemo(() => {
+    const raw = (profileData as any)?.fecha_creacion || (profileData as any)?.created_at || (user as any)?.created_at;
+    return raw ? formatDate(raw) : 'Fecha no disponible';
+  }, [profileData, user]);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50/80 to-blue-50/80 backdrop-blur-sm p-3 sm:p-4 md:p-6">
       <div className="w-full">
@@ -351,7 +384,7 @@ export function ProfilePage() {
                     </p>
                     <div className="flex items-center mt-2 text-blue-100">
                       <Calendar className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
-                      <span className="text-xs sm:text-sm">Miembro desde marzo 2024</span>
+                      <span className="text-xs sm:text-sm">Miembro desde {memberSince}</span>
                     </div>
                   </div>
                 </div>

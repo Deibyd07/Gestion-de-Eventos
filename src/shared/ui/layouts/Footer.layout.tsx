@@ -5,7 +5,7 @@ export function Footer() {
   return (
     <footer className="bg-gray-900 text-white">
       <div className="w-full px-4 sm:px-6 lg:px-8 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {/* Brand Section */}
           <div className="space-y-4">
             <div className="flex items-center space-x-2">
@@ -39,7 +39,7 @@ export function Footer() {
           </div>
 
           {/* Para Asistentes */}
-          <div>
+          <div className="flex flex-col items-center text-center">
             <h3 className="text-lg font-semibold mb-4">Para Asistentes</h3>
             <ul className="space-y-3">
               <li>
@@ -73,46 +73,19 @@ export function Footer() {
             </ul>
           </div>
 
-          {/* Para Organizadores */}
-          <div>
-            <h3 className="text-lg font-semibold mb-4">Para Organizadores</h3>
-            <ul className="space-y-3">
-              <li>
-                <Link to="/events/create" className="text-gray-300 hover:text-white transition-colors duration-200 text-sm">
-                  Crear Evento
-                </Link>
-              </li>
-              <li>
-                <Link to="/organizer/dashboard" className="text-gray-300 hover:text-white transition-colors duration-200 text-sm">
-                  Mi Dashboard
-                </Link>
-              </li>
-              <li>
-                <a href="#" className="text-gray-300 hover:text-white transition-colors duration-200 text-sm">
-                  Gestión de Asistentes
-                </a>
-              </li>
-              <li>
-                <a href="#" className="text-gray-300 hover:text-white transition-colors duration-200 text-sm">
-                  Reportes y Analytics
-                </a>
-              </li>
-            </ul>
-          </div>
-
           {/* Contact Info */}
-          <div>
+          <div className="flex flex-col md:items-end md:text-right">
             <h3 className="text-lg font-semibold mb-4">Contacto</h3>
             <div className="space-y-3">
-              <div className="flex items-center space-x-3">
+              <div className="flex items-center space-x-3 md:justify-end">
                 <Mail className="w-4 h-4 text-gray-400" />
                 <span className="text-gray-300 text-sm">hola@eventhub.com</span>
               </div>
-              <div className="flex items-center space-x-3">
+              <div className="flex items-center space-x-3 md:justify-end">
                 <Phone className="w-4 h-4 text-gray-400" />
                 <span className="text-gray-300 text-sm">+57 3168134245</span>
               </div>
-              <div className="flex items-center space-x-3">
+              <div className="flex items-center space-x-3 md:justify-end">
                 <MapPin className="w-4 h-4 text-gray-400" />
                 <span className="text-gray-300 text-sm">Colombia</span>
               </div>

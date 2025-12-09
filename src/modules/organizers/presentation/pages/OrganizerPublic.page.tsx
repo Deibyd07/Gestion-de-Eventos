@@ -219,7 +219,7 @@ export const OrganizerPublicPage: React.FC = () => {
                   <div className="p-2 bg-purple-100 rounded-lg">
                     <Users className="w-5 h-5 text-purple-600" />
                   </div>
-                  <h2 className="text-xl font-bold text-gray-900">Acerca de</h2>
+                  <h2 className="text-xl font-bold text-gray-900">Biografía</h2>
                 </div>
                 <p className="text-gray-700 leading-relaxed">
                   {organizer.bio || organizer.preferencias?.bio || organizer.descripcion || 'Este organizador aún no ha agregado una biografía.'}

@@ -463,9 +463,7 @@ npm run typecheck    # Verificación de tipos TypeScript
 
 ---
 
-## 🔐 Usuarios de Prueba (Desarrollo)
-
-Solo disponibles si ejecutaste `database/datos_ejemplo.sql`:
+## 🔐 Usuarios de Prueba 
 
 ```
 Administrador:

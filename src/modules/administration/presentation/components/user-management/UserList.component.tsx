@@ -81,7 +81,7 @@ export const UserList: React.FC<UserListProps> = ({
           <div>
             <div className="text-xs">Eventos: {user.eventos_creados || 0}</div>
             <div className="text-xs">Ingresos: {formatCurrency(user.ingresos_generados || 0)}</div>
-            {user.rating && (
+            {!!user.rating && user.rating > 0 && (
               <div className="flex items-center">
                 <Star className="w-3 h-3 text-yellow-400 mr-1" />
                 <span className="text-xs">{user.rating}</span>
@@ -93,9 +93,9 @@ export const UserList: React.FC<UserListProps> = ({
       case 'asistente':
         return (
           <div>
-            <div className="text-xs">Eventos asistidos: {user.eventos_asistidos || 0}</div>
-            <div className="text-xs">Participaciones: {user.eventos_asistidos || 0}</div>
-            {user.rating && (
+            <div className="text-xs">Compras: {user.compras_realizadas || 0}</div>
+            <div className="text-xs">Entradas: {user.total_entradas || 0}</div>
+            {!!user.rating && user.rating > 0 && (
               <div className="flex items-center">
                 <Star className="w-3 h-3 text-yellow-400 mr-1" />
                 <span className="text-xs">{user.rating}</span>
@@ -107,14 +107,9 @@ export const UserList: React.FC<UserListProps> = ({
       case 'admin':
         return (
           <div>
-            <div className="text-xs">Sistema: Activo</div>
-            <div className="text-xs">Permisos: Completo</div>
-            {user.rating && (
-              <div className="flex items-center">
-                <Star className="w-3 h-3 text-yellow-400 mr-1" />
-                <span className="text-xs">{user.rating}</span>
-              </div>
-            )}
+            <div className="text-xs">Acceso: Total</div>
+            <div className="text-xs">Privilegios: Máximo</div>
+            <div className="text-xs">Gestión: Completa</div>
           </div>
         );
       
@@ -123,7 +118,7 @@ export const UserList: React.FC<UserListProps> = ({
           <div>
             <div className="text-xs">Eventos: {user.eventos_creados || 0}</div>
             <div className="text-xs">Actividad: {user.estado}</div>
-            {user.rating && (
+            {!!user.rating && user.rating > 0 && (
               <div className="flex items-center">
                 <Star className="w-3 h-3 text-yellow-400 mr-1" />
                 <span className="text-xs">{user.rating}</span>

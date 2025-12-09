@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, Star, Shield, Crown, Calendar, DollarSign, Users } from 'lucide-react';
+import { X, Star, Shield, Crown, Calendar, DollarSign, Users, UserCheck, Activity } from 'lucide-react';
 
 interface User {
   id: string;
@@ -15,6 +15,7 @@ interface User {
   eventos_creados?: number;
   eventos_asistidos?: number;
   ingresos_generados?: number;
+  compras_realizadas?: number;
   rating?: number;
   verificacion?: boolean;
 }
@@ -117,52 +118,125 @@ export const UserModal: React.FC<UserModalProps> = ({
             </div>
           </div>
 
-          {/* Statistics */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            <div className="bg-blue-50 rounded-lg p-4">
-              <div className="flex items-center mb-2">
-                <Calendar className="w-5 h-5 text-blue-600 mr-2" />
-                <span className="text-sm font-medium text-gray-700">Eventos Creados</span>
-              </div>
-              <p className="text-2xl font-bold text-blue-900">{user.eventos_creados || 0}</p>
-            </div>
-            <div className="bg-green-50 rounded-lg p-4">
-              <div className="flex items-center mb-2">
-                <Users className="w-5 h-5 text-green-600 mr-2" />
-                <span className="text-sm font-medium text-gray-700">Eventos Asistidos</span>
-              </div>
-              <p className="text-2xl font-bold text-green-900">{user.eventos_asistidos || 0}</p>
-            </div>
-            <div className="bg-purple-50 rounded-lg p-4">
-              <div className="flex items-center mb-2">
-                <DollarSign className="w-5 h-5 text-purple-600 mr-2" />
-                <span className="text-sm font-medium text-gray-700">Ingresos Generados</span>
-              </div>
-              <p className="text-2xl font-bold text-purple-900">{formatCurrency(user.ingresos_generados || 0)}</p>
-            </div>
-          </div>
-
-          {/* Rating */}
-          {user.rating && (
-            <div className="bg-yellow-50 rounded-lg p-4 mb-6">
-              <div className="flex items-center mb-2">
-                <Star className="w-5 h-5 text-yellow-600 mr-2" />
-                <span className="text-sm font-medium text-gray-700">Rating</span>
-              </div>
-              <div className="flex items-center">
-                <div className="flex items-center">
-                  {[...Array(5)].map((_, i) => (
-                    <Star
-                      key={i}
-                      className={`w-5 h-5 ${
-                        i < Math.floor(user.rating!) ? 'text-yellow-400' : 'text-gray-300'
-                      }`}
-                    />
-                  ))}
+          {/* Statistics - Mostrar según el rol */}
+          {user.rol === 'organizador' && (
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                <div className="bg-blue-50 rounded-lg p-4">
+                  <div className="flex items-center mb-2">
+                    <Calendar className="w-5 h-5 text-blue-600 mr-2" />
+                    <span className="text-sm font-medium text-gray-700">Eventos Asignados</span>
+                  </div>
+                  <p className="text-2xl font-bold text-blue-900">{user.eventos_creados || 0}</p>
                 </div>
-                <span className="ml-2 text-lg font-semibold text-gray-900">{user.rating}</span>
+                <div className="bg-purple-50 rounded-lg p-4">
+                  <div className="flex items-center mb-2">
+                    <DollarSign className="w-5 h-5 text-purple-600 mr-2" />
+                    <span className="text-sm font-medium text-gray-700">Ingresos Generados</span>
+                  </div>
+                  <p className="text-2xl font-bold text-purple-900">{formatCurrency(user.ingresos_generados || 0)}</p>
+                </div>
+              </div>
+
+              {/* Rating - Solo para organizadores */}
+              {!!user.rating && user.rating > 0 && (
+                <div className="bg-yellow-50 rounded-lg p-4 mb-6">
+                  <div className="flex items-center mb-2">
+                    <Star className="w-5 h-5 text-yellow-600 mr-2" />
+                    <span className="text-sm font-medium text-gray-700">Rating Promedio</span>
+                  </div>
+                  <div className="flex items-center">
+                    <div className="flex items-center">
+                      {[...Array(5)].map((_, i) => (
+                        <Star
+                          key={i}
+                          className={`w-5 h-5 ${
+                            i < Math.floor(user.rating!) ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'
+                          }`}
+                        />
+                      ))}
+                    </div>
+                    <span className="ml-2 text-lg font-semibold text-gray-900">{user.rating.toFixed(1)}</span>
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+
+          {user.rol === 'asistente' && (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+              <div className="bg-green-50 rounded-lg p-4">
+                <div className="flex items-center mb-2">
+                  <Users className="w-5 h-5 text-green-600 mr-2" />
+                  <span className="text-sm font-medium text-gray-700">Eventos Asistidos</span>
+                </div>
+                <p className="text-2xl font-bold text-green-900">{user.eventos_asistidos || 0}</p>
+              </div>
+              <div className="bg-blue-50 rounded-lg p-4">
+                <div className="flex items-center mb-2">
+                  <Calendar className="w-5 h-5 text-blue-600 mr-2" />
+                  <span className="text-sm font-medium text-gray-700">Compras Realizadas</span>
+                </div>
+                <p className="text-2xl font-bold text-blue-900">{user.compras_realizadas || 0}</p>
+              </div>
+              <div className="bg-indigo-50 rounded-lg p-4">
+                <div className="flex items-center mb-2">
+                  <DollarSign className="w-5 h-5 text-indigo-600 mr-2" />
+                  <span className="text-sm font-medium text-gray-700">Total Gastado</span>
+                </div>
+                <p className="text-2xl font-bold text-indigo-900">{formatCurrency(user.ingresos_generados || 0)}</p>
               </div>
             </div>
+          )}
+
+          {user.rol === 'administrador' && (
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div className="bg-purple-50 rounded-lg p-4">
+                  <div className="flex items-center mb-2">
+                    <Shield className="w-5 h-5 text-purple-600 mr-2" />
+                    <span className="text-sm font-medium text-gray-700">Permisos</span>
+                  </div>
+                  <p className="text-lg font-bold text-purple-900">Acceso Total</p>
+                  <p className="text-xs text-gray-600 mt-1">Administrador del sistema</p>
+                </div>
+                <div className="bg-blue-50 rounded-lg p-4">
+                  <div className="flex items-center mb-2">
+                    <Activity className="w-5 h-5 text-blue-600 mr-2" />
+                    <span className="text-sm font-medium text-gray-700">Estado del Sistema</span>
+                  </div>
+                  <p className="text-lg font-bold text-blue-900">Operativo</p>
+                  <p className="text-xs text-gray-600 mt-1">Todos los servicios activos</p>
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <div className="bg-green-50 rounded-lg p-4">
+                  <div className="flex items-center mb-2">
+                    <UserCheck className="w-5 h-5 text-green-600 mr-2" />
+                    <span className="text-sm font-medium text-gray-700">Gestión de Usuarios</span>
+                  </div>
+                  <p className="text-2xl font-bold text-green-900">Completo</p>
+                  <p className="text-xs text-gray-600 mt-1">CRUD total</p>
+                </div>
+                <div className="bg-orange-50 rounded-lg p-4">
+                  <div className="flex items-center mb-2">
+                    <Calendar className="w-5 h-5 text-orange-600 mr-2" />
+                    <span className="text-sm font-medium text-gray-700">Gestión de Eventos</span>
+                  </div>
+                  <p className="text-2xl font-bold text-orange-900">Completo</p>
+                  <p className="text-xs text-gray-600 mt-1">Control total</p>
+                </div>
+                <div className="bg-cyan-50 rounded-lg p-4">
+                  <div className="flex items-center mb-2">
+                    <DollarSign className="w-5 h-5 text-cyan-600 mr-2" />
+                    <span className="text-sm font-medium text-gray-700">Reportes Financieros</span>
+                  </div>
+                  <p className="text-2xl font-bold text-cyan-900">Acceso</p>
+                  <p className="text-xs text-gray-600 mt-1">Vista completa</p>
+                </div>
+              </div>
+            </>
           )}
 
           {/* Activity Dates */}

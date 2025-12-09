@@ -176,42 +176,15 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
     return new Intl.NumberFormat('es-CO').format(num);
   };
 
-  // Función para obtener el color de la medalla
+  // Función para obtener el color de la medalla (uniforme para todos)
   const getMedalColor = (index: number) => {
-    switch(index) {
-      case 0:
-        return {
-          bg: 'bg-gradient-to-br from-yellow-100 to-yellow-200',
-          border: 'border-yellow-400',
-          iconBg: 'bg-gradient-to-br from-yellow-400 to-yellow-500',
-          iconText: 'text-white',
-          shadow: 'shadow-yellow-200'
-        };
-      case 1:
-        return {
-          bg: 'bg-gradient-to-br from-gray-100 to-gray-200',
-          border: 'border-gray-400',
-          iconBg: 'bg-gradient-to-br from-gray-400 to-gray-500',
-          iconText: 'text-white',
-          shadow: 'shadow-gray-200'
-        };
-      case 2:
-        return {
-          bg: 'bg-gradient-to-br from-orange-100 to-orange-200',
-          border: 'border-orange-400',
-          iconBg: 'bg-gradient-to-br from-orange-400 to-orange-500',
-          iconText: 'text-white',
-          shadow: 'shadow-orange-200'
-        };
-      default:
-        return {
-          bg: 'bg-gray-50',
-          border: 'border-gray-200',
-          iconBg: 'bg-blue-100',
-          iconText: 'text-blue-600',
-          shadow: ''
-        };
-    }
+    return {
+      bg: 'bg-white/70',
+      border: 'border-indigo-200',
+      iconBg: 'bg-gray-100',
+      iconText: 'text-gray-800',
+      shadow: 'shadow-sm'
+    };
   };
 
   // Obtener eventos a mostrar
@@ -336,7 +309,7 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
           <div className="flex items-start sm:items-center justify-between gap-2">
             <div className="flex-1 min-w-0">
               <p className="text-xs md:text-sm font-medium text-blue-700 truncate">Total Eventos</p>
-              <p className="text-lg md:text-2xl font-bold text-blue-900">{formatNumber(data.totalEvents)}</p>
+              <p className="text-lg md:text-2xl font-semibold text-blue-900">{formatNumber(data.totalEvents)}</p>
               <p className={`text-xs font-medium flex items-center mt-1 ${data.growth.events >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                 <span className="truncate">{data.growth.events >= 0 ? '+' : ''}{data.growth.events}% vs mes anterior</span>
               </p>
@@ -351,7 +324,7 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
           <div className="flex items-start sm:items-center justify-between gap-2">
             <div className="flex-1 min-w-0">
               <p className="text-xs md:text-sm font-medium text-green-700 truncate">Ingresos Totales</p>
-              <p className="text-lg md:text-2xl font-bold text-green-900">{formatCurrency(data.totalRevenue)}</p>
+              <p className="text-lg md:text-2xl font-semibold text-green-900">{formatCurrency(data.totalRevenue)}</p>
               <p className={`text-xs font-medium flex items-center mt-1 ${data.growth.revenue >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                 <span className="truncate">{data.growth.revenue >= 0 ? '+' : ''}{data.growth.revenue}% vs mes anterior</span>
               </p>
@@ -366,7 +339,7 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
           <div className="flex items-start sm:items-center justify-between gap-2">
             <div className="flex-1 min-w-0">
               <p className="text-xs md:text-sm font-medium text-purple-700 truncate">Total Asistentes</p>
-              <p className="text-lg md:text-2xl font-bold text-purple-900">{formatNumber(data.totalAttendees)}</p>
+              <p className="text-lg md:text-2xl font-semibold text-purple-900">{formatNumber(data.totalAttendees)}</p>
               <p className={`text-xs font-medium flex items-center mt-1 ${data.growth.attendees >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                 <span className="truncate">{data.growth.attendees >= 0 ? '+' : ''}{data.growth.attendees}% vs mes anterior</span>
               </p>
@@ -381,7 +354,7 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
           <div className="flex items-start sm:items-center justify-between gap-2">
             <div className="flex-1 min-w-0">
               <p className="text-xs md:text-sm font-medium text-yellow-700 truncate">Tasa de Conversión</p>
-              <p className="text-lg md:text-2xl font-bold text-yellow-900">{data.conversionRate.toFixed(1)}%</p>
+              <p className="text-lg md:text-2xl font-semibold text-yellow-900">{data.conversionRate.toFixed(1)}%</p>
               <p className={`text-xs font-medium flex items-center mt-1 ${data.growth.conversionRate >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                 <span className="truncate">{data.growth.conversionRate >= 0 ? '+' : ''}{data.growth.conversionRate}% vs mes anterior</span>
               </p>
@@ -421,48 +394,57 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
       <div className="space-y-4">
         {/* Overview Tab */}
         {activeTab === 'overview' && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Top Events */}
-            <div className="bg-gradient-to-br from-white to-indigo-100/98 backdrop-blur-lg shadow-xl border border-white/20 rounded-lg p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-gray-900">Eventos Destacados</h3>
+            <div className="bg-gradient-to-br from-gray-50 via-white to-gray-50 rounded-2xl p-6 sm:p-8 shadow-lg hover:shadow-xl transition-all duration-200">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl font-semibold text-gray-900">Eventos Destacados</h3>
                 {data.topEvents && data.topEvents.length > 3 && (
                   <button
                     onClick={() => setShowAllEvents(!showAllEvents)}
-                    className="text-sm text-blue-600 hover:text-blue-700 font-medium transition-colors"
+                    className="flex items-center gap-1 text-sm text-indigo-600 font-semibold hover:text-indigo-700 transition-colors"
                   >
-                    {showAllEvents ? 'Ver menos' : `Ver todos (${data.topEvents.length})`}
+                    {showAllEvents ? (
+                      <>
+                        <ChevronUp className="w-4 h-4" />
+                        Ver menos
+                      </>
+                    ) : (
+                      <>
+                        <ChevronDown className="w-4 h-4" />
+                        Ver todos ({data.topEvents.length})
+                      </>
+                    )}
                   </button>
                 )}
               </div>
-              <div className="space-y-2">
+              <div className="space-y-3">
                 {data.topEvents && data.topEvents.length > 0 ? (
                   eventsToShow.map((event, index) => {
                     const colors = getMedalColor(index);
                     return (
                       <div 
                         key={event.id} 
-                        className={`flex items-center justify-between p-3 ${colors.bg} border ${colors.border} rounded-lg ${colors.shadow} transition-all duration-200 hover:scale-102`}
+                        className="flex items-center justify-between p-4 bg-gradient-to-r from-white via-gray-50 to-white rounded-xl shadow-sm hover:shadow-md transition-all duration-200"
                       >
-                        <div className="flex items-center space-x-3">
-                          <div className={`w-10 h-10 ${colors.iconBg} rounded-full flex items-center justify-center shadow-md`}>
-                            <span className={`text-base font-bold ${colors.iconText}`}>
+                        <div className="flex items-center space-x-4">
+                          <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center shadow-sm">
+                            <span className={`text-lg ${colors.iconText}`}>
                               {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `#${index + 1}`}
                             </span>
                           </div>
-                          <div>
-                            <p className="font-semibold text-gray-900">{event.title}</p>
-                            <p className="text-xs text-gray-600">{new Date(event.date).toLocaleDateString('es-ES', { 
+                          <div className="flex-1 min-w-0">
+                            <p className="font-semibold text-gray-900 truncate">{event.title}</p>
+                            <p className="text-xs text-gray-600 mt-1">{new Date(event.date).toLocaleDateString('es-ES', { 
                               year: 'numeric', 
                               month: 'long', 
                               day: 'numeric' 
                             })}</p>
                           </div>
                         </div>
-                        <div className="text-right">
-                          <p className="font-bold text-gray-900">{formatCurrency(event.revenue)}</p>
-                          <p className="text-xs text-gray-600">
-                            <Users className="w-3 h-3 inline mr-1" />
+                        <div className="text-right ml-4">
+                          <p className="font-semibold text-lg text-gray-900">{formatCurrency(event.revenue)}</p>
+                          <p className="text-xs text-gray-600 mt-1 flex items-center justify-end">
                             {event.attendees} asistentes
                           </p>
                         </div>
@@ -470,96 +452,108 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
                     );
                   })
                 ) : (
-                  <div className="text-center py-8 text-gray-500">
-                    <p>No hay eventos con ventas disponibles</p>
+                  <div className="text-center py-12 bg-white/50 rounded-xl">
+                    <p className="text-gray-500 font-medium">No hay eventos con ventas disponibles</p>
                   </div>
                 )}
               </div>
             </div>
 
             {/* Revenue Chart */}
-            <div className="bg-gradient-to-br from-white to-indigo-100/98 backdrop-blur-lg shadow-xl border border-white/20 rounded-lg p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Ingresos por Mes</h3>
-              <div className="space-y-2">
-                {data.revenueByMonth.map((month, index) => {
-                  const monthKey = `${month.month}-${month.year}`;
-                  const isExpanded = expandedMonths.has(monthKey);
-                  const maxRevenue = Math.max(...data.revenueByMonth.map(m => m.revenue));
-                  
-                  return (
-                    <div key={index} className="border border-gray-200 rounded-lg overflow-hidden">
-                      {/* Header - Siempre visible */}
-                      <div 
-                        className="p-3 bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 cursor-pointer transition-colors"
-                        onClick={() => toggleMonth(monthKey)}
-                      >
-                        <div className="flex items-center justify-between mb-2">
-                          <div className="flex items-center space-x-2">
-                            <span className="text-sm font-bold text-gray-900">{month.month} {month.year}</span>
-                            <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full">
-                              {month.events} {month.events === 1 ? 'evento' : 'eventos'}
-                            </span>
-                            {month.growthVsPrevMonth !== 0 && (
-                              <span className={`text-xs px-2 py-1 rounded-full ${
-                                month.growthVsPrevMonth > 0 
-                                  ? 'bg-green-100 text-green-700' 
-                                  : 'bg-red-100 text-red-700'
-                              }`}>
-                                {month.growthVsPrevMonth > 0 ? '+' : ''}{month.growthVsPrevMonth.toFixed(1)}%
+            <div className="bg-gradient-to-br from-gray-50 via-white to-gray-50 rounded-2xl p-6 sm:p-8 shadow-lg hover:shadow-xl transition-all duration-200">
+              <div className="flex items-center space-x-3 mb-6">
+                <h3 className="text-xl font-semibold text-gray-900">Ingresos por Mes</h3>
+              </div>
+              <div className="space-y-3">
+                {data.revenueByMonth && data.revenueByMonth.length > 0 ? (
+                  data.revenueByMonth.map((month, index) => {
+                    const monthKey = `${month.month}-${month.year}`;
+                    const isExpanded = expandedMonths.has(monthKey);
+                    const maxRevenue = Math.max(...data.revenueByMonth.map(m => m.revenue));
+                    
+                    return (
+                      <div key={index} className="bg-gradient-to-r from-white via-gray-50 to-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-200">
+                        {/* Header - Siempre visible */}
+                        <div 
+                          className="p-4 bg-gradient-to-r from-emerald-50/80 to-teal-50/80 hover:from-emerald-100/80 hover:to-teal-100/80 cursor-pointer transition-all duration-200"
+                          onClick={() => toggleMonth(monthKey)}
+                        >
+                          <div className="flex items-center justify-between mb-3">
+                            <div className="flex items-center space-x-2 flex-wrap gap-y-1">
+                              <span className="text-sm font-semibold text-gray-900">{month.month} {month.year}</span>
+                              <span className="text-xs bg-emerald-100 text-emerald-700 px-2.5 py-1 rounded-full font-semibold shadow-sm">
+                                {month.events} {month.events === 1 ? 'evento' : 'eventos'}
                               </span>
-                            )}
+                              {month.growthVsPrevMonth !== 0 && (
+                                <span className={`text-xs px-2.5 py-1 rounded-full font-semibold shadow-sm ${
+                                  month.growthVsPrevMonth > 0 
+                                    ? 'bg-green-100 text-green-700' 
+                                    : 'bg-red-100 text-red-700'
+                                }`}>
+                                  {month.growthVsPrevMonth > 0 ? '↑ ' : '↓ '}{Math.abs(month.growthVsPrevMonth).toFixed(1)}%
+                                </span>
+                              )}
+                            </div>
+                            <div className="flex items-center space-x-3">
+                              <span className="text-sm font-semibold text-gray-900 whitespace-nowrap">{formatCurrency(month.revenue)}</span>
+                              {month.events > 0 && (
+                                isExpanded ? 
+                                  <ChevronUp className="w-5 h-5 text-emerald-600" /> : 
+                                  <ChevronDown className="w-5 h-5 text-emerald-600" />
+                              )}
+                            </div>
                           </div>
-                          <div className="flex items-center space-x-3">
-                            <span className="text-sm font-bold text-gray-900">{formatCurrency(month.revenue)}</span>
-                            {month.events > 0 && (
-                              isExpanded ? <ChevronUp className="w-4 h-4 text-gray-500" /> : <ChevronDown className="w-4 h-4 text-gray-500" />
-                            )}
+                          
+                          {/* Barra de progreso */}
+                          <div className="w-full bg-gray-200 rounded-full h-2.5 shadow-inner">
+                            <div
+                              className="bg-gradient-to-r from-emerald-500 to-teal-600 h-2.5 rounded-full transition-all duration-300 shadow-sm"
+                              style={{ width: `${(month.revenue / maxRevenue) * 100}%` }}
+                            />
                           </div>
                         </div>
-                        
-                        {/* Barra de progreso */}
-                        <div className="w-full bg-gray-200 rounded-full h-2">
-                          <div
-                            className="bg-gradient-to-r from-blue-500 to-purple-600 h-2 rounded-full transition-all duration-300"
-                            style={{ width: `${(month.revenue / maxRevenue) * 100}%` }}
-                          />
-                        </div>
-                      </div>
 
-                      {/* Detalles expandibles */}
-                      {isExpanded && month.eventsList.length > 0 && (
-                        <div className="p-3 bg-white border-t border-gray-200">
-                          <p className="text-xs font-semibold text-gray-600 mb-2 uppercase">Eventos del mes:</p>
-                          <div className="space-y-2">
-                            {month.eventsList.map((event, eventIndex) => (
-                              <div 
-                                key={event.id} 
-                                className="flex items-center justify-between p-2 bg-gray-50 rounded hover:bg-gray-100 transition-colors"
-                              >
-                                <div className="flex items-center space-x-2 flex-1 min-w-0">
-                                  <span className="text-xs font-medium text-gray-500 flex-shrink-0">#{eventIndex + 1}</span>
-                                  <span className="text-sm text-gray-900 truncate">{event.title}</span>
-                                </div>
-                                <div className="flex items-center space-x-3 flex-shrink-0">
-                                  <div className="text-right">
-                                    <p className="text-sm font-semibold text-gray-900">{formatCurrency(event.revenue)}</p>
-                                    <p className="text-xs text-gray-500">{event.percentage.toFixed(1)}% del total</p>
+                        {/* Detalles expandibles */}
+                        {isExpanded && month.eventsList.length > 0 && (
+                          <div className="p-4 bg-white/90 border-t-2 border-emerald-100">
+                            <p className="text-xs font-semibold text-emerald-700 mb-3 uppercase tracking-wide">Eventos del mes:</p>
+                            <div className="space-y-2">
+                              {month.eventsList.map((event, eventIndex) => (
+                                <div 
+                                  key={event.id} 
+                                  className="flex items-center justify-between p-3 bg-gradient-to-r from-gray-50 to-emerald-50/30 rounded-lg hover:from-emerald-50 hover:to-emerald-100/50 transition-all duration-200 border border-gray-200 hover:border-emerald-300 hover:shadow-md"
+                                >
+                                  <div className="flex items-center space-x-3 flex-1 min-w-0">
+                                    <div className="w-7 h-7 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-lg flex items-center justify-center shadow-sm flex-shrink-0">
+                                      <span className="text-xs font-semibold text-white">#{eventIndex + 1}</span>
+                                    </div>
+                                    <span className="text-sm font-semibold text-gray-900 truncate">{event.title}</span>
                                   </div>
-                                  <div className="w-16 bg-gray-200 rounded-full h-1.5">
-                                    <div
-                                      className="bg-blue-500 h-1.5 rounded-full"
-                                      style={{ width: `${event.percentage}%` }}
-                                    />
+                                  <div className="flex items-center space-x-3 flex-shrink-0 ml-3">
+                                    <div className="text-right">
+                                      <p className="text-sm font-semibold text-gray-900">{formatCurrency(event.revenue)}</p>
+                                      <p className="text-xs text-emerald-600 font-semibold">{event.percentage.toFixed(1)}% del total</p>
+                                    </div>
+                                    <div className="w-20 bg-gray-200 rounded-full h-2 shadow-inner">
+                                      <div
+                                        className="bg-gradient-to-r from-emerald-500 to-teal-600 h-2 rounded-full shadow-sm"
+                                        style={{ width: `${event.percentage}%` }}
+                                      />
+                                    </div>
                                   </div>
                                 </div>
-                              </div>
-                            ))}
+                              ))}
+                            </div>
                           </div>
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
+                        )}
+                      </div>
+                    );
+                  })
+                ) : (
+                  <div className="text-center py-12 bg-white/50 rounded-xl">
+                    <p className="text-gray-500 font-medium">No hay datos de ingresos disponibles</p>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -574,7 +568,7 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
                 {data.ticketSalesByType && data.ticketSalesByType.length > 3 && (
                   <button
                     onClick={() => setShowAllTicketTypes(!showAllTicketTypes)}
-                    className="flex items-center gap-1 text-sm text-indigo-600 hover:text-indigo-700 font-medium py-1 px-3 rounded-lg hover:bg-indigo-50 transition-colors"
+                    className="flex items-center gap-1 text-sm text-indigo-600 hover:text-indigo-700 font-medium transition-colors"
                   >
                     {showAllTicketTypes ? (
                       <>
@@ -706,7 +700,7 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
                   <div key={index} className="flex items-center justify-between">
                     <div className="flex items-center space-x-3">
                       <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                        <span className="text-sm font-bold text-blue-600">{index + 1}</span>
+                        <span className="text-sm font-semibold text-blue-600">{index + 1}</span>
                       </div>
                       <div>
                         <p className="font-medium text-gray-900">{location.location}</p>

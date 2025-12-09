@@ -112,6 +112,17 @@ export const useAuthStore = create<AuthState>()(
 
       register: async (userData) => {
         try {
+          // 0. Verificar si el correo ya está registrado en la tabla usuarios
+          const { data: existingUser, error: checkError } = await supabase
+            .from('usuarios')
+            .select('correo_electronico')
+            .eq('correo_electronico', userData.email)
+            .maybeSingle();
+
+          if (existingUser) {
+            throw new Error('Este correo electrónico ya está en uso. Por favor usa otro correo o inicia sesión.');
+          }
+
           // 1. Crear usuario en Supabase Auth (encripta contraseña y agrega metadatos)
           const { data: authData, error: authError } = await supabase.auth.signUp({
             email: userData.email,
@@ -129,11 +140,17 @@ export const useAuthStore = create<AuthState>()(
           if (authError) {
             console.error('[Auth.register] Supabase signUp error:', authError);
             // Mensajes de error más específicos según el tipo de error
-            if (authError.message.includes('already registered') || authError.message.includes('already been registered')) {
-              throw new Error('Este correo electrónico ya está registrado');
+            if (authError.message.includes('already registered') || 
+                authError.message.includes('already been registered') ||
+                authError.message.includes('User already registered') ||
+                authError.message.toLowerCase().includes('duplicate')) {
+              throw new Error('Este correo electrónico ya está en uso. Por favor usa otro correo o inicia sesión.');
             }
             if (authError.message.includes('Email rate limit exceeded')) {
               throw new Error('Demasiados intentos. Por favor espera un momento e intenta nuevamente');
+            }
+            if (authError.message.includes('Invalid email')) {
+              throw new Error('El formato del correo electrónico no es válido');
             }
             throw new Error(authError.message || 'Error al crear la cuenta');
           }

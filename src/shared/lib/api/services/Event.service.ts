@@ -415,7 +415,25 @@ export class EventService {
   static async obtenerTodosEventos() {
     const { data, error } = await supabase
       .from('eventos')
-      .select('*');
+      .select(`
+        *,
+        tipos_entrada (*),
+        analiticas_eventos (*),
+        compras (
+          id,
+          cantidad,
+          total_pagado,
+          estado,
+          fecha_creacion,
+          id_usuario
+        ),
+        asistencia_eventos (
+          id,
+          fecha_asistencia,
+          id_usuario
+        )
+      `)
+      .order('fecha_creacion', { ascending: false });
 
     if (error) throw error;
     return data || [];

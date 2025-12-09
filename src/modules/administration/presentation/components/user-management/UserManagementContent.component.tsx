@@ -56,8 +56,6 @@ interface UserManagementContentProps {
   onDeleteUser: (user: User) => void;
   onUpdateUserRole: (user: User) => void;
   onToggleUserStatus: (user: User) => void;
-  onExportUsers: () => void;
-  onImportUsers: () => void;
   onConfirmRoleUpdate: () => void;
   formatCurrency: (amount: number) => string;
   formatDate: (date: string) => string;
@@ -97,8 +95,6 @@ export const UserManagementContent: React.FC<UserManagementContentProps> = ({
   onDeleteUser,
   onUpdateUserRole,
   onToggleUserStatus,
-  onExportUsers,
-  onImportUsers,
   onConfirmRoleUpdate,
   formatCurrency,
   formatDate,

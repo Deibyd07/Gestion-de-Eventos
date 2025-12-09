@@ -107,32 +107,36 @@ export const AllOrganizersModal: React.FC<AllOrganizersModalProps> = ({
                 {organizers.map((organizer, index) => (
                   <div
                     key={organizer.id}
-                    className={`flex items-center justify-between p-4 rounded-lg transition-all border ${
+                    className={`group flex items-center justify-between p-5 rounded-2xl transition-all duration-200 border ${
                       index < 3
-                        ? 'bg-gradient-to-r from-yellow-50 to-orange-50 border-yellow-200 shadow-md'
-                        : 'bg-white hover:bg-gray-50 border-gray-100'
+                        ? 'bg-white/80 backdrop-blur-sm border-white/40 shadow-lg hover:shadow-xl'
+                        : 'bg-white/60 backdrop-blur-sm hover:bg-white/80 border-white/30 shadow-md hover:shadow-lg'
                     }`}
                   >
                     <div className="flex items-center space-x-4">
-                      <div className={`w-10 h-10 ${getMedalColor(index)} rounded-full flex items-center justify-center font-bold text-sm shadow-lg`}>
-                        {index < 3 ? <Trophy className="w-5 h-5" /> : index + 1}
+                      <div className={`w-12 h-12 ${getMedalColor(index)} text-white rounded-2xl flex items-center justify-center font-bold text-base shadow-lg`}>
+                        {index < 3 ? <Trophy className="w-6 h-6" /> : index + 1}
                       </div>
                       <div>
-                        <p className="text-base font-semibold text-gray-900">{organizer.name}</p>
-                        <div className="flex items-center space-x-3 mt-1">
-                          <p className="text-sm text-gray-600">{organizer.events} eventos</p>
-                          {organizer.rating > 0 && (
-                            <div className="flex items-center">
-                              <Star className="w-4 h-4 text-yellow-400 mr-1 fill-yellow-400" />
-                              <span className="text-sm font-medium text-gray-700">{organizer.rating.toFixed(1)}</span>
+                        <p className="text-base font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">{organizer.name}</p>
+                        <div className="flex items-center space-x-3 mt-1.5">
+                          <span className="px-2.5 py-0.5 bg-blue-100 text-blue-700 rounded-lg text-xs font-medium">
+                            {organizer.events} {organizer.events === 1 ? 'evento' : 'eventos'}
+                          </span>
+                          {!!organizer.rating && organizer.rating > 0 && (
+                            <div className="flex items-center bg-yellow-50 px-2.5 py-0.5 rounded-lg">
+                              <Star className="w-3.5 h-3.5 text-yellow-500 mr-1 fill-yellow-500" />
+                              <span className="text-xs font-semibold text-yellow-700">{organizer.rating.toFixed(1)}</span>
                             </div>
                           )}
                         </div>
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="text-lg font-bold text-purple-600">{formatCurrency(organizer.revenue)}</p>
-                      <p className="text-xs text-gray-500 mt-1">Ingresos totales</p>
+                      <p className="text-lg font-bold text-gray-900">
+                        {formatCurrency(organizer.revenue)}
+                      </p>
+                      <p className="text-xs text-gray-500 mt-1 font-medium">Ingresos totales</p>
                     </div>
                   </div>
                 ))}

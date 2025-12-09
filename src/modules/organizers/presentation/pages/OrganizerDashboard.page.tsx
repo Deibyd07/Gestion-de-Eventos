@@ -1473,11 +1473,11 @@ export function OrganizerDashboard() {
       {/* Sidebar - Fixed */}
       <div className={`${
         isSidebarOpen ? 'w-64' : 'w-16'
-      } bg-white/90 backdrop-blur-md shadow-xl border-r border-white/20 transition-all duration-300 flex-shrink-0 fixed left-0 top-0 h-dvh md:h-full z-30 md:z-40 overflow-y-auto md:overflow-hidden overscroll-contain touch-pan-y ${
+      } bg-white/90 backdrop-blur-md shadow-xl border-r border-white/20 transition-all duration-300 flex-shrink-0 fixed left-0 top-0 h-dvh md:h-full z-30 md:z-40 ${
         !isSidebarOpen ? 'hidden md:flex md:flex-col' : 'flex flex-col'
       }`}>
         {/* Sidebar Header */}
-        <div className={`h-16 flex items-center ${isSidebarOpen ? 'justify-between px-4' : 'justify-center px-2'} bg-gradient-to-r from-blue-600/90 to-purple-600/90 backdrop-blur-sm`}>
+        <div className={`h-16 flex-shrink-0 flex items-center ${isSidebarOpen ? 'justify-between px-4' : 'justify-center px-2'} bg-gradient-to-r from-blue-600/90 to-purple-600/90 backdrop-blur-sm`}>
           {isSidebarOpen && (
             <div className="flex items-center space-x-3">
               <div className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center shadow-lg border border-white/30">
@@ -1497,8 +1497,8 @@ export function OrganizerDashboard() {
           </button>
         </div>
 
-        {/* Navigation */}
-        <nav className={`${isSidebarOpen ? 'p-4' : 'px-0 py-4 flex flex-col items-center'} space-y-2 max-h-[calc(100dvh-8rem)] overflow-y-auto md:max-h-none md:overflow-y-visible`}>
+        {/* Navigation - Scrollable Area */}
+        <nav className={`${isSidebarOpen ? 'p-4' : 'px-0 py-4 flex flex-col items-center'} space-y-2 flex-1 overflow-y-auto overflow-x-hidden overscroll-contain`}>
           {navigationItems.map((item) => {
             const Icon = item.icon;
             return (
@@ -1549,8 +1549,8 @@ export function OrganizerDashboard() {
           })}
         </nav>
 
-        {/* Logout Button in Sidebar */}
-        <div className={`${isSidebarOpen ? 'absolute bottom-4 left-4 right-4' : 'mt-auto pb-4 flex justify-center'}`}>
+        {/* Logout Button in Sidebar - Fixed at Bottom */}
+        <div className={`${isSidebarOpen ? 'p-4' : 'pb-4 flex justify-center'} flex-shrink-0 border-t border-gray-200/50`}>
           <button
             onClick={handleLogout}
             className={`${

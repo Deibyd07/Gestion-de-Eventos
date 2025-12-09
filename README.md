@@ -469,15 +469,15 @@ Solo disponibles si ejecutaste `database/datos_ejemplo.sql`:
 
 ```
 Administrador:
-Email: admin@eventhub.co
+Email: admin@eventhub.com
 Password: admin123
 
 Organizador:
-Email: organizador1@eventhub.co
+Email: organizador1@eventhub.com
 Password: organizador123
 
 Asistente:
-Email: usuario1@email.com
+Email: bayfrox@gmail.com
 Password: usuario123
 ```
 

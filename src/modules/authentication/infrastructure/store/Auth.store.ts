@@ -112,6 +112,10 @@ export const useAuthStore = create<AuthState>()(
 
       register: async (userData) => {
         try {
+          // Limpiar sesión previa para evitar refresh tokens inválidos
+          await supabase.auth.signOut();
+          localStorage.removeItem('auth-storage');
+
           // 0. Verificar si el correo ya está registrado en la tabla usuarios
           const { data: existingUser, error: checkError } = await supabase
             .from('usuarios')
@@ -124,10 +128,14 @@ export const useAuthStore = create<AuthState>()(
           }
 
           // 1. Crear usuario en Supabase Auth (encripta contraseña y agrega metadatos)
+          // IMPORTANTE: emailRedirectTo debe apuntar a tu dominio de producción o localhost en desarrollo
+          const redirectUrl = window.location.origin + '/auth/callback';
+          
           const { data: authData, error: authError } = await supabase.auth.signUp({
             email: userData.email,
             password: userData.password,
             options: {
+              emailRedirectTo: redirectUrl,
               data: {
                 nombre_completo: userData.name,
                 telefono: userData.phone,
@@ -156,74 +164,71 @@ export const useAuthStore = create<AuthState>()(
           }
           if (!authData.user) throw new Error('No se pudo crear el usuario');
 
+          // Verificar si el usuario necesita confirmar su email
+          const needsEmailConfirmation = authData.user.identities && authData.user.identities.length > 0;
+          console.log('[Auth.register] Usuario creado:', {
+            userId: authData.user.id,
+            email: authData.user.email,
+            emailConfirmed: authData.user.email_confirmed_at,
+            needsConfirmation: needsEmailConfirmation
+          });
+
           const userId = authData.user.id;
 
-          // 2. Esperar a que el trigger inserte en usuarios; intentar varias veces si es necesario
-          let finalPerfil = null;
-          let attempts = 0;
-          const maxAttempts = 5;
+          // Crear/actualizar registro en public.usuarios (estado pendiente) para evitar 406
+          // y permitir que el callback lo marque como verificado al confirmar el correo
+          const roleMapping: { [key: string]: string } = {
+            admin: 'administrador',
+            organizer: 'organizador',
+            attendee: 'asistente',
+          };
+          const dbRole = roleMapping[userData.role || 'attendee'] || 'asistente';
+
+          // Intento obligatorio de crear el registro en public.usuarios desde el botón "Crear cuenta"
+          const perfilPendiente = {
+            id: userId,
+            correo_electronico: userData.email,
+            nombre_completo: userData.name || 'Usuario',
+            rol: dbRole as any,          // columna existente en el schema actual
+            telefono: userData.phone || null,
+            ubicacion: userData.location || null,
+            estado: 'pendiente',
+            email_verified: false,
+          } as any;
+
+          const { error: upsertError } = await supabase
+            .from('usuarios')
+            .upsert(perfilPendiente, { onConflict: 'id' });
+
+          if (upsertError) {
+            console.error('[Auth.register] Error al crear perfil en usuarios:', upsertError);
+            throw new Error('No se pudo crear la cuenta en la tabla usuarios: ' + upsertError.message);
+          }
+
+          console.log('[Auth.register] Perfil creado/actualizado en public.usuarios (pendiente)');
+
+          // IMPORTANTE: NO crear el perfil todavía
+          // El perfil se creará automáticamente por el trigger DESPUÉS de que el usuario verifique su email
+          // Por ahora, solo guardamos los metadatos en Supabase Auth para usarlos después
           
-          while (!finalPerfil && attempts < maxAttempts) {
-            attempts++;
-            await new Promise(r => setTimeout(r, 500)); // Esperar 500ms entre intentos
-            
-            const { data: perfil } = await supabase
-              .from('usuarios')
-              .select('*')
-              .eq('id', userId)
-              .maybeSingle();
-            
-            if (perfil) {
-              finalPerfil = perfil;
-              console.log(`[Auth.register] Perfil encontrado en intento ${attempts}`);
-              break;
-            }
-          }
-
-          if (!finalPerfil) {
-            // Mapear rol frontend -> BD
-            const roleMapping: { [key: string]: string } = {
-              admin: 'administrador',
-              organizer: 'organizador',
-              attendee: 'asistente'
-            };
-            const dbRole = roleMapping[userData.role || 'attendee'] || 'asistente';
-            try {
-              finalPerfil = await ServicioUsuarios.crearUsuario({
-                id: userId as any,
-                correo_electronico: userData.email,
-                nombre_completo: userData.name,
-                rol: dbRole as any,
-                ...(userData.phone && { telefono: userData.phone } as any),
-                ...(userData.location && { ubicacion: userData.location } as any)
-              } as any);
-            } catch (e: any) {
-              if (!e.message?.includes('duplicate')) {
-                console.error('[Auth.register] Fallback inserción usuarios error:', e);
-                throw new Error('Error creando perfil de usuario');
-              }
-              // Si es duplicate, reintentar obtener
-              const { data: existente } = await supabase
-                .from('usuarios')
-                .select('*')
-                .eq('id', userId)
-                .maybeSingle();
-              finalPerfil = existente || null;
-            }
-          }
-
-          if (!finalPerfil) throw new Error('No se pudo obtener el perfil de usuario');
+          console.log('[Auth.register] Usuario creado en Auth. Esperando verificación de email...');
 
           // NO iniciar sesión en el store - el usuario debe verificar su email primero
-          // IMPORTANTE: NO hacemos signOut() porque la sesión de Supabase es necesaria
-          // para que el callback de verificación funcione correctamente
+          // IMPORTANTE: NO hacemos signOut() porque eso eliminaría al usuario de Supabase Auth
+          // La sesión debe permanecer para que el callback de verificación funcione
+          // Solo limpiamos el store LOCAL para que no aparezca como autenticado en la UI
           
-          // Solo limpiamos el store para que no aparezca como autenticado
           set({ 
             user: null, 
             isAuthenticated: false, 
             token: null 
           });
+          
+          // NO limpiar el localStorage de Supabase, solo nuestro store
+          localStorage.removeItem('auth-storage');
+          
+          console.log('[Auth.register] Usuario creado en Supabase Auth:', userId);
+          console.log('[Auth.register] Email de verificación enviado. Usuario debe confirmar su correo.');
         } catch (error: any) {
           console.error('[Auth.register] Error final:', error);
           throw new Error(error.message || 'Error al crear la cuenta');

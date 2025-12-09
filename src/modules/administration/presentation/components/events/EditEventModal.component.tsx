@@ -1,11 +1,23 @@
-import React, { useState, useEffect } from 'react';
-import { X, Save, Calendar, MapPin, Users, Tag, Image as ImageIcon, AlertCircle } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import {
+  Calendar,
+  Clock,
+  FileText,
+  Image as ImageIcon,
+  MapPin,
+  Save,
+  Tag,
+  Users,
+  X
+} from 'lucide-react';
+import { Modal, Input } from '@shared/ui';
+import { UploadImageModal } from '../../../../events/presentation/components/UploadImageModal.component';
 
 interface Event {
   id: string;
   titulo: string;
   descripcion: string;
-  url_imagen: string;
+  url_imagen?: string;
   fecha_evento: string;
   hora_evento: string;
   ubicacion: string;
@@ -15,9 +27,22 @@ interface Event {
   estado: 'borrador' | 'publicado' | 'pausado' | 'cancelado' | 'finalizado';
   id_organizador: string;
   nombre_organizador: string;
-  etiquetas: string[];
+  etiquetas?: string[];
   fecha_creacion: string;
   fecha_actualizacion: string;
+}
+
+interface EditEventFormData {
+  titulo: string;
+  descripcion: string;
+  fecha_evento: string;
+  hora_evento: string;
+  ubicacion: string;
+  categoria: string;
+  maximo_asistentes: number;
+  estado: Event['estado'];
+  etiquetas: string[];
+  url_imagen?: string;
 }
 
 interface EditEventModalProps {
@@ -28,147 +53,186 @@ interface EditEventModalProps {
 }
 
 export const EditEventModal: React.FC<EditEventModalProps> = ({ event, isOpen, onClose, onSave }) => {
-  const [formData, setFormData] = useState<Partial<Event>>({});
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [etiquetasInput, setEtiquetasInput] = useState('');
+  const [formData, setFormData] = useState<EditEventFormData>({
+    titulo: '',
+    descripcion: '',
+    fecha_evento: '',
+    hora_evento: '',
+    ubicacion: '',
+    categoria: '',
+    maximo_asistentes: 0,
+    estado: 'borrador',
+    etiquetas: [],
+    url_imagen: ''
+  });
+  const [errors, setErrors] = useState<Partial<Record<keyof EditEventFormData, string>>>({});
+  const [etiquetaInput, setEtiquetaInput] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
+  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
+  const [imageJustUpdated, setImageJustUpdated] = useState(false);
 
   useEffect(() => {
-    if (event) {
+    if (event && isOpen) {
       setFormData({
         titulo: event.titulo,
         descripcion: event.descripcion,
-        url_imagen: event.url_imagen,
         fecha_evento: event.fecha_evento,
         hora_evento: event.hora_evento,
         ubicacion: event.ubicacion,
         categoria: event.categoria,
         maximo_asistentes: event.maximo_asistentes,
         estado: event.estado,
-        etiquetas: event.etiquetas || []
+        etiquetas: event.etiquetas || [],
+        url_imagen: event.url_imagen || ''
       });
-      setEtiquetasInput(event.etiquetas?.join(', ') || '');
+      setEtiquetaInput('');
+      setErrors({});
+      setImageJustUpdated(false);
     }
-  }, [event]);
+  }, [event, isOpen]);
 
-  if (!isOpen || !event) return null;
+  if (!event) return null;
+
+  const handleInputChange = (field: keyof EditEventFormData, value: string | number | string[]) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+    if (errors[field]) {
+      setErrors(prev => ({ ...prev, [field]: undefined }));
+    }
+  };
+
+  const handleAgregarEtiqueta = () => {
+    const etiqueta = etiquetaInput.trim();
+    if (etiqueta && !formData.etiquetas?.includes(etiqueta)) {
+      handleInputChange('etiquetas', [...(formData.etiquetas || []), etiqueta]);
+      setEtiquetaInput('');
+    }
+  };
+
+  const handleEliminarEtiqueta = (etiqueta: string) => {
+    handleInputChange('etiquetas', (formData.etiquetas || []).filter(t => t !== etiqueta));
+  };
+
+  const validate = () => {
+    const newErrors: Partial<Record<keyof EditEventFormData, string>> = {};
+
+    if (!formData.titulo.trim()) newErrors.titulo = 'El título es requerido';
+    if (!formData.descripcion.trim()) newErrors.descripcion = 'La descripción es requerida';
+    if (!formData.fecha_evento) newErrors.fecha_evento = 'La fecha es requerida';
+    if (!formData.hora_evento) newErrors.hora_evento = 'La hora es requerida';
+    if (!formData.ubicacion.trim()) newErrors.ubicacion = 'La ubicación es requerida';
+    if (!formData.categoria.trim()) newErrors.categoria = 'La categoría es requerida';
+    if (formData.maximo_asistentes < (event?.asistentes_actuales || 0)) {
+      newErrors.maximo_asistentes = `No puede ser menor que los asistentes actuales (${event?.asistentes_actuales})`;
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-    setError(null);
+    if (!validate()) return;
 
+    setIsSaving(true);
     try {
-      // Procesar etiquetas
-      const etiquetas = etiquetasInput
-        .split(',')
-        .map(tag => tag.trim())
-        .filter(tag => tag.length > 0);
-
-      const updates = {
+      await onSave(event.id, {
         ...formData,
-        etiquetas
-      };
-
-      await onSave(event.id, updates);
+        etiquetas: formData.etiquetas || [],
+        url_imagen: formData.url_imagen || null
+      });
       onClose();
-    } catch (err: any) {
-      console.error('Error al actualizar evento:', err);
-      setError(err.message || 'Error al actualizar el evento');
+    } catch (error) {
+      console.error('Error al guardar cambios:', error);
     } finally {
-      setLoading(false);
+      setIsSaving(false);
     }
   };
 
-  const handleChange = (field: string, value: any) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+  const handleClose = () => {
+    if (!isSaving) {
+      setErrors({});
+      onClose();
+    }
+  };
+
+  const handleImageUploaded = async (imageUrl: string) => {
+    handleInputChange('url_imagen', imageUrl);
+    setImageJustUpdated(true);
+    setIsImageModalOpen(false);
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-        {/* Header */}
-        <div className="sticky top-0 bg-gradient-to-r from-blue-500 to-purple-600 text-white p-6 rounded-t-2xl">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-2xl font-bold">Editar Evento</h2>
-              <p className="text-blue-100 text-sm mt-1">Modifica la información del evento</p>
-            </div>
-            <button
-              onClick={onClose}
-              className="p-2 hover:bg-white/20 rounded-full transition-colors"
-            >
-              <X className="w-6 h-6" />
-            </button>
-          </div>
-        </div>
-
-        {/* Error Message */}
-        {error && (
-          <div className="mx-6 mt-4 p-4 bg-red-50 border border-red-200 rounded-xl flex items-start space-x-3">
-            <AlertCircle className="w-5 h-5 text-red-600 mt-0.5" />
-            <div>
-              <p className="text-red-800 font-medium">Error</p>
-              <p className="text-red-600 text-sm">{error}</p>
-            </div>
-          </div>
-        )}
-
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-6">
+    <>
+      <Modal
+        isOpen={isOpen}
+        onClose={handleClose}
+        title="Editar Evento"
+        description="Actualiza la información del evento"
+        size="2xl"
+        showCloseButton={false}
+      >
+        <form onSubmit={handleSubmit} className="space-y-6">
           {/* Título */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Título del Evento *
+              <FileText className="w-4 h-4 inline-block mr-2" />
+              Título del Evento
             </label>
-            <input
+            <Input
               type="text"
-              value={formData.titulo || ''}
-              onChange={(e) => handleChange('titulo', e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              required
+              value={formData.titulo}
+              onChange={(e) => handleInputChange('titulo', e.target.value)}
+              placeholder="Ej: Conferencia de Tecnología 2025"
+              disabled={isSaving}
+              error={errors.titulo}
             />
           </div>
 
           {/* Descripción */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Descripción *
+              Descripción
             </label>
             <textarea
-              value={formData.descripcion || ''}
-              onChange={(e) => handleChange('descripcion', e.target.value)}
-              rows={5}
-              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-              required
+              value={formData.descripcion}
+              onChange={(e) => handleInputChange('descripcion', e.target.value)}
+              placeholder="Describe tu evento..."
+              rows={4}
+              disabled={isSaving}
+              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all ${
+                errors.descripcion ? 'border-red-300' : 'border-gray-300'
+              } disabled:bg-gray-100 disabled:cursor-not-allowed`}
             />
+            {errors.descripcion && <p className="text-sm text-red-600 mt-1">{errors.descripcion}</p>}
           </div>
 
           {/* Fecha y Hora */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                <Calendar className="w-4 h-4 inline mr-2" />
-                Fecha del Evento *
+                <Calendar className="w-4 h-4 inline-block mr-2" />
+                Fecha
               </label>
-              <input
+              <Input
                 type="date"
-                value={formData.fecha_evento || ''}
-                onChange={(e) => handleChange('fecha_evento', e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                required
+                value={formData.fecha_evento}
+                onChange={(e) => handleInputChange('fecha_evento', e.target.value)}
+                disabled={isSaving}
+                error={errors.fecha_evento}
               />
             </div>
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Hora del Evento *
+                <Clock className="w-4 h-4 inline-block mr-2" />
+                Hora
               </label>
-              <input
+              <Input
                 type="time"
-                value={formData.hora_evento || ''}
-                onChange={(e) => handleChange('hora_evento', e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                required
+                value={formData.hora_evento}
+                onChange={(e) => handleInputChange('hora_evento', e.target.value)}
+                disabled={isSaving}
+                error={errors.hora_evento}
               />
             </div>
           </div>
@@ -177,39 +241,43 @@ export const EditEventModal: React.FC<EditEventModalProps> = ({ event, isOpen, o
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                <MapPin className="w-4 h-4 inline mr-2" />
-                Ubicación *
+                <MapPin className="w-4 h-4 inline-block mr-2" />
+                Ubicación
               </label>
-              <input
+              <Input
                 type="text"
-                value={formData.ubicacion || ''}
-                onChange={(e) => handleChange('ubicacion', e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                required
+                value={formData.ubicacion}
+                onChange={(e) => handleInputChange('ubicacion', e.target.value)}
+                placeholder="Ej: Bogotá, Colombia"
+                disabled={isSaving}
+                error={errors.ubicacion}
               />
             </div>
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                <Tag className="w-4 h-4 inline mr-2" />
-                Categoría *
+                <Tag className="w-4 h-4 inline-block mr-2" />
+                Categoría
               </label>
               <select
-                value={formData.categoria || ''}
-                onChange={(e) => handleChange('categoria', e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                required
+                value={formData.categoria}
+                onChange={(e) => handleInputChange('categoria', e.target.value)}
+                disabled={isSaving}
+                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all ${
+                  errors.categoria ? 'border-red-300' : 'border-gray-300'
+                } disabled:bg-gray-100 disabled:cursor-not-allowed`}
               >
-                <option value="">Seleccionar categoría</option>
-                <option value="Agropecuario">Agropecuario</option>
-                <option value="Tecnología">Tecnología</option>
-                <option value="Cultura">Cultura</option>
-                <option value="Negocios">Negocios</option>
-                <option value="Deportes">Deportes</option>
-                <option value="Educación">Educación</option>
-                <option value="Entretenimiento">Entretenimiento</option>
-                <option value="Salud">Salud</option>
+                <option value="">Selecciona una categoría</option>
+                <option value="Conferencia">Conferencia</option>
+                <option value="Taller">Taller</option>
+                <option value="Concierto">Concierto</option>
+                <option value="Festival">Festival</option>
+                <option value="Deportivo">Deportivo</option>
+                <option value="Cultural">Cultural</option>
+                <option value="Networking">Networking</option>
                 <option value="Otro">Otro</option>
               </select>
+              {errors.categoria && <p className="text-sm text-red-600 mt-1">{errors.categoria}</p>}
             </div>
           </div>
 
@@ -217,27 +285,32 @@ export const EditEventModal: React.FC<EditEventModalProps> = ({ event, isOpen, o
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                <Users className="w-4 h-4 inline mr-2" />
-                Capacidad Máxima *
+                <Users className="w-4 h-4 inline-block mr-2" />
+                Capacidad Máxima
               </label>
-              <input
+              <Input
                 type="number"
-                min="1"
-                value={formData.maximo_asistentes || ''}
-                onChange={(e) => handleChange('maximo_asistentes', parseInt(e.target.value))}
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                required
+                value={formData.maximo_asistentes}
+                onChange={(e) => handleInputChange('maximo_asistentes', parseInt(e.target.value, 10) || 0)}
+                placeholder="Ej: 500"
+                min={event.asistentes_actuales}
+                disabled={isSaving}
+                error={errors.maximo_asistentes}
               />
+              <p className="text-xs text-gray-500 mt-1">
+                Asistentes actuales: {event.asistentes_actuales}. No puedes reducir la capacidad por debajo de este número.
+              </p>
             </div>
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Estado *
+                Estado
               </label>
               <select
-                value={formData.estado || ''}
-                onChange={(e) => handleChange('estado', e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                required
+                value={formData.estado}
+                onChange={(e) => handleInputChange('estado', e.target.value as Event['estado'])}
+                disabled={isSaving}
+                className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all border-gray-300 disabled:bg-gray-100 disabled:cursor-not-allowed"
               >
                 <option value="borrador">Borrador</option>
                 <option value="publicado">Publicado</option>
@@ -248,59 +321,135 @@ export const EditEventModal: React.FC<EditEventModalProps> = ({ event, isOpen, o
             </div>
           </div>
 
-          {/* URL de Imagen */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              <ImageIcon className="w-4 h-4 inline mr-2" />
-              URL de la Imagen
+          {/* Imagen */}
+          <div className="space-y-3">
+            <label className="block text-sm font-medium text-gray-700">
+              <ImageIcon className="w-4 h-4 inline-block mr-2" />
+              Imagen del Evento
             </label>
-            <input
-              type="url"
-              value={formData.url_imagen || ''}
-              onChange={(e) => handleChange('url_imagen', e.target.value)}
-              placeholder="https://ejemplo.com/imagen.jpg"
-              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
+            {formData.url_imagen ? (
+              <div className="relative w-full overflow-hidden rounded-lg border border-gray-200 bg-gray-50">
+                <div className="aspect-video w-full overflow-hidden">
+                  <img src={formData.url_imagen} alt={formData.titulo} className="h-full w-full object-cover" />
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsImageModalOpen(true)}
+                  className="absolute top-3 right-3 inline-flex items-center px-3 py-1.5 bg-white text-gray-800 rounded-full shadow hover:bg-gray-100 transition"
+                  disabled={isSaving}
+                >
+                  <ImageIcon className="w-4 h-4 mr-2" />
+                  Cambiar imagen
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setIsImageModalOpen(true)}
+                className="w-full border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-400 hover:bg-blue-50 transition"
+                disabled={isSaving}
+              >
+                <div className="flex flex-col items-center space-y-2 text-gray-600">
+                  <ImageIcon className="w-6 h-6" />
+                  <p className="text-sm font-medium">Agregar imagen del evento</p>
+                  <p className="text-xs text-gray-500">PNG, JPG, GIF o WEBP hasta 5MB</p>
+                </div>
+              </button>
+            )}
+            {imageJustUpdated && (
+              <p className="text-xs text-green-600">Imagen actualizada. Guarda para confirmar los cambios.</p>
+            )}
           </div>
 
           {/* Etiquetas */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Etiquetas (separadas por comas)
+              Etiquetas
             </label>
-            <input
-              type="text"
-              value={etiquetasInput}
-              onChange={(e) => setEtiquetasInput(e.target.value)}
-              placeholder="música, concierto, festival"
-              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-            <p className="text-xs text-gray-500 mt-1">
-              Escribe etiquetas separadas por comas para ayudar a categorizar el evento
-            </p>
+            <div className="flex items-center space-x-2 mb-3">
+              <Input
+                type="text"
+                value={etiquetaInput}
+                onChange={(e) => setEtiquetaInput(e.target.value)}
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    handleAgregarEtiqueta();
+                  }
+                }}
+                placeholder="Agregar etiqueta..."
+                disabled={isSaving}
+              />
+              <button
+                type="button"
+                onClick={handleAgregarEtiqueta}
+                disabled={!etiquetaInput.trim() || isSaving}
+                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Agregar
+              </button>
+            </div>
+            {formData.etiquetas && formData.etiquetas.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {formData.etiquetas.map((etiqueta, index) => (
+                  <span
+                    key={`${etiqueta}-${index}`}
+                    className="inline-flex items-center px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-sm border border-blue-200"
+                  >
+                    {etiqueta}
+                    <button
+                      type="button"
+                      onClick={() => handleEliminarEtiqueta(etiqueta)}
+                      disabled={isSaving}
+                      className="ml-2 text-blue-600 hover:text-blue-800 disabled:opacity-50"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
 
-          {/* Footer con botones */}
-          <div className="flex justify-end space-x-3 pt-6 border-t">
+          {/* Botones de acción */}
+          <div className="flex items-center justify-end space-x-3 pt-6 border-t border-gray-200">
             <button
               type="button"
-              onClick={onClose}
-              className="px-6 py-3 bg-gray-200 text-gray-700 rounded-xl hover:bg-gray-300 transition-colors font-medium"
-              disabled={loading}
+              onClick={handleClose}
+              disabled={isSaving}
+              className="px-6 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Cancelar
             </button>
             <button
               type="submit"
-              className="px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-xl hover:from-blue-600 hover:to-purple-700 transition-all font-medium shadow-lg flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
-              disabled={loading}
+              disabled={isSaving}
+              className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
             >
-              <Save className="w-5 h-5" />
-              <span>{loading ? 'Guardando...' : 'Guardar Cambios'}</span>
+              {isSaving ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  <span>Guardando...</span>
+                </>
+              ) : (
+                <>
+                  <Save className="w-4 h-4" />
+                  <span>Guardar Cambios</span>
+                </>
+              )}
             </button>
           </div>
         </form>
-      </div>
-    </div>
+      </Modal>
+
+      <UploadImageModal
+        isOpen={isImageModalOpen}
+        onClose={() => setIsImageModalOpen(false)}
+        onImageUploaded={handleImageUploaded}
+        currentImageUrl={formData.url_imagen || undefined}
+        eventId={event.id}
+        eventTitle={formData.titulo}
+      />
+    </>
   );
 };

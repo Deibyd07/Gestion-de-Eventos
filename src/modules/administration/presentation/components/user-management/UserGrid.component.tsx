@@ -85,7 +85,7 @@ export const UserGrid: React.FC<UserGridProps> = ({
               <span className="text-gray-500">Ingresos:</span>
               <span className="font-medium text-xs md:text-sm">{formatCurrency(user.ingresos_generados || 0)}</span>
             </div>
-            {user.rating && (
+            {!!user.rating && user.rating > 0 && (
               <div className="flex justify-between text-xs md:text-sm">
                 <span className="text-gray-500">Rating:</span>
                 <div className="flex items-center">
@@ -101,14 +101,14 @@ export const UserGrid: React.FC<UserGridProps> = ({
         return (
           <div className="space-y-1 md:space-y-2">
             <div className="flex justify-between text-xs md:text-sm">
-              <span className="text-gray-500">Eventos asistidos:</span>
-              <span className="font-medium">{user.eventos_asistidos || 0}</span>
+              <span className="text-gray-500">Compras:</span>
+              <span className="font-medium">{user.compras_realizadas || 0}</span>
             </div>
             <div className="flex justify-between text-xs md:text-sm">
-              <span className="text-gray-500">Participaciones:</span>
-              <span className="font-medium">{user.eventos_asistidos || 0}</span>
+              <span className="text-gray-500">Entradas:</span>
+              <span className="font-medium">{user.total_entradas || 0}</span>
             </div>
-            {user.rating && (
+            {!!user.rating && user.rating > 0 && (
               <div className="flex justify-between text-xs md:text-sm">
                 <span className="text-gray-500">Rating:</span>
                 <div className="flex items-center">
@@ -120,26 +120,21 @@ export const UserGrid: React.FC<UserGridProps> = ({
           </div>
         );
       
-      case 'admin':
+      case 'administrador':
         return (
           <div className="space-y-1 md:space-y-2">
             <div className="flex justify-between text-xs md:text-sm">
-              <span className="text-gray-500">Sistema:</span>
-              <span className="font-medium text-green-600">Activo</span>
+              <span className="text-gray-500">Acceso:</span>
+              <span className="font-medium text-purple-600">Total</span>
             </div>
             <div className="flex justify-between text-xs md:text-sm">
-              <span className="text-gray-500">Permisos:</span>
-              <span className="font-medium text-blue-600">Completo</span>
+              <span className="text-gray-500">Privilegios:</span>
+              <span className="font-medium text-blue-600">Máximo</span>
             </div>
-            {user.rating && (
-              <div className="flex justify-between text-xs md:text-sm">
-                <span className="text-gray-500">Rating:</span>
-                <div className="flex items-center">
-                  <Star className="w-3 h-3 text-yellow-400 mr-1" />
-                  <span className="font-medium">{user.rating}</span>
-                </div>
-              </div>
-            )}
+            <div className="flex justify-between text-xs md:text-sm">
+              <span className="text-gray-500">Gestión:</span>
+              <span className="font-medium text-green-600">Completa</span>
+            </div>
           </div>
         );
       
@@ -154,7 +149,7 @@ export const UserGrid: React.FC<UserGridProps> = ({
               <span className="text-gray-500">Actividad:</span>
               <span className="font-medium">{user.estado}</span>
             </div>
-            {user.rating && (
+            {!!user.rating && user.rating > 0 && (
               <div className="flex justify-between text-xs md:text-sm">
                 <span className="text-gray-500">Rating:</span>
                 <div className="flex items-center">
@@ -174,8 +169,8 @@ export const UserGrid: React.FC<UserGridProps> = ({
         <div key={user.id} className="bg-gradient-to-br from-white to-indigo-100/98 backdrop-blur-lg shadow-xl border border-white/20 rounded-2xl overflow-hidden hover:shadow-2xl transition-all duration-200 hover:scale-105">
           <div className="p-4 md:p-6">
             {/* Header */}
-            <div className="flex items-start justify-between mb-3 md:mb-4">
-              <div className="flex items-center space-x-2 md:space-x-3">
+            <div className="flex items-start justify-between mb-3 md:mb-4 gap-2">
+              <div className="flex items-center space-x-2 md:space-x-3 flex-shrink-0">
                 <input
                   type="checkbox"
                   checked={selectedUsers.includes(user.id)}
@@ -188,7 +183,7 @@ export const UserGrid: React.FC<UserGridProps> = ({
                   alt={user.nombre_completo}
                 />
               </div>
-              <div className="flex items-center space-x-1">
+              <div className="flex items-center space-x-1 flex-wrap justify-end gap-y-1">
                 <button
                   onClick={() => onViewUser(user)}
                   className="p-2 bg-gradient-to-r from-blue-500/20 to-blue-600/20 backdrop-blur-sm text-blue-700 rounded-lg hover:from-blue-500/30 hover:to-blue-600/30 hover:text-blue-800 transition-all duration-200 shadow-sm hover:shadow-md border border-blue-200/50"

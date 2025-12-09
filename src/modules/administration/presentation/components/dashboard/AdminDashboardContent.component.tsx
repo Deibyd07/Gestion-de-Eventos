@@ -57,11 +57,6 @@ interface AdminDashboardContentProps {
       revenue: number;
       rating: number;
     }>;
-    deviceStats: {
-      desktop: number;
-      mobile: number;
-      tablet: number;
-    };
     locationStats: Record<string, number>;
   };
 }
@@ -91,9 +86,8 @@ export const AdminDashboardContent: React.FC<AdminDashboardContentProps> = ({
         />
       </div>
 
-      {/* Device and Location Stats */}
+      {/* Location Stats */}
       <DeviceLocationStats 
-        deviceStats={dashboardData.deviceStats}
         locationStats={dashboardData.locationStats}
       />
     </div>

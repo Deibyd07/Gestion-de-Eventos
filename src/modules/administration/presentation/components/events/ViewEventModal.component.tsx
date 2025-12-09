@@ -1,263 +1,367 @@
 import React from 'react';
-import { X, Calendar, MapPin, Users, DollarSign, Tag, Clock, User, Image as ImageIcon } from 'lucide-react';
+import { 
+  X, 
+  Calendar, 
+  Clock, 
+  MapPin, 
+  Users, 
+  DollarSign, 
+  Tag, 
+  BarChart, 
+  Eye,
+  ShoppingCart,
+  Activity
+} from 'lucide-react';
+import { Modal } from '@shared/ui';
+import { formatRevenue } from '@shared/lib/utils/Currency.utils';
 
-interface Event {
+interface EventDetails {
   id: string;
   titulo: string;
   descripcion: string;
-  url_imagen: string;
+  url_imagen?: string;
   fecha_evento: string;
   hora_evento: string;
   ubicacion: string;
   categoria: string;
   maximo_asistentes: number;
   asistentes_actuales: number;
-  estado: 'borrador' | 'publicado' | 'pausado' | 'cancelado' | 'finalizado';
-  id_organizador: string;
+  estado: string;
+  etiquetas?: string[];
   nombre_organizador: string;
-  etiquetas: string[];
   fecha_creacion: string;
   fecha_actualizacion: string;
-  tipos_entrada?: any[];
-  analiticas_eventos?: any[];
+  tipos_entrada?: Array<{
+    id: string;
+    nombre_tipo: string;
+    precio: number;
+    descripcion?: string;
+    cantidad_maxima: number;
+    cantidad_vendida?: number;
+    cantidad_disponible?: number;
+  }>;
+  compras?: Array<{
+    id: string;
+    cantidad: number;
+    total_pagado: number;
+    estado: string;
+    fecha_creacion: string;
+  }>;
+  analiticas_eventos?: Array<{
+    total_visualizaciones: number;
+    total_ventas: number;
+    tasa_conversion: number;
+    tasa_asistencia: number;
+  }>;
+  asistencia_eventos?: Array<{
+    id: string;
+    fecha_asistencia: string;
+  }>;
 }
 
 interface ViewEventModalProps {
-  event: Event | null;
+  event: EventDetails | null;
   isOpen: boolean;
   onClose: () => void;
 }
 
 export const ViewEventModal: React.FC<ViewEventModalProps> = ({ event, isOpen, onClose }) => {
-  if (!isOpen || !event) return null;
+  if (!event) return null;
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('es-CO', {
+  const analytics = event.analiticas_eventos?.[0];
+  const comprasCompletadas = event.compras?.filter(c => c.estado === 'completada') || [];
+  const totalVentas = comprasCompletadas.reduce((sum, c) => sum + c.total_pagado, 0);
+  const asistenciasRegistradas = event.asistencia_eventos?.length || 0;
+  const porcentajeOcupacion = event.maximo_asistentes > 0 
+    ? ((event.asistentes_actuales / event.maximo_asistentes) * 100).toFixed(1)
+    : '0';
+
+  const formatDate = (dateStr: string) => {
+    return new Date(dateStr).toLocaleDateString('es-CO', {
+      weekday: 'long',
       year: 'numeric',
       month: 'long',
       day: 'numeric'
     });
   };
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('es-CO', {
-      style: 'currency',
-      currency: 'COP',
-      minimumFractionDigits: 0
-    }).format(amount);
+  const formatDateTime = (dateStr: string) => {
+    return new Date(dateStr).toLocaleString('es-CO', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'publicado': return 'bg-green-100 text-green-800';
-      case 'borrador': return 'bg-yellow-100 text-yellow-800';
-      case 'pausado': return 'bg-orange-100 text-orange-800';
-      case 'cancelado': return 'bg-red-100 text-red-800';
-      case 'finalizado': return 'bg-blue-100 text-blue-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
+  const getEstadoBadge = (estado: string) => {
+    const badges: Record<string, { color: string; label: string }> = {
+      'borrador': { color: 'bg-gray-100 text-gray-700 border-gray-300', label: 'Borrador' },
+      'publicado': { color: 'bg-green-100 text-green-700 border-green-300', label: 'Publicado' },
+      'pausado': { color: 'bg-yellow-100 text-yellow-700 border-yellow-300', label: 'Pausado' },
+      'cancelado': { color: 'bg-red-100 text-red-700 border-red-300', label: 'Cancelado' },
+      'finalizado': { color: 'bg-blue-100 text-blue-700 border-blue-300', label: 'Finalizado' }
+    };
+    return badges[estado] || badges['borrador'];
   };
 
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case 'publicado': return 'Publicado';
-      case 'borrador': return 'Borrador';
-      case 'pausado': return 'Pausado';
-      case 'cancelado': return 'Cancelado';
-      case 'finalizado': return 'Finalizado';
-      default: return 'Desconocido';
-    }
-  };
-
-  const ocupacion = event.maximo_asistentes > 0 
-    ? ((event.asistentes_actuales / event.maximo_asistentes) * 100).toFixed(1)
-    : 0;
+  const estadoBadge = getEstadoBadge(event.estado);
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-        {/* Header con imagen */}
-        <div className="relative h-64 md:h-80">
-          <img
-            src={event.url_imagen || 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800'}
-            alt={event.titulo}
-            className="w-full h-full object-cover"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-          
-          {/* Close Button */}
-          <button
-            onClick={onClose}
-            className="absolute top-4 right-4 p-2 bg-white/90 rounded-full hover:bg-white transition-colors"
-          >
-            <X className="w-5 h-5" />
-          </button>
-
-          {/* Estado */}
-          <div className="absolute top-4 left-4">
-            <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(event.estado)}`}>
-              {getStatusText(event.estado)}
-            </span>
+    <Modal isOpen={isOpen} onClose={onClose} size="2xl" showCloseButton={false}>
+      {/* Header */}
+      <div className="flex items-start justify-between pb-4 border-b border-gray-200">
+        <div className="flex items-start space-x-3 flex-1 min-w-0">
+          <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg flex-shrink-0">
+            <Calendar className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
           </div>
-
-          {/* Título superpuesto */}
-          <div className="absolute bottom-4 left-4 right-4">
-            <h2 className="text-2xl md:text-3xl font-bold text-white mb-2">{event.titulo}</h2>
-            <div className="flex items-center text-white/90">
-              <User className="w-4 h-4 mr-2" />
-              <span className="text-sm">Organizado por {event.nombre_organizador}</span>
+          <div className="flex-1 min-w-0">
+            <h2 className="text-lg sm:text-xl font-bold text-gray-900 truncate">{event.titulo}</h2>
+            <div className="flex items-center space-x-2 mt-1 flex-wrap">
+              <span className={`px-2 py-0.5 rounded-full text-xs font-semibold border ${estadoBadge.color}`}>
+                {estadoBadge.label}
+              </span>
+              <span className="text-xs text-gray-500 hidden sm:inline">•</span>
+              <span className="text-xs sm:text-sm text-gray-600">{event.categoria}</span>
             </div>
           </div>
         </div>
+        <button
+          onClick={onClose}
+          className="p-1.5 sm:p-2 hover:bg-gray-100 rounded-lg transition-all duration-200 group flex-shrink-0 ml-2"
+        >
+          <X className="w-5 h-5 text-gray-400 group-hover:text-gray-600" />
+        </button>
+      </div>
 
-        {/* Contenido */}
-        <div className="p-6 md:p-8">
-          {/* Información Principal */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-            <div className="flex items-start space-x-3 p-4 bg-blue-50 rounded-xl">
-              <Calendar className="w-5 h-5 text-blue-600 mt-1" />
+      {/* Content - Sin overflow propio, usa el del Modal padre */}
+      <div className="space-y-4 mt-4">
+        {/* Imagen del Evento */}
+        {event.url_imagen && (
+          <div className="relative h-40 sm:h-48 rounded-xl overflow-hidden shadow-lg border border-gray-200">
+            <img
+              src={event.url_imagen}
+              alt={event.titulo}
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
+          </div>
+        )}
+
+        {/* Grid de Estadísticas Principales */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
+          <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-lg p-3 border border-green-200">
+            <div className="flex items-center justify-between mb-1">
+              <DollarSign className="w-5 h-5 sm:w-6 sm:h-6 text-green-600" />
+            </div>
+            <p className="text-xs font-medium text-green-700">Ventas</p>
+            <p className="text-sm sm:text-lg font-bold text-green-900 truncate">{formatRevenue(totalVentas)}</p>
+          </div>
+
+          <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-3 border border-blue-200">
+            <div className="flex items-center justify-between mb-1">
+              <ShoppingCart className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" />
+            </div>
+            <p className="text-xs font-medium text-blue-700">Compras</p>
+            <p className="text-sm sm:text-lg font-bold text-blue-900">{comprasCompletadas.length}</p>
+          </div>
+
+          <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg p-3 border border-purple-200">
+            <div className="flex items-center justify-between mb-1">
+              <Users className="w-5 h-5 sm:w-6 sm:h-6 text-purple-600" />
+            </div>
+            <p className="text-xs font-medium text-purple-700">Asistentes</p>
+            <p className="text-sm sm:text-lg font-bold text-purple-900">{event.asistentes_actuales}/{event.maximo_asistentes}</p>
+          </div>
+
+        </div>
+
+        {/* Información del Evento */}
+        <div className="bg-white rounded-lg p-4 border border-gray-200 shadow-sm">
+          <h3 className="text-sm font-bold text-gray-900 mb-3 flex items-center">
+            <Calendar className="w-4 h-4 text-blue-500 mr-2" />
+            Información del Evento
+          </h3>
+          
+          <div className="space-y-3">
+            <div>
+              <label className="text-xs font-semibold text-gray-500 uppercase">Descripción</label>
+              <p className="text-sm text-gray-700 mt-1 leading-relaxed line-clamp-3">{event.descripcion}</p>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-3 border-t border-gray-100">
               <div>
-                <p className="text-sm text-gray-600">Fecha y Hora</p>
-                <p className="font-semibold text-gray-900">{formatDate(event.fecha_evento)}</p>
-                <p className="text-sm text-gray-700">{event.hora_evento}</p>
+                <label className="text-xs font-semibold text-gray-500 uppercase flex items-center">
+                  <Calendar className="w-3 h-3 mr-1" />
+                  Fecha
+                </label>
+                <p className="text-sm font-medium text-gray-900 mt-1">{formatDate(event.fecha_evento)}</p>
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-gray-500 uppercase flex items-center">
+                  <Clock className="w-3 h-3 mr-1" />
+                  Hora
+                </label>
+                <p className="text-sm font-medium text-gray-900 mt-1">{event.hora_evento}</p>
+              </div>
+
+              <div className="sm:col-span-2">
+                <label className="text-xs font-semibold text-gray-500 uppercase flex items-center">
+                  <MapPin className="w-3 h-3 mr-1" />
+                  Ubicación
+                </label>
+                <p className="text-sm font-medium text-gray-900 mt-1">{event.ubicacion}</p>
               </div>
             </div>
 
-            <div className="flex items-start space-x-3 p-4 bg-purple-50 rounded-xl">
-              <MapPin className="w-5 h-5 text-purple-600 mt-1" />
-              <div>
-                <p className="text-sm text-gray-600">Ubicación</p>
-                <p className="font-semibold text-gray-900">{event.ubicacion}</p>
-              </div>
-            </div>
-
-            <div className="flex items-start space-x-3 p-4 bg-green-50 rounded-xl">
-              <Users className="w-5 h-5 text-green-600 mt-1" />
-              <div>
-                <p className="text-sm text-gray-600">Asistentes</p>
-                <p className="font-semibold text-gray-900">
-                  {event.asistentes_actuales} / {event.maximo_asistentes}
-                </p>
-                <div className="mt-2 w-full bg-gray-200 rounded-full h-2">
-                  <div
-                    className="bg-green-600 h-2 rounded-full transition-all"
-                    style={{ width: `${ocupacion}%` }}
-                  />
+            {/* Etiquetas */}
+            {event.etiquetas && event.etiquetas.length > 0 && (
+              <div className="pt-3 border-t border-gray-100">
+                <label className="text-xs font-semibold text-gray-500 uppercase flex items-center mb-2">
+                  <Tag className="w-3 h-3 mr-1" />
+                  Etiquetas
+                </label>
+                <div className="flex flex-wrap gap-1.5">
+                  {event.etiquetas.map((tag, index) => (
+                    <span
+                      key={index}
+                      className="px-2 py-1 bg-gradient-to-r from-blue-50 to-purple-50 text-blue-700 rounded-md text-xs font-medium border border-blue-200"
+                    >
+                      {tag}
+                    </span>
+                  ))}
                 </div>
-                <p className="text-xs text-gray-600 mt-1">{ocupacion}% de ocupación</p>
               </div>
-            </div>
+            )}
+          </div>
+        </div>
 
-            <div className="flex items-start space-x-3 p-4 bg-amber-50 rounded-xl">
-              <Tag className="w-5 h-5 text-amber-600 mt-1" />
-              <div>
-                <p className="text-sm text-gray-600">Categoría</p>
-                <p className="font-semibold text-gray-900">{event.categoria}</p>
+        {/* Analíticas Compactas */}
+        {analytics && (
+          <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-lg p-4 border border-blue-200">
+            <h3 className="text-sm font-bold text-gray-900 mb-3 flex items-center">
+              <BarChart className="w-4 h-4 text-purple-500 mr-2" />
+              Analíticas
+            </h3>
+
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              <div className="text-center">
+                <p className="text-xs text-gray-600">Conversión</p>
+                <p className="text-xl font-bold text-blue-900">{(analytics.tasa_conversion || 0).toFixed(1)}%</p>
+              </div>
+
+              <div className="text-center">
+                <p className="text-xs text-gray-600">Asistencia</p>
+                <p className="text-xl font-bold text-green-900">{(analytics.tasa_asistencia || 0).toFixed(1)}%</p>
+              </div>
+
+              <div className="text-center sm:col-span-1 col-span-2">
+                <p className="text-xs text-gray-600">Registros</p>
+                <p className="text-xl font-bold text-purple-900">{asistenciasRegistradas}</p>
               </div>
             </div>
           </div>
+        )}
 
-          {/* Descripción */}
-          <div className="mb-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-3">Descripción</h3>
-            <p className="text-gray-700 leading-relaxed whitespace-pre-line">{event.descripcion}</p>
-          </div>
-
-          {/* Etiquetas */}
-          {event.etiquetas && event.etiquetas.length > 0 && (
-            <div className="mb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Etiquetas</h3>
-              <div className="flex flex-wrap gap-2">
-                {event.etiquetas.map((etiqueta, index) => (
-                  <span
-                    key={index}
-                    className="px-3 py-1 bg-indigo-100 text-indigo-700 rounded-full text-sm"
-                  >
-                    {etiqueta}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Tipos de Entrada */}
-          {event.tipos_entrada && event.tipos_entrada.length > 0 && (
-            <div className="mb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Tipos de Entrada</h3>
-              <div className="space-y-3">
-                {event.tipos_entrada.map((tipo: any) => (
+        {/* Tipos de Entrada Compactos */}
+        <div className="bg-white rounded-lg p-4 border border-gray-200 shadow-sm">
+          <h3 className="text-sm font-bold text-gray-900 mb-3 flex items-center">
+            <DollarSign className="w-4 h-4 text-green-500 mr-2" />
+            Tipos de Entrada
+          </h3>
+          {event.tipos_entrada && event.tipos_entrada.length > 0 ? (
+            <div className="space-y-2">
+              {event.tipos_entrada.map((ticket) => {
+                const maximos = ticket.cantidad_maxima ?? 0;
+                const disponibles = ticket.cantidad_disponible ?? maximos;
+                const vendidos = ticket.cantidad_vendida ?? Math.max(maximos - disponibles, 0);
+                const restantes = Math.max(disponibles, 0);
+                const porcentajeVendido = maximos > 0 
+                  ? ((vendidos / maximos) * 100).toFixed(0)
+                  : '0';
+                
+                return (
                   <div
-                    key={tipo.id}
-                    className="flex items-center justify-between p-4 bg-gray-50 rounded-xl"
+                    key={ticket.id}
+                    className="bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg p-3 border border-gray-200"
                   >
-                    <div>
-                      <p className="font-semibold text-gray-900">{tipo.nombre_tipo}</p>
-                      <p className="text-sm text-gray-600">{tipo.descripcion}</p>
-                      <p className="text-xs text-gray-500 mt-1">
-                        {tipo.cantidad_disponible} / {tipo.cantidad_maxima} disponibles
-                      </p>
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-bold text-gray-900 text-sm truncate">{ticket.nombre_tipo}</h4>
+                        {ticket.descripcion && (
+                          <p className="text-xs text-gray-600 mt-0.5 line-clamp-1">{ticket.descripcion}</p>
+                        )}
+                      </div>
+                      <p className="text-lg font-bold text-green-600 ml-3 flex-shrink-0">{formatRevenue(ticket.precio)}</p>
                     </div>
-                    <div className="text-right">
-                      <p className="text-lg font-bold text-gray-900">{formatCurrency(tipo.precio)}</p>
+
+                    <div className="flex items-center gap-2 text-[11px] font-semibold text-gray-700 mb-2">
+                      <span className="px-2 py-1 bg-green-100 text-green-700 rounded-lg">Vendidas: {vendidos}</span>
+                      <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded-lg">Restantes: {restantes}</span>
+                      <span className="px-2 py-1 bg-gray-200 text-gray-700 rounded-lg">Totales: {maximos}</span>
+                      <span className="px-2 py-1 bg-purple-100 text-purple-700 rounded-lg">{porcentajeVendido}%</span>
+                    </div>
+
+                    <div className="space-y-1">
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="text-gray-600">{vendidos} / {maximos}</span>
+                        <span className="text-gray-500">{porcentajeVendido}% vendido</span>
+                      </div>
+                      
+                      <div className="w-full bg-gray-200 rounded-full h-1.5 overflow-hidden">
+                        <div 
+                          className="bg-gradient-to-r from-green-500 to-green-600 h-full rounded-full transition-all duration-500"
+                          style={{ width: `${porcentajeVendido}%` }}
+                        />
+                      </div>
                     </div>
                   </div>
-                ))}
-              </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="text-center py-6 bg-gray-50 rounded-lg border border-dashed border-gray-300">
+              <DollarSign className="w-8 h-8 text-gray-300 mx-auto mb-2" />
+              <p className="text-xs text-gray-500">Sin entradas configuradas</p>
             </div>
           )}
+        </div>
 
-          {/* Analíticas */}
-          {event.analiticas_eventos && event.analiticas_eventos.length > 0 && (
-            <div className="mb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Estadísticas</h3>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {event.analiticas_eventos.map((analytic: any) => (
-                  <React.Fragment key={analytic.id}>
-                    <div className="text-center p-4 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl">
-                      <p className="text-2xl font-bold text-blue-900">{analytic.total_visualizaciones || 0}</p>
-                      <p className="text-xs text-blue-700">Visualizaciones</p>
-                    </div>
-                    <div className="text-center p-4 bg-gradient-to-br from-green-50 to-green-100 rounded-xl">
-                      <p className="text-2xl font-bold text-green-900">{analytic.total_ventas || 0}</p>
-                      <p className="text-xs text-green-700">Ventas</p>
-                    </div>
-                    <div className="text-center p-4 bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl">
-                      <p className="text-2xl font-bold text-purple-900">{formatCurrency(analytic.ingresos_totales || 0)}</p>
-                      <p className="text-xs text-purple-700">Ingresos</p>
-                    </div>
-                    <div className="text-center p-4 bg-gradient-to-br from-amber-50 to-amber-100 rounded-xl">
-                      <p className="text-2xl font-bold text-amber-900">{(analytic.tasa_conversion || 0).toFixed(1)}%</p>
-                      <p className="text-xs text-amber-700">Conversión</p>
-                    </div>
-                  </React.Fragment>
-                ))}
-              </div>
+        {/* Metadata Compacta */}
+        <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg p-4 border border-gray-200">
+          <h3 className="text-xs font-bold text-gray-700 uppercase mb-3">Información del Sistema</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+            <div>
+              <label className="text-gray-500 font-medium">Organizador</label>
+              <p className="font-semibold text-gray-900 mt-0.5 truncate">{event.nombre_organizador}</p>
             </div>
-          )}
-
-          {/* Información Adicional */}
-          <div className="border-t pt-4 mt-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-600">
-              <div>
-                <span className="font-medium">Creado:</span> {formatDate(event.fecha_creacion)}
-              </div>
-              <div>
-                <span className="font-medium">Última actualización:</span> {formatDate(event.fecha_actualizacion)}
-              </div>
+            <div>
+              <label className="text-gray-500 font-medium">Creado</label>
+              <p className="font-semibold text-gray-900 mt-0.5">{formatDateTime(event.fecha_creacion)}</p>
             </div>
-          </div>
-
-          {/* Footer con botones */}
-          <div className="flex justify-end mt-6 pt-6 border-t">
-            <button
-              onClick={onClose}
-              className="px-6 py-2 bg-gray-200 text-gray-700 rounded-xl hover:bg-gray-300 transition-colors font-medium"
-            >
-              Cerrar
-            </button>
+            <div>
+              <label className="text-gray-500 font-medium">Actualizado</label>
+              <p className="font-semibold text-gray-900 mt-0.5">{formatDateTime(event.fecha_actualizacion)}</p>
+            </div>
+            <div>
+              <label className="text-gray-500 font-medium">ID</label>
+              <p className="font-mono text-gray-700 mt-0.5 truncate" title={event.id}>{event.id}</p>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+
+      {/* Footer */}
+      <div className="mt-4 pt-4 border-t border-gray-200 flex justify-end">
+        <button
+          onClick={onClose}
+          className="px-4 sm:px-6 py-2 bg-gradient-to-r from-gray-100 to-gray-200 hover:from-gray-200 hover:to-gray-300 text-gray-700 rounded-lg transition-all duration-200 font-semibold shadow-sm text-sm"
+        >
+          Cerrar
+        </button>
+      </div>
+    </Modal>
   );
 };

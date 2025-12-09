@@ -122,11 +122,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     },
     recentActivity: recentActivities,
     topOrganizers: topOrganizers,
-    deviceStats: {
-      desktop: 65,
-      mobile: 30,
-      tablet: 5
-    },
     locationStats: locationStats
   };
 
@@ -147,13 +142,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       {/* Controls */}
       <div className="flex flex-col sm:flex-row justify-end items-start sm:items-center gap-2 sm:gap-3">
          <div className="flex flex-row-reverse sm:flex-row flex-wrap gap-2 sm:gap-3 w-full sm:w-auto">
-           <button
-             onClick={() => onExportData('dashboard')}
-             className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-xl hover:from-blue-600 hover:to-purple-700 transition-all duration-200 shadow-sm"
-           >
-             <Download className="w-4 h-4" />
-             <span>Exportar</span>
-           </button>
            <button
              onClick={handleRefresh}
              disabled={isRefreshing}

@@ -39,7 +39,8 @@ interface EventDetails {
     precio: number;
     descripcion?: string;
     cantidad_maxima: number;
-    cantidad_vendida: number;
+    cantidad_vendida?: number;
+    cantidad_disponible?: number;
   }>;
   compras?: Array<{
     id: string;
@@ -110,7 +111,7 @@ export const ViewEventModal: React.FC<ViewEventModalProps> = ({ isOpen, onClose,
   const estadoBadge = getEstadoBadge(event.estado);
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size="xl" showCloseButton={false}>
+    <Modal isOpen={isOpen} onClose={onClose} size="2xl" showCloseButton={false}>
       {/* Header */}
       <div className="flex items-start justify-between pb-4 border-b border-gray-200">
         <div className="flex items-start space-x-3 flex-1 min-w-0">
@@ -151,7 +152,7 @@ export const ViewEventModal: React.FC<ViewEventModalProps> = ({ isOpen, onClose,
         )}
 
         {/* Grid de Estadísticas Principales */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
           <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-lg p-3 border border-green-200">
             <div className="flex items-center justify-between mb-1">
               <DollarSign className="w-5 h-5 sm:w-6 sm:h-6 text-green-600" />
@@ -176,13 +177,6 @@ export const ViewEventModal: React.FC<ViewEventModalProps> = ({ isOpen, onClose,
             <p className="text-sm sm:text-lg font-bold text-purple-900">{event.asistentes_actuales}/{event.maximo_asistentes}</p>
           </div>
 
-          <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-lg p-3 border border-orange-200">
-            <div className="flex items-center justify-between mb-1">
-              <Eye className="w-5 h-5 sm:w-6 sm:h-6 text-orange-600" />
-            </div>
-            <p className="text-xs font-medium text-orange-700">Vistas</p>
-            <p className="text-sm sm:text-lg font-bold text-orange-900">{analytics?.total_visualizaciones || 0}</p>
-          </div>
         </div>
 
         {/* Información del Evento */}
@@ -282,8 +276,12 @@ export const ViewEventModal: React.FC<ViewEventModalProps> = ({ isOpen, onClose,
           {event.tipos_entrada && event.tipos_entrada.length > 0 ? (
             <div className="space-y-2">
               {event.tipos_entrada.map((ticket) => {
-                const porcentajeVendido = ticket.cantidad_maxima > 0 
-                  ? ((ticket.cantidad_vendida / ticket.cantidad_maxima) * 100).toFixed(0)
+                const maximos = ticket.cantidad_maxima ?? 0;
+                const disponibles = ticket.cantidad_disponible ?? maximos;
+                const vendidos = ticket.cantidad_vendida ?? Math.max(maximos - disponibles, 0);
+                const restantes = Math.max(disponibles, 0);
+                const porcentajeVendido = maximos > 0 
+                  ? ((vendidos / maximos) * 100).toFixed(0)
                   : '0';
                 
                 return (
@@ -291,7 +289,7 @@ export const ViewEventModal: React.FC<ViewEventModalProps> = ({ isOpen, onClose,
                     key={ticket.id}
                     className="bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg p-3 border border-gray-200"
                   >
-                    <div className="flex items-start justify-between mb-2">
+                    <div className="flex items-start justify-between mb-3">
                       <div className="flex-1 min-w-0">
                         <h4 className="font-bold text-gray-900 text-sm truncate">{ticket.nombre_tipo}</h4>
                         {ticket.descripcion && (
@@ -301,10 +299,17 @@ export const ViewEventModal: React.FC<ViewEventModalProps> = ({ isOpen, onClose,
                       <p className="text-lg font-bold text-green-600 ml-3 flex-shrink-0">{formatRevenue(ticket.precio)}</p>
                     </div>
 
+                    <div className="flex items-center gap-2 text-[11px] font-semibold text-gray-700 mb-2">
+                      <span className="px-2 py-1 bg-green-100 text-green-700 rounded-lg">Vendidas: {vendidos}</span>
+                      <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded-lg">Restantes: {restantes}</span>
+                      <span className="px-2 py-1 bg-gray-200 text-gray-700 rounded-lg">Totales: {maximos}</span>
+                      <span className="px-2 py-1 bg-purple-100 text-purple-700 rounded-lg">{porcentajeVendido}%</span>
+                    </div>
+
                     <div className="space-y-1">
                       <div className="flex items-center justify-between text-xs">
-                        <span className="text-gray-600">{ticket.cantidad_vendida} / {ticket.cantidad_maxima}</span>
-                        <span className="text-gray-500">{porcentajeVendido}%</span>
+                        <span className="text-gray-600">{vendidos} / {maximos}</span>
+                        <span className="text-gray-500">{porcentajeVendido}% vendido</span>
                       </div>
                       
                       <div className="w-full bg-gray-200 rounded-full h-1.5 overflow-hidden">

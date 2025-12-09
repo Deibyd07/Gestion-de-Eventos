@@ -3,7 +3,6 @@ import { supabase } from '../supabase';
 export interface FinanceOverview {
   totalRevenue: number;
   monthlyRevenue: number;
-  pendingPayments: number;
   failedPayments: number;
   avgTransactionValue: number;
   totalTransactions: number;
@@ -53,14 +52,12 @@ export class FinanceService {
       const [
         totalRevenue,
         monthlyRevenue,
-        pendingPayments,
         failedPayments,
         transactionStats,
         growthStats
       ] = await Promise.all([
         this.getTotalRevenue(),
         this.getMonthlyRevenue(),
-        this.getPendingPayments(),
         this.getFailedPayments(),
         this.getTransactionStats(),
         this.getGrowthStats()
@@ -69,7 +66,6 @@ export class FinanceService {
       return {
         totalRevenue,
         monthlyRevenue,
-        pendingPayments,
         failedPayments,
         avgTransactionValue: transactionStats.avgValue,
         totalTransactions: transactionStats.total,
@@ -139,47 +135,22 @@ export class FinanceService {
   }
 
   /**
-   * Obtiene el total de pagos pendientes
-   */
-  private static async getPendingPayments(): Promise<number> {
-    try {
-      const { data, error } = await supabase
-        .from('compras')
-        .select('total_pagado')
-        .eq('estado', 'pendiente');
-
-      if (error) {
-        console.error('Error al obtener pagos pendientes:', error);
-        throw error;
-      }
-
-      const pendingPayments = (data as Array<{ total_pagado: number }>)?.reduce((sum, compra) => {
-        return sum + (parseFloat(String(compra.total_pagado)) || 0);
-      }, 0) || 0;
-
-      return pendingPayments;
-    } catch (error) {
-      console.error('Error en getPendingPayments:', error);
-      return 0;
-    }
-  }
-
-  /**
    * Obtiene el total de pagos fallidos
    */
   private static async getFailedPayments(): Promise<number> {
     try {
+      // Usamos únicamente estados presentes en la BD para evitar 22P02 (enum inválido)
       const { data, error } = await supabase
         .from('compras')
         .select('total_pagado')
-        .eq('estado', 'fallida');
+        .in('estado', ['cancelada', 'reembolsada']);
 
       if (error) {
         console.error('Error al obtener pagos fallidos:', error);
         throw error;
       }
 
-      const failedPayments = (data as Array<{ total_pagado: number }>)?.reduce((sum, compra) => {
+      const failedPayments = (data as Array<{ total_pagado: number }> || [])?.reduce((sum, compra) => {
         return sum + (parseFloat(String(compra.total_pagado)) || 0);
       }, 0) || 0;
 

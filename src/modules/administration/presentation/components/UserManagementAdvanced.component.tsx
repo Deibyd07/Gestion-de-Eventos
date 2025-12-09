@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Download, Upload } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { UserManagementContent } from './user-management/UserManagementContent.component';
 import { UserEditModal } from './user-management/UserEditModal.component';
 import { UserDeleteModal } from './user-management/UserDeleteModal.component';
 import { UserService } from '@shared/lib/api/services/User.service';
+import { AddUserModal } from './user-management/AddUserModal.component';
+import { supabase } from '@shared/lib/api/supabase';
 
 interface User {
   id: string;
@@ -19,6 +21,8 @@ interface User {
   eventos_creados?: number;
   eventos_asistidos?: number;
   ingresos_generados?: number;
+  compras_realizadas?: number;
+  total_entradas?: number;
   rating?: number;
   verificacion?: boolean;
 }
@@ -45,6 +49,7 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onViewOrganizerP
   const [userToEdit, setUserToEdit] = useState<User | null>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [userToDelete, setUserToDelete] = useState<User | null>(null);
+  const [showAddModal, setShowAddModal] = useState(false);
 
   // Función para obtener estadísticas basadas en el rol del usuario
   const getStatsByRole = (userRole: string) => {
@@ -88,43 +93,130 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onViewOrganizerP
   const currentUserRole = 'admin';
   const stats = getStatsByRole(currentUserRole);
 
-  // Cargar usuarios desde Supabase
-  useEffect(() => {
-    const loadUsers = async () => {
-      setLoading(true);
-      try {
-        console.log('🔄 Cargando usuarios desde Supabase...');
-        const usuariosDB = await UserService.obtenerTodosUsuarios();
-        
-        // Mapear usuarios de la base de datos al formato esperado
-        const usuariosMapeados: User[] = usuariosDB.map(usuario => ({
+  const loadUsers = async () => {
+    setLoading(true);
+    try {
+      console.log('🔄 Cargando usuarios desde Supabase...');
+      const usuariosDB = await UserService.obtenerTodosUsuarios();
+      
+      // Obtener estadísticas reales para cada usuario según su rol
+      const usuariosMapeados: User[] = await Promise.all(usuariosDB.map(async (usuario) => {
+        let eventos_creados = 0;
+        let eventos_asistidos = 0;
+        let ingresos_generados = 0;
+        let compras_realizadas = 0;
+        let total_entradas = 0;
+        let rating = 0;
+
+        try {
+          if (usuario.rol === 'organizador' || usuario.rol === 'administrador') {
+            // Contar eventos creados por el organizador
+            const { data: eventos, error: eventosError } = await supabase
+              .from('eventos')
+              .select('id')
+              .eq('id_organizador', usuario.id);
+            
+            if (eventosError) {
+              console.error(`Error eventos para ${usuario.id}:`, eventosError);
+            }
+            eventos_creados = eventos?.length || 0;
+            console.log(`👤 ${usuario.nombre_completo} (organizador): ${eventos_creados} eventos`);
+
+            // Calcular ingresos de sus eventos (compras completadas)
+            // Primero obtener los IDs de eventos del organizador
+            if (eventos && eventos.length > 0) {
+              const eventosIds = eventos.map(e => e.id);
+              const { data: compras, error: comprasError } = await supabase
+                .from('compras')
+                .select('total_pagado')
+                .in('id_evento', eventosIds)
+                .eq('estado', 'completada');
+              
+              if (comprasError) {
+                console.error(`Error compras para ${usuario.id}:`, comprasError);
+              } else {
+                ingresos_generados = compras?.reduce((sum, c) => sum + (c.total_pagado || 0), 0) || 0;
+                console.log(`💰 ${usuario.nombre_completo}: ${compras?.length || 0} compras, $${ingresos_generados} ingresos totales`);
+              }
+            }
+          }
+
+          if (usuario.rol === 'asistente' || usuario.rol === 'administrador') {
+            // Contar eventos a los que ha asistido
+            const { data: asistencias, error: asistError } = await supabase
+              .from('asistencia_eventos')
+              .select('id')
+              .eq('id_usuario', usuario.id);
+            
+            if (asistError) {
+              console.error(`Error asistencias para ${usuario.id}:`, asistError);
+            }
+            eventos_asistidos = asistencias?.length || 0;
+            console.log(`🎟️ ${usuario.nombre_completo} (asistente): ${eventos_asistidos} asistencias`);
+
+            // Contar compras realizadas por el asistente y sumar total de entradas
+            const { data: compras, error: comprasError } = await supabase
+              .from('compras')
+              .select('id, total_pagado, cantidad')
+              .eq('id_usuario', usuario.id)
+              .eq('estado', 'completada');
+            
+            if (comprasError) {
+              console.error(`Error compras asistente ${usuario.id}:`, comprasError);
+            }
+            compras_realizadas = compras?.length || 0;
+            total_entradas = compras?.reduce((sum, c) => sum + (c.cantidad || 0), 0) || 0;
+            ingresos_generados = compras?.reduce((sum, c) => sum + (c.total_pagado || 0), 0) || 0;
+            console.log(`🛒 ${usuario.nombre_completo}: ${compras_realizadas} compras, ${total_entradas} entradas, $${ingresos_generados} gastado`);
+          }
+
+          // Obtener rating promedio (si es organizador)
+          if (usuario.rol === 'organizador') {
+            const { data: ratings } = await supabase
+              .from('calificaciones_eventos')
+              .select('calificacion, eventos!inner(id_organizador)')
+              .eq('eventos.id_organizador', usuario.id);
+            if (ratings && ratings.length > 0) {
+              rating = ratings.reduce((sum, r) => sum + r.calificacion, 0) / ratings.length;
+            }
+          }
+        } catch (err) {
+          console.warn(`Error cargando stats para usuario ${usuario.id}:`, err);
+        }
+
+        return {
           id: usuario.id,
           nombre_completo: usuario.nombre_completo,
           correo_electronico: usuario.correo_electronico,
           rol: usuario.rol,
-          estado: usuario.estado || 'activo', // Usar el estado de la BD o por defecto activo
+          estado: usuario.estado || 'activo',
           fecha_registro: usuario.fecha_creacion,
           ultima_actividad: usuario.fecha_actualizacion || usuario.fecha_creacion,
           telefono: usuario.telefono,
           ubicacion: usuario.ubicacion,
           avatar: usuario.url_avatar,
-          eventos_creados: 0, // Estos campos requieren consultas adicionales
-          eventos_asistidos: 0,
-          ingresos_generados: 0,
-          rating: 0,
+          eventos_creados,
+          eventos_asistidos,
+          ingresos_generados,
+          compras_realizadas,
+          total_entradas,
+          rating: Math.round(rating * 10) / 10,
           verificacion: usuario.verificacion || false
-        }));
-        
-        console.log('✅ Usuarios cargados:', usuariosMapeados.length);
-        setUsers(usuariosMapeados);
-      } catch (error) {
-        console.error('❌ Error al cargar usuarios:', error);
-        alert('Error al cargar usuarios desde la base de datos');
-      } finally {
-        setLoading(false);
-      }
-    };
+        };
+      }));
 
+      console.log('✅ Usuarios cargados:', usuariosMapeados.length);
+      setUsers(usuariosMapeados);
+    } catch (error) {
+      console.error('❌ Error al cargar usuarios:', error);
+      alert('Error al cargar usuarios desde la base de datos');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Cargar usuarios desde Supabase
+  useEffect(() => {
     loadUsers();
   }, []);
 
@@ -250,14 +342,48 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onViewOrganizerP
     }
   };
 
-  const handleExportUsers = () => {
-    // Implementar exportación
-    console.log('Export users');
-  };
+  const handleCreateUser = async (payload: {
+    nombre_completo: string;
+    correo_electronico: string;
+    password: string;
+    telefono?: string;
+    ubicacion?: string;
+    rol: 'administrador' | 'organizador' | 'asistente';
+    estado: 'activo' | 'inactivo' | 'suspendido' | 'pendiente';
+  }) => {
+    try {
+      console.log('➕ Creando usuario:', payload.correo_electronico, payload.rol);
+      const result = await UserService.registrarse(
+        payload.correo_electronico,
+        payload.password,
+        {
+          nombre: payload.nombre_completo,
+          telefono: payload.telefono,
+          ubicacion: payload.ubicacion,
+          rol: payload.rol
+        }
+      );
 
-  const handleImportUsers = () => {
-    // Implementar importación
-    console.log('Import users');
+      const userId = result?.user?.id;
+      if (userId) {
+        await UserService.actualizarUsuario(userId, {
+          nombre_completo: payload.nombre_completo,
+          correo_electronico: payload.correo_electronico,
+          telefono: payload.telefono,
+          ubicacion: payload.ubicacion,
+          rol: payload.rol,
+          estado: payload.estado
+        } as any);
+      }
+
+      await loadUsers();
+      setShowAddModal(false);
+      alert('Usuario creado correctamente');
+    } catch (error: any) {
+      console.error('❌ Error al crear usuario:', error);
+      alert(error?.message || 'Error al crear el usuario');
+      throw error;
+    }
   };
 
   const handleConfirmRoleUpdate = async () => {
@@ -287,24 +413,15 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onViewOrganizerP
   return (
     <div className="space-y-4 md:space-y-6 w-full max-w-full">
 
-      {/* Botones de acción */}
-      <div className="flex flex-col sm:flex-row justify-end items-start sm:items-center gap-2 sm:gap-3">
-        <div className="flex flex-row-reverse sm:flex-row flex-wrap gap-2 sm:gap-3 w-full sm:w-auto">
-          <button
-            onClick={handleExportUsers}
-            className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-xl hover:from-blue-600 hover:to-purple-700 transition-all duration-200 shadow-sm"
-          >
-            <Download className="w-4 h-4" />
-            <span>Exportar</span>
-          </button>
-          <button
-            onClick={handleImportUsers}
-            className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-gray-500 to-gray-600 text-white rounded-xl hover:from-gray-600 hover:to-gray-700 transition-all duration-200 shadow-sm"
-          >
-            <Upload className="w-4 h-4" />
-            <span>Importar</span>
-          </button>
-        </div>
+      {/* Botón agregar usuario */}
+      <div className="flex justify-end">
+        <button
+          onClick={() => setShowAddModal(true)}
+          className="inline-flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-xl hover:from-blue-600 hover:to-purple-700 transition-all duration-200 shadow-sm"
+        >
+          <Plus className="w-4 h-4" />
+          <span>Agregar usuario</span>
+        </button>
       </div>
 
       {/* Estadísticas rápidas */}
@@ -407,12 +524,16 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onViewOrganizerP
         onUpdateUserRole={handleUpdateUserRole}
         onToggleUserStatus={handleToggleUserStatus}
         onViewOrganizerProfile={onViewOrganizerProfile}
-        onExportUsers={handleExportUsers}
-        onImportUsers={handleImportUsers}
         onConfirmRoleUpdate={handleConfirmRoleUpdate}
         formatCurrency={formatCurrency}
         formatDate={formatDate}
         currentUserRole={currentUserRole}
+      />
+
+      <AddUserModal
+        isOpen={showAddModal}
+        onClose={() => setShowAddModal(false)}
+        onCreate={handleCreateUser}
       />
 
       {/* Modal de edición */}

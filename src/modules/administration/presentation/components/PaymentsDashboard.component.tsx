@@ -21,7 +21,9 @@ import {
   Check,
   X,
   User,
-  Calendar
+  Calendar,
+  Pencil,
+  Trash2
 } from 'lucide-react';
 import { FinanceService, PaymentMethod, Transaction } from '@shared/lib/api/services/Finance.service';
 
@@ -43,7 +45,6 @@ export const PaymentsDashboard: React.FC = () => {
     overview: {
       totalRevenue: 0,
       monthlyRevenue: 0,
-      pendingPayments: 0,
       failedPayments: 0,
       avgTransactionValue: 0,
       totalTransactions: 0,
@@ -303,10 +304,6 @@ export const PaymentsDashboard: React.FC = () => {
       {/* Controls */}
       <div className="flex justify-end items-center">
         <div className="flex flex-row-reverse sm:flex-row gap-2 sm:gap-3">
-          <button className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-xl hover:from-blue-600 hover:to-purple-700 transition-all duration-200 shadow-sm">
-            <Download className="w-4 h-4" />
-            <span>Exportar</span>
-          </button>
           <button 
             onClick={handleRefresh}
             disabled={isLoading}
@@ -319,7 +316,7 @@ export const PaymentsDashboard: React.FC = () => {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
         <div className="bg-gradient-to-br from-green-50 to-green-100 border border-green-200 rounded-xl md:rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-200 backdrop-blur-lg p-3 sm:p-4">
           <div className="flex items-start sm:items-center justify-between gap-2">
             <div className="flex-1 min-w-0">
@@ -356,26 +353,6 @@ export const PaymentsDashboard: React.FC = () => {
             </div>
             <div className="p-2 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg shadow-sm flex-shrink-0">
               <CreditCard className="w-4 h-4 md:w-5 md:h-5 text-white" />
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-gradient-to-br from-purple-50 to-purple-100 border border-purple-200 rounded-xl md:rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-200 backdrop-blur-lg p-3 sm:p-4">
-          <div className="flex items-start sm:items-center justify-between gap-2">
-            <div className="flex-1 min-w-0">
-              <p className="text-xs md:text-sm font-medium text-purple-700 truncate">Tasa de Éxito</p>
-              <p className="text-lg md:text-2xl font-bold text-purple-900">{paymentsData.overview.successRate}%</p>
-              <div className="flex items-center mt-1">
-                <TrendingUp className={`w-3 h-3 mr-1 ${paymentsData.overview.growth.successRate >= 0 ? 'text-green-600' : 'text-red-600'}`} />
-                <span className={`text-xs font-medium ${
-                  paymentsData.overview.growth.successRate >= 0 ? 'text-green-700' : 'text-red-700'
-                }`}>
-                  {paymentsData.overview.growth.successRate >= 0 ? '+' : ''}{paymentsData.overview.growth.successRate}% vs el mes anterior
-                </span>
-              </div>
-            </div>
-            <div className="p-2 bg-gradient-to-r from-purple-500 to-purple-600 rounded-lg shadow-sm flex-shrink-0">
-              <CheckCircle className="w-4 h-4 md:w-5 md:h-5 text-white" />
             </div>
           </div>
         </div>
@@ -425,19 +402,7 @@ export const PaymentsDashboard: React.FC = () => {
       {activeTab === 'overview' && (
         <div className="space-y-4">
           {/* Secondary Metrics */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="bg-gradient-to-br from-yellow-50 to-yellow-100 border border-yellow-200 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-200 backdrop-blur-lg p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-yellow-700">Pagos Pendientes</p>
-                  <p className="text-2xl font-bold text-yellow-900">{formatCurrency(paymentsData.overview.pendingPayments)}</p>
-                </div>
-                <div className="p-3 bg-gradient-to-r from-yellow-500 to-yellow-600 rounded-xl shadow-sm">
-                  <Clock className="w-6 h-6 text-white" />
-                </div>
-              </div>
-            </div>
-
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="bg-gradient-to-br from-red-50 to-red-100 border border-red-200 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-200 backdrop-blur-lg p-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -465,7 +430,7 @@ export const PaymentsDashboard: React.FC = () => {
 
           {/* Payment Methods Chart */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className="bg-gradient-to-br from-white to-indigo-100/98 backdrop-blur-lg shadow-xl border border-blue-200 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-200 backdrop-blur-lg p-6">
+            <div className="bg-gradient-to-br from-white to-indigo-100/98 backdrop-blur-lg shadow-xl rounded-2xl hover:shadow-2xl transition-all duration-200 backdrop-blur-lg p-6">
               <div className="flex items-center space-x-3 mb-4">
                 <div className="p-2 bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl">
                   <CreditCard className="w-5 h-5 text-white" />
@@ -502,7 +467,7 @@ export const PaymentsDashboard: React.FC = () => {
               </div>
             </div>
 
-            <div className="bg-gradient-to-br from-white to-indigo-100/98 backdrop-blur-lg shadow-xl border border-blue-200 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-200 backdrop-blur-lg p-6">
+            <div className="bg-gradient-to-br from-white to-indigo-100/98 backdrop-blur-lg shadow-xl rounded-2xl hover:shadow-2xl transition-all duration-200 backdrop-blur-lg p-6">
               <div className="flex items-center space-x-3 mb-4">
                 <div className="p-2 bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl">
                   <DollarSign className="w-5 h-5 text-white" />
@@ -568,9 +533,7 @@ export const PaymentsDashboard: React.FC = () => {
               >
                 <option value="all">Todos los estados</option>
                 <option value="completada">Completadas</option>
-                <option value="pendiente">Pendientes</option>
                 <option value="procesando">Procesando</option>
-                <option value="fallida">Fallidas</option>
                 <option value="cancelada">Canceladas</option>
                 <option value="reembolsada">Reembolsadas</option>
               </select>
@@ -800,14 +763,16 @@ export const PaymentsDashboard: React.FC = () => {
                     <div className="mt-4 flex gap-2">
                       <button
                         onClick={() => openEditMethodModal(method)}
-                        className="flex-1 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors"
+                        className="flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 text-sm font-semibold text-blue-700 bg-white/80 border border-blue-200 rounded-lg shadow-sm hover:bg-blue-50 hover:border-blue-300 transition-all"
                       >
+                        <Pencil className="w-4 h-4" />
                         Editar
                       </button>
                       <button
                         onClick={() => openDeleteConfirm(method)}
-                        className="flex-1 px-3 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition-colors"
+                        className="flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 text-sm font-semibold text-red-700 bg-white/80 border border-red-200 rounded-lg shadow-sm hover:bg-red-50 hover:border-red-300 transition-all"
                       >
+                        <Trash2 className="w-4 h-4" />
                         Eliminar
                       </button>
                     </div>
@@ -974,15 +939,6 @@ export const PaymentsDashboard: React.FC = () => {
                 className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors"
               >
                 Cerrar
-              </button>
-              <button
-                onClick={() => {
-                  window.print();
-                }}
-                className="px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-xl hover:from-blue-600 hover:to-purple-700 transition-all duration-200 flex items-center gap-2"
-              >
-                <Download className="w-4 h-4" />
-                Exportar
               </button>
             </div>
           </div>

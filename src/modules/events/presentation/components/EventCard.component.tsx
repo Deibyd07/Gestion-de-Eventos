@@ -1,25 +1,123 @@
-import { MapPin, Users, Clock, Heart, Share2, ShoppingCart } from 'lucide-react';
+import { MapPin, Users, Clock, Share2, ShoppingCart, ImageIcon, AlertTriangle } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
 import { Event } from '../../../events/infrastructure/store/Event.store';
 import { useCartStore } from '../../../payments/infrastructure/store/Cart.store';
 import { useNotificationStore } from '../../../notifications/infrastructure/store/Notification.store';
 import { formatPriceDisplay } from '@shared/lib/utils/Currency.utils';
+import { parseDateString } from '@shared/lib/utils/Date.utils';
 import { useAuthStore } from '../../../authentication/infrastructure/store/Auth.store';
 import { FollowOrganizerButton } from '@shared/ui/components/FollowOrganizerButton/FollowOrganizerButton.component';
+import { supabase } from '@shared/lib/api/supabase';
 
 interface EventCardProps {
   event: Event;
   viewMode?: 'grid' | 'list';
-  isFavorite?: boolean;
-  onToggleFavorite?: () => void;
 }
 
-export function EventCard({ event, viewMode = 'grid', isFavorite = false, onToggleFavorite }: EventCardProps) {
+export function EventCard({ event, viewMode = 'grid' }: EventCardProps) {
   const { addItem } = useCartStore();
   const { addNotification } = useNotificationStore();
   const { user } = useAuthStore();
+  const [availableTickets, setAvailableTickets] = useState<number>(0);
+  const [totalCapacity, setTotalCapacity] = useState<number>(0);
+  const [loading, setLoading] = useState(true);
+
+  // Calcular disponibilidad real en tiempo real
+  useEffect(() => {
+    const fetchAvailability = async () => {
+      try {
+        // Obtener aforo máximo del evento
+        let maxCapacity = event.maxAttendees;
+        let currentAttendees = event.currentAttendees;
+
+        // Obtener tipos de entrada para calcular capacidad y disponibilidad
+        const { data: ticketTypes, error: ticketError } = await supabase
+          .from('tipos_entrada')
+          .select('cantidad_maxima, cantidad_disponible')
+          .eq('id_evento', event.id);
+
+        if (!ticketError && ticketTypes && ticketTypes.length > 0) {
+          const capacitySum = ticketTypes.reduce((sum, t) => sum + (t.cantidad_maxima || 0), 0);
+          const availableSum = ticketTypes.reduce((sum, t) => sum + (t.cantidad_disponible || 0), 0);
+          if (capacitySum > 0) {
+            maxCapacity = capacitySum;
+            // Derivar asistentes actuales a partir de capacidad - disponibles
+            currentAttendees = Math.max(0, maxCapacity - availableSum);
+          }
+        }
+
+        // Obtener asistentes actuales desde la tabla eventos
+        const { data: eventoData, error: eventoError } = await supabase
+          .from('eventos')
+          .select('asistentes_actuales, maximo_asistentes')
+          .eq('id', event.id)
+          .single();
+
+        if (!eventoError && eventoData) {
+          if (eventoData.maximo_asistentes) {
+            maxCapacity = eventoData.maximo_asistentes;
+          }
+          if (eventoData.asistentes_actuales !== undefined && eventoData.asistentes_actuales !== null) {
+            currentAttendees = eventoData.asistentes_actuales;
+          }
+        }
+
+        setTotalCapacity(maxCapacity);
+        setAvailableTickets(maxCapacity - currentAttendees);
+      } catch (error) {
+        console.error('Error fetching availability:', error);
+        setTotalCapacity(event.maxAttendees);
+        setAvailableTickets(event.maxAttendees - event.currentAttendees);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAvailability();
+
+    // Suscribirse a cambios en tiempo real en compras y tipos de entrada
+    const channelId = `${Date.now()}-${Math.random()}`;
+    const comprasChannel = supabase
+      .channel(`compras-${event.id}-card-${channelId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'compras',
+          filter: `id_evento=eq.${event.id}`
+        },
+        () => {
+          fetchAvailability();
+        }
+      )
+      .subscribe();
+
+    const ticketsChannel = supabase
+      .channel(`tipos_entrada-${event.id}-card-${channelId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'tipos_entrada',
+          filter: `id_evento=eq.${event.id}`
+        },
+        () => {
+          fetchAvailability();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      comprasChannel.unsubscribe();
+      ticketsChannel.unsubscribe();
+    };
+  }, [event.id]);
+
   const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
+    const date = parseDateString(dateString);
     return date.toLocaleDateString('es-ES', {
       day: 'numeric',
       month: 'short'
@@ -60,8 +158,9 @@ export function EventCard({ event, viewMode = 'grid', isFavorite = false, onTogg
     }
   };
 
-  const availableSpots = event.maxAttendees - event.currentAttendees;
-  const isAlmostFull = availableSpots <= event.maxAttendees * 0.1; // Less than 10% available
+  const availableSpots = availableTickets;
+  const isAlmostFull = availableSpots <= totalCapacity * 0.1 && availableSpots > 0;
+  const isSoldOut = availableSpots <= 0;
 
   const handleShare = () => {
     if (navigator.share) {
@@ -128,11 +227,17 @@ export function EventCard({ event, viewMode = 'grid', isFavorite = false, onTogg
       <div className="bg-white rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 border border-gray-200 overflow-hidden group">
         <div className="flex">
           <div className="relative w-48 h-32 flex-shrink-0">
-            <img
-              src={event.image}
-              alt={event.title}
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-            />
+            {event.image ? (
+              <img
+                src={event.image}
+                alt={event.title}
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              />
+            ) : (
+              <div className="w-full h-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center">
+                <ImageIcon className="w-12 h-12 text-gray-400" />
+              </div>
+            )}
             <div className="absolute top-2 left-2 bg-white/95 backdrop-blur-sm px-2 py-1 rounded-lg">
               <div className="text-center">
                 <div className="text-sm font-bold text-gray-900">
@@ -144,16 +249,6 @@ export function EventCard({ event, viewMode = 'grid', isFavorite = false, onTogg
               </div>
             </div>
             <div className="absolute top-2 right-2 flex space-x-1">
-              <button
-                onClick={onToggleFavorite}
-                className={`p-1.5 rounded-full backdrop-blur-sm transition-all duration-200 ${
-                  isFavorite 
-                    ? 'bg-red-500 text-white' 
-                    : 'bg-white/95 text-gray-700 hover:bg-white'
-                }`}
-              >
-                <Heart className={`w-3 h-3 ${isFavorite ? 'fill-current' : ''}`} />
-              </button>
               <button
                 onClick={handleShare}
                 className="p-1.5 bg-white/95 backdrop-blur-sm rounded-full text-gray-700 hover:bg-white transition-all duration-200"
@@ -203,9 +298,22 @@ export function EventCard({ event, viewMode = 'grid', isFavorite = false, onTogg
               </div>
               <div className="flex items-center">
                 <Users className="w-4 h-4 mr-1 text-gray-400" />
-                <span>
-                  {event.currentAttendees} / {event.maxAttendees}
-                </span>
+                  <span>
+                    {loading ? '...' : (
+                      <>
+                        <span className={`font-semibold ${isSoldOut ? 'text-red-600' : isAlmostFull ? 'text-orange-600' : 'text-green-600'}`}>
+                          {availableSpots}
+                        </span>
+                        {' / '}{totalCapacity} disponibles
+                        {isAlmostFull && !isSoldOut && (
+                          <span className="ml-1 text-orange-600 font-semibold">¡Últimas plazas!</span>
+                        )}
+                        {isSoldOut && (
+                          <span className="ml-1 text-red-600 font-semibold">Agotado</span>
+                        )}
+                      </>
+                    )}
+                  </span>
               </div>
             </div>
             
@@ -244,11 +352,17 @@ export function EventCard({ event, viewMode = 'grid', isFavorite = false, onTogg
   return (
     <div className="bg-white rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 border border-gray-200 overflow-hidden group h-full flex flex-col">
       <div className="relative h-48 overflow-hidden">
-        <img
-          src={event.image}
-          alt={event.title}
-          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-        />
+        {event.image ? (
+          <img
+            src={event.image}
+            alt={event.title}
+            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+          />
+        ) : (
+          <div className="w-full h-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center">
+            <ImageIcon className="w-16 h-16 text-gray-400" />
+          </div>
+        )}
         
         {/* Date Badge */}
         <div className="absolute top-4 left-4 bg-white/95 backdrop-blur-sm px-3 py-2 rounded-lg">
@@ -274,16 +388,6 @@ export function EventCard({ event, viewMode = 'grid', isFavorite = false, onTogg
 
         {/* Action Buttons */}
         <div className="absolute bottom-4 right-4 flex space-x-2">
-          <button
-            onClick={onToggleFavorite}
-            className={`p-2 rounded-full backdrop-blur-sm transition-all duration-200 ${
-              isFavorite 
-                ? 'bg-red-500 text-white' 
-                : 'bg-white/95 text-gray-700 hover:bg-white'
-            }`}
-          >
-            <Heart className={`w-4 h-4 ${isFavorite ? 'fill-current' : ''}`} />
-          </button>
           <button
             onClick={handleShare}
             className="p-2 bg-white/95 backdrop-blur-sm rounded-full text-gray-700 hover:bg-white transition-all duration-200"
@@ -329,11 +433,24 @@ export function EventCard({ event, viewMode = 'grid', isFavorite = false, onTogg
           <div className="flex items-center text-gray-600 text-sm">
             <Users className="w-4 h-4 mr-2 text-gray-400" />
             <span>
-              {event.currentAttendees} / {event.maxAttendees} asistentes
-              {isAlmostFull && (
-                <span className="ml-1 text-orange-600 font-medium">
-                  · ¡Últimas plazas!
-                </span>
+              {loading ? 'Cargando...' : (
+                <>
+                  <span className={`font-semibold ${isSoldOut ? 'text-red-600' : isAlmostFull ? 'text-orange-600' : 'text-green-600'}`}>
+                    {availableSpots}
+                  </span>
+                  {' '}/{' '}{totalCapacity} disponibles
+                  {isAlmostFull && !isSoldOut && (
+                    <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+                      <AlertTriangle className="w-3 h-3 mr-1" />
+                      ¡Últimas plazas!
+                    </span>
+                  )}
+                  {isSoldOut && (
+                    <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                      Agotado
+                    </span>
+                  )}
+                </>
               )}
             </span>
           </div>
@@ -381,10 +498,15 @@ export function EventCard({ event, viewMode = 'grid', isFavorite = false, onTogg
           <div className="flex space-x-2 ml-3">
             <button
               onClick={handleAddToCart}
-              className="px-3 py-1.5 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg hover:from-green-600 hover:to-green-700 transition-all duration-300 font-medium shadow-md hover:shadow-lg transform hover:scale-105 flex items-center space-x-1 border border-green-400 text-xs"
+              disabled={isSoldOut || loading}
+              className={`px-3 py-1.5 rounded-lg transition-all duration-300 font-medium shadow-md flex items-center space-x-1 text-xs ${
+                isSoldOut || loading
+                  ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                  : 'bg-gradient-to-r from-green-500 to-green-600 text-white hover:from-green-600 hover:to-green-700 hover:shadow-lg transform hover:scale-105 border border-green-400'
+              }`}
             >
               <ShoppingCart className="w-3 h-3" />
-              <span>Agregar</span>
+              <span>{isSoldOut ? 'Agotado' : 'Agregar'}</span>
             </button>
             <Link
               to={`/events/${event.id}`}

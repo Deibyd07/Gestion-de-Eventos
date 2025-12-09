@@ -85,9 +85,16 @@ export const AuthCallbackPage = () => {
           setStatus('success');
           setMessage('¡Email verificado exitosamente!');
           
-          // Redirigir después de 2 segundos
+          // Redirigir después de 2 segundos según el rol del usuario
           setTimeout(() => {
-            navigate('/events', { replace: true });
+            const currentUser = useAuthStore.getState().user;
+            if (currentUser?.role === 'organizer') {
+              navigate('/organizer/dashboard', { replace: true });
+            } else if (currentUser?.role === 'admin') {
+              navigate('/admin', { replace: true });
+            } else {
+              navigate('/events', { replace: true });
+            }
           }, 2000);
         } else {
           throw new Error('Tipo de confirmación no válido');

@@ -1,18 +1,25 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { Calendar, MapPin, Clock, Users, Share2, Heart, Plus, Minus, ArrowLeft } from 'lucide-react';
+import { Calendar, MapPin, Clock, Users, Share2, Plus, Minus, ArrowLeft } from 'lucide-react';
+import { supabase } from '@shared/lib/api/supabase';
 import { useEventStore } from '../../../events/infrastructure/store/Event.store';
 import { useCartStore } from '../../../payments/infrastructure/store/Cart.store';
 import { formatPriceDisplay } from '@shared/lib/utils/Currency.utils';
+import { parseDateString } from '@shared/lib/utils/Date.utils';
 
 export function EventDetailPage() {
   const { id } = useParams<{ id: string }>();
   const { getEventById } = useEventStore();
   const { addItem } = useCartStore();
-  const [selectedTickets, setSelectedTickets] = useState<{ [key: string]: number }>({});
-  const [isLiked, setIsLiked] = useState(false);
-
   const event = id ? getEventById(id) : null;
+  const [selectedTickets, setSelectedTickets] = useState<{ [key: string]: number }>({});
+  const [ticketTypesData, setTicketTypesData] = useState(event?.ticketTypes || []);
+  const [totalCapacity, setTotalCapacity] = useState<number>(event?.maxAttendees || 0);
+  const [currentAttendees, setCurrentAttendees] = useState<number>(event?.currentAttendees || 0);
+  const [loadingAvailability, setLoadingAvailability] = useState<boolean>(true);
+  const safeCapacity = totalCapacity || event?.maxAttendees || 0;
+  const safeCurrent = currentAttendees || 0;
+  const availableSeats = Math.max(0, safeCapacity - safeCurrent);
 
   if (!event) {
     return (
@@ -29,7 +36,7 @@ export function EventDetailPage() {
   }
 
   const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
+    const date = parseDateString(dateString);
     return date.toLocaleDateString('es-ES', {
       weekday: 'long',
       year: 'numeric',
@@ -39,8 +46,10 @@ export function EventDetailPage() {
   };
 
   const updateTicketQuantity = (ticketTypeId: string, change: number) => {
+    const ticketType = (ticketTypesData as any[]).find(t => t.id === ticketTypeId);
+    const maxAvailable = ticketType ? Math.min(ticketType.cantidad_disponible ?? Infinity, ticketType.cantidad_maxima ?? Infinity) : Infinity;
     const currentQuantity = selectedTickets[ticketTypeId] || 0;
-    const newQuantity = Math.max(0, currentQuantity + change);
+    const newQuantity = Math.max(0, Math.min(currentQuantity + change, maxAvailable));
     
     if (newQuantity === 0) {
       const { [ticketTypeId]: removed, ...rest } = selectedTickets;
@@ -55,7 +64,7 @@ export function EventDetailPage() {
 
   const getTotalPrice = () => {
     return Object.entries(selectedTickets).reduce((total, [ticketTypeId, quantity]) => {
-      const ticketType = event.ticketTypes.find(t => t.id === ticketTypeId);
+      const ticketType = (ticketTypesData as any[]).find(t => t.id === ticketTypeId);
       return total + (ticketType ? ticketType.precio * quantity : 0);
     }, 0);
   };
@@ -64,9 +73,87 @@ export function EventDetailPage() {
     return Object.values(selectedTickets).reduce((sum, quantity) => sum + quantity, 0);
   };
 
+  useEffect(() => {
+    if (!event) return;
+
+    const fetchAvailability = async () => {
+      try {
+        // Empezar con los valores que llegan al card para mantener consistencia inicial
+        let maxCapacity = event.maxAttendees;
+        let current = event.currentAttendees;
+
+        const { data: ticketTypes, error: ticketError } = await supabase
+          .from('tipos_entrada')
+          .select('id, nombre_tipo, descripcion, precio, cantidad_disponible, cantidad_maxima')
+          .eq('id_evento', event.id);
+
+        if (!ticketError && ticketTypes) {
+          setTicketTypesData(ticketTypes as any);
+          const capacitySum = ticketTypes.reduce((sum: number, t: any) => sum + (t.cantidad_maxima || 0), 0);
+          const availableSum = ticketTypes.reduce((sum: number, t: any) => sum + (t.cantidad_disponible || 0), 0);
+          if (capacitySum > 0) {
+            maxCapacity = capacitySum;
+          }
+          // Derivar asistentes a partir de capacidad - disponibles
+          current = Math.max(0, maxCapacity - availableSum);
+        }
+
+        const { data: eventoData, error: eventoError } = await supabase
+          .from('eventos')
+          .select('asistentes_actuales, maximo_asistentes')
+          .eq('id', event.id)
+          .single();
+
+        if (!eventoError && eventoData) {
+          if (eventoData.maximo_asistentes) {
+            maxCapacity = eventoData.maximo_asistentes;
+          }
+          if (eventoData.asistentes_actuales !== undefined && eventoData.asistentes_actuales !== null) {
+            current = eventoData.asistentes_actuales;
+          }
+        }
+
+        setTotalCapacity(maxCapacity);
+        setCurrentAttendees(current);
+      } catch (err) {
+        console.error('Error obteniendo disponibilidad en detalle:', err);
+        setTotalCapacity(event.maxAttendees);
+        setCurrentAttendees(event.currentAttendees);
+      } finally {
+        setLoadingAvailability(false);
+      }
+    };
+
+    fetchAvailability();
+
+    const channelId = `${Date.now()}-${Math.random()}`;
+    const comprasChannel = supabase
+      .channel(`compras-${event.id}-detail-${channelId}`)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'compras', filter: `id_evento=eq.${event.id}` },
+        () => fetchAvailability()
+      )
+      .subscribe();
+
+    const ticketsChannel = supabase
+      .channel(`tipos_entrada-${event.id}-detail-${channelId}`)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'tipos_entrada', filter: `id_evento=eq.${event.id}` },
+        () => fetchAvailability()
+      )
+      .subscribe();
+
+    return () => {
+      comprasChannel.unsubscribe();
+      ticketsChannel.unsubscribe();
+    };
+  }, [event.id]);
+
   const handleAddToCart = () => {
     Object.entries(selectedTickets).forEach(([ticketTypeId, quantity]) => {
-      const ticketType = event.ticketTypes.find(t => t.id === ticketTypeId);
+      const ticketType = (ticketTypesData as any[]).find(t => t.id === ticketTypeId);
       if (ticketType && quantity > 0) {
         addItem({
           eventId: event.id,
@@ -114,16 +201,6 @@ export function EventDetailPage() {
               </div>
             </div>
             <div className="absolute top-6 right-6 flex space-x-2">
-              <button
-                onClick={() => setIsLiked(!isLiked)}
-                className={`p-3 rounded-full backdrop-blur-sm transition-all duration-200 ${
-                  isLiked 
-                    ? 'bg-red-500 text-white' 
-                    : 'bg-white/95 text-gray-700 hover:bg-white'
-                }`}
-              >
-                <Heart className={`w-5 h-5 ${isLiked ? 'fill-current' : ''}`} />
-              </button>
               <button className="p-3 bg-white/95 backdrop-blur-sm rounded-full text-gray-700 hover:bg-white transition-all duration-200">
                 <Share2 className="w-5 h-5" />
               </button>
@@ -219,13 +296,15 @@ export function EventDetailPage() {
               <div className="flex items-center text-gray-600 text-sm">
                 <Users className="w-4 h-4 mr-2" />
                 <span>
-                  {event.currentAttendees} de {event.maxAttendees} plazas ocupadas
+                  {loadingAvailability
+                    ? 'Calculando cupos...'
+                    : `${availableSeats} de ${safeCapacity} plazas disponibles`}
                 </span>
               </div>
             </div>
 
             <div className="space-y-4 mb-6">
-              {event.ticketTypes.map((ticketType) => (
+                {ticketTypesData.map((ticketType: any) => (
                 <div key={ticketType.id} className="border border-gray-200 rounded-lg p-4">
                   <div className="flex justify-between items-start mb-3">
                     <div>

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { UserService } from '@shared/lib/api/services/User.service';
+import { OrganizerFollowService } from '@shared/lib/api/services/OrganizerFollow.service';
 import { useAuthStore } from '../../../authentication/infrastructure/store/Auth.store';
 import { FollowOrganizerButton } from '@shared/ui/components/FollowOrganizerButton/FollowOrganizerButton.component';
 import { MapPin, Calendar, Award, Users, Building2, Mail, Globe } from 'lucide-react';
@@ -15,6 +16,7 @@ export const OrganizerPublicPage: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [events, setEvents] = useState<Event[]>([]);
   const [loadingEvents, setLoadingEvents] = useState<boolean>(true);
+  const [stats, setStats] = useState({ totalEvents: 0, totalFollowers: 0, rating: 0 });
 
   useEffect(() => {
     const load = async () => {
@@ -33,6 +35,19 @@ export const OrganizerPublicPage: React.FC = () => {
       }
     };
     load();
+  }, [id]);
+
+  useEffect(() => {
+    const loadFollowers = async () => {
+      if (!id || id === 'undefined') return;
+      try {
+        const followers = await OrganizerFollowService.listarSeguidoresOrganizador(id);
+        setStats(prev => ({ ...prev, totalFollowers: followers?.length || 0 }));
+      } catch (e) {
+        console.error('Error cargando seguidores:', e);
+      }
+    };
+    loadFollowers();
   }, [id]);
 
   useEffect(() => {
@@ -80,6 +95,10 @@ export const OrganizerPublicPage: React.FC = () => {
           .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
         setEvents(converted);
+        
+        // Calculate stats
+        const totalEvents = supabaseEvents?.length || 0;
+        setStats(prev => ({ ...prev, totalEvents }));
       } catch (e) {
         console.error('Error cargando eventos del organizador:', e);
         setEvents([]);
@@ -178,18 +197,16 @@ export const OrganizerPublicPage: React.FC = () => {
 
             {/* Estadísticas */}
             <div className="px-6 sm:px-8 py-6 bg-gradient-to-r from-gray-50 to-blue-50 border-t border-b border-gray-100">
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-2 gap-4">
                 <div className="text-center">
-                  <div className="text-2xl sm:text-3xl font-bold text-blue-600">12</div>
+                  <div className="text-2xl sm:text-3xl font-bold text-blue-600">{stats.totalEvents}</div>
                   <div className="text-xs sm:text-sm text-gray-600 mt-1">Eventos</div>
                 </div>
-                <div className="text-center border-x border-gray-200">
-                  <div className="text-2xl sm:text-3xl font-bold text-purple-600">1.2K</div>
+                <div className="text-center border-l border-gray-200">
+                  <div className="text-2xl sm:text-3xl font-bold text-purple-600">
+                    {stats.totalFollowers >= 1000 ? `${(stats.totalFollowers / 1000).toFixed(1)}K` : stats.totalFollowers}
+                  </div>
                   <div className="text-xs sm:text-sm text-gray-600 mt-1">Seguidores</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl sm:text-3xl font-bold text-green-600">4.8</div>
-                  <div className="text-xs sm:text-sm text-gray-600 mt-1">Rating</div>
                 </div>
               </div>
             </div>
@@ -205,7 +222,7 @@ export const OrganizerPublicPage: React.FC = () => {
                   <h2 className="text-xl font-bold text-gray-900">Acerca de</h2>
                 </div>
                 <p className="text-gray-700 leading-relaxed">
-                  {organizer.preferencias?.bio || organizer.descripcion || 'Este organizador aún no ha agregado una biografía.'}
+                  {organizer.bio || organizer.preferencias?.bio || organizer.descripcion || 'Este organizador aún no ha agregado una biografía.'}
                 </p>
               </div>
 
@@ -240,7 +257,7 @@ export const OrganizerPublicPage: React.FC = () => {
               )}
 
               {/* Organización */}
-              {organizer.preferencias?.organization && (
+              {(organizer.organizacion || organizer.preferencias?.organization) && (
                 <div>
                   <div className="flex items-center space-x-2 mb-4">
                     <div className="p-2 bg-green-100 rounded-lg">
@@ -248,7 +265,7 @@ export const OrganizerPublicPage: React.FC = () => {
                     </div>
                     <h2 className="text-xl font-bold text-gray-900">Organización</h2>
                   </div>
-                  <p className="text-gray-700">{organizer.preferencias.organization}</p>
+                  <p className="text-gray-700">{organizer.organizacion || organizer.preferencias.organization}</p>
                 </div>
               )}
             </div>

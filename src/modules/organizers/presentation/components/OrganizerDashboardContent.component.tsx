@@ -26,6 +26,7 @@ interface OrganizerDashboardContentProps {
     badge?: string;
     eventTitle?: string;
   }>;
+  onViewAllActivity?: () => void;
 }
 
 export function OrganizerDashboardContent({
@@ -33,12 +34,13 @@ export function OrganizerDashboardContent({
   onCreateEvent,
   onNavigateToTab,
   formatRevenue,
-  recentActivity
+  recentActivity,
+  onViewAllActivity
 }: OrganizerDashboardContentProps) {
   return (
     <div className="space-y-4 md:space-y-6">
       <OrganizerMetrics stats={stats} formatRevenue={formatRevenue} />
-      <RecentActivity activities={recentActivity || []} />
+      <RecentActivity activities={recentActivity || []} onViewAll={onViewAllActivity} />
       <QuickActions onCreateEvent={onCreateEvent} onNavigateToTab={onNavigateToTab} />
     </div>
   );

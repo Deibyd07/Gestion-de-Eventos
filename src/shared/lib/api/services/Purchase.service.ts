@@ -3,6 +3,7 @@ import type { Database } from '../supabase';
 import { QRCodeService, type QRTicketData } from '../../services/QRCode.service';
 import { EventService } from './Event.service';
 import { UserService } from './User.service';
+import { getCurrentColombiaISOString } from '../../utils/Date.utils';
 
 type Tables = Database['public']['Tables'];
 
@@ -30,7 +31,8 @@ export class PurchaseService {
     const insertPayload = {
       ...datosCompra,
       id_usuario: usuario.id, // Usar el ID real de la tabla usuarios
-      id_metodo_pago: idMetodoPago || null // Asociar método de pago si se proporciona
+      id_metodo_pago: idMetodoPago || null, // Asociar método de pago si se proporciona
+      fecha_creacion: getCurrentColombiaISOString() // Usar hora de Colombia explícitamente
     } as Tables['compras']['Insert'];
 
     console.log('📦 Datos de compra a insertar:', insertPayload);
@@ -54,25 +56,25 @@ export class PurchaseService {
     }
 
     // 2. Crear compra
-    const { data, error } = await supabase
+    const { data: purchaseData, error } = await supabase
       .from('compras')
-      .insert(insertPayload)
+      .insert(insertPayload as any)
       .select()
       .single();
 
-    console.log('📤 Respuesta de Supabase INSERT:', { data, error });
+    console.log('📤 Respuesta de Supabase INSERT:', { data: purchaseData, error });
 
     if (error) {
       console.error('❌ Error en INSERT de compra:', error);
       throw error;
     }
 
-    if (!data) {
+    if (!purchaseData) {
       console.error('⚠️ INSERT exitoso pero data es null/undefined');
       throw new Error('No se pudo obtener los datos de la compra creada');
     }
 
-    console.log('✅ Compra creada exitosamente:', data);
+    console.log('✅ Compra creada exitosamente:', purchaseData);
 
     // 3. Decrementar disponibilidad (operación sencilla; para concurrencia alta usar RPC)
     const { error: updateStockError } = await supabase
@@ -95,18 +97,21 @@ export class PurchaseService {
 
       // Generar un QR por cada entrada comprada
       const qrPromises = [];
+      // Calcular el precio real pagado por entrada (considerando descuentos)
+      const precioPorEntrada = insertPayload.total_pagado / insertPayload.cantidad;
+      
       for (let i = 1; i <= insertPayload.cantidad; i++) {
         const qrData: QRTicketData = {
-          ticketId: `${data.id}-${i}`,
+          ticketId: `${(purchaseData as any).id}-${i}`,
           eventId: insertPayload.id_evento,
           eventTitle: evento?.titulo || 'Evento',
           userId: insertPayload.id_usuario,
           userName: usuario?.nombre_completo || 'Usuario',
           userEmail: usuario?.correo_electronico || '',
-          purchaseId: data.id,
+          purchaseId: (purchaseData as any).id,
           ticketNumber: i,
           ticketType: tipoEntrada.data?.nombre_tipo || 'General',
-          price: insertPayload.precio_unitario,
+          price: precioPorEntrada,
           eventDate: evento?.fecha_evento || '',
           eventTime: evento?.hora_evento || '',
           eventLocation: evento?.ubicacion || '',
@@ -117,14 +122,25 @@ export class PurchaseService {
       }
 
       await Promise.all(qrPromises);
-      console.log(`✅ Generados ${insertPayload.cantidad} códigos QR para la compra ${data.id}`);
+      console.log(`✅ Generados ${insertPayload.cantidad} códigos QR para la compra ${(purchaseData as any).id}`);
+
+      // Actualizar la compra con los códigos QR generados (concatenados si son múltiples)
+      const qrCodes = await QRCodeService.getQRsByPurchase((purchaseData as any).id);
+      if (qrCodes && qrCodes.length > 0) {
+        const codigosQR = qrCodes.map((qr: any) => qr.codigo_qr).join(',');
+        await supabase
+          .from('compras')
+          .update({ codigo_qr: codigosQR } as any)
+          .eq('id', (purchaseData as any).id);
+        console.log(`✅ Campo codigo_qr actualizado en compras:`, codigosQR);
+      }
     } catch (qrError) {
       console.error('❌ Error generando QR codes:', qrError);
       // No lanzamos el error para que la compra se complete
       // Los QR se pueden regenerar después si es necesario
     }
 
-    return data;
+    return purchaseData;
   }
 
   static async obtenerComprasUsuario(idUsuario: string) {
@@ -135,10 +151,31 @@ export class PurchaseService {
     const userEmail = authInfo?.user?.email || null;
     console.log('🪪 obtenerComprasUsuario UID usado:', { authUid: uid, email: userEmail, paramId: idUsuario });
 
-    // Primero intentar por uid directo
+    // Primero intentar por uid directo con JOIN a eventos y usuario
     let { data, error } = await supabase
       .from('compras')
-      .select('*')
+      .select(`
+        *,
+        eventos (
+          id,
+          titulo,
+          descripcion,
+          fecha_evento,
+          hora_evento,
+          ubicacion
+        ),
+        usuarios:usuarios!compras_id_usuario_fkey (
+          id,
+          nombre_completo,
+          correo_electronico
+        ),
+        metodos_pago:metodos_pago!compras_id_metodo_pago_fkey (
+          id,
+          nombre,
+          tipo,
+          proveedor
+        )
+      `)
       .eq('id_usuario', uid)
       .order('fecha_creacion', { ascending: false });
 
@@ -154,7 +191,28 @@ export class PurchaseService {
       if (userData?.id) {
         const result = await supabase
           .from('compras')
-          .select('*')
+          .select(`
+            *,
+            eventos (
+              id,
+              titulo,
+              descripcion,
+              fecha_evento,
+              hora_evento,
+              ubicacion
+            ),
+            usuarios:usuarios!compras_id_usuario_fkey (
+              id,
+              nombre_completo,
+              correo_electronico
+            ),
+            metodos_pago:metodos_pago!compras_id_metodo_pago_fkey (
+              id,
+              nombre,
+              tipo,
+              proveedor
+            )
+          `)
           .eq('id_usuario', userData.id)
           .order('fecha_creacion', { ascending: false });
         data = result.data;
@@ -162,9 +220,38 @@ export class PurchaseService {
       }
     }
 
-    console.log('📥 obtenerComprasUsuario respuesta:', { count: data?.length || 0, error });
+    // Enriquecer con nombre/correo usuario y lista de códigos QR separados
+    const mapped = (data || []).map((purchase: any) => {
+      const correo = purchase.usuarios?.correo_electronico || purchase.correo_usuario || purchase.correo || null;
+      const nombre =
+        purchase.usuarios?.nombre_completo ||
+        purchase.nombre_usuario ||
+        purchase.nombre_comprador ||
+        purchase.nombre ||
+        (correo ? correo.split('@')[0] : null);
+
+      const metodoPagoNombre = purchase.metodos_pago?.nombre || purchase.metodo_pago_nombre || purchase.metodo_pago || null;
+
+      return {
+        ...purchase,
+        nombre_usuario: nombre,
+        correo_usuario: correo,
+        metodo_pago_nombre: metodoPagoNombre,
+        // Preferir nombre amigable como metodo_pago para el frontend
+        metodo_pago: metodoPagoNombre || purchase.metodo_pago || purchase.id_metodo_pago,
+        // Lista de códigos QR separados en array
+        codigos_qr: purchase.codigo_qr
+          ? String(purchase.codigo_qr)
+              .split(',')
+              .map((c: string) => c.trim())
+              .filter(Boolean)
+          : []
+      };
+    });
+
+    console.log('📥 obtenerComprasUsuario respuesta:', { count: mapped?.length || 0, error });
     if (error) throw error;
-    return data;
+    return mapped;
   }
 
   static async actualizarEstadoCompra(id: string, estado: Tables['compras']['Update']['estado']) {

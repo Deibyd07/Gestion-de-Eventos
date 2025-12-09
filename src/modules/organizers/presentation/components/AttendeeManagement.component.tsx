@@ -693,7 +693,7 @@ export function AttendeeManagement({ eventId, eventTitle, onRefreshRequest }: At
                       <div className="flex items-center space-x-4 text-sm text-gray-600">
                         <span className="flex items-center">
                           <Calendar className="w-4 h-4 mr-1" />
-                          {new Date(event.date).toLocaleDateString('es-ES')}
+                          {parseDateString(event.date).toLocaleDateString('es-ES')}
                         </span>
                         <span className="flex items-center">
                           <MapPin className="w-4 h-4 mr-1" />

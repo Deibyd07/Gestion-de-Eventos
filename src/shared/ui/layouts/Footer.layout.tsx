@@ -83,7 +83,7 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <Link to="/dashboard" className="text-gray-300 hover:text-white transition-colors duration-200 text-sm">
+                <Link to="/organizer/dashboard" className="text-gray-300 hover:text-white transition-colors duration-200 text-sm">
                   Mi Dashboard
                 </Link>
               </li>

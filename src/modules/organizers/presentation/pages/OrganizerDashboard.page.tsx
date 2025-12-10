@@ -808,21 +808,68 @@ export function OrganizerDashboard() {
     const autoTable = (await import('jspdf-autotable')).default;
     const doc = new jsPDF();
 
-    doc.setFontSize(14);
-    doc.text(title, 14, 16);
+    // Configuración de colores (igual que en administrador)
+    const primaryColor: [number, number, number] = [79, 70, 229]; // Indigo
+    const secondaryColor: [number, number, number] = [99, 102, 241]; // Indigo claro
 
-    let startY = 22;
-    tables.forEach((table) => {
+    // Encabezado principal
+    doc.setFillColor(...primaryColor);
+    doc.rect(0, 0, 210, 35, 'F');
+    
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(22);
+    doc.setFont('helvetica', 'bold');
+    doc.text(title.toUpperCase(), 105, 15, { align: 'center' });
+    
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'normal');
+    doc.text('EventHub - Sistema de Gestión de Eventos', 105, 25, { align: 'center' });
+
+    // Información de fecha
+    doc.setTextColor(0, 0, 0);
+    doc.setFontSize(10);
+    doc.text(`Fecha de generación: ${new Date().toLocaleDateString('es-CO')}`, 20, 45);
+
+    let startY = 55;
+    tables.forEach((table, index) => {
+      if (startY > 250) {
+        doc.addPage();
+        startY = 20;
+      }
+
       const tableRows = table.rows.length > 0 ? table.rows : [['Sin datos', '—']];
+      const fillColor = index === 0 ? primaryColor : secondaryColor;
+
       autoTable(doc, {
         startY,
         head: [table.headers],
         body: tableRows,
-        styles: { fontSize: 8 }
+        theme: 'grid',
+        headStyles: { 
+          fillColor: fillColor, 
+          textColor: 255, 
+          fontStyle: 'bold',
+          fontSize: 10
+        },
+        styles: { fontSize: 9 }
       });
       const lastTable = (doc as any).lastAutoTable;
-      startY = lastTable?.finalY ? lastTable.finalY + 10 : startY + 10;
+      startY = lastTable?.finalY ? lastTable.finalY + 15 : startY + 15;
     });
+
+    // Pie de página en todas las páginas
+    const pageCount = doc.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      doc.setFontSize(8);
+      doc.setTextColor(128, 128, 128);
+      doc.text(
+        `EventHub © ${new Date().getFullYear()} - Página ${i} de ${pageCount}`,
+        105,
+        290,
+        { align: 'center' }
+      );
+    }
 
     doc.save(fileName);
   };

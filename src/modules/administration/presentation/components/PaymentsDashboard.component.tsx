@@ -327,7 +327,7 @@ export const PaymentsDashboard: React.FC = () => {
                 <span className={`text-xs font-medium ${
                   paymentsData.overview.growth.revenue >= 0 ? 'text-green-700' : 'text-red-700'
                 }`}>
-                  {paymentsData.overview.growth.revenue >= 0 ? '+' : ''}{paymentsData.overview.growth.revenue}% vs el mes anterior
+                  {paymentsData.overview.growth.revenue >= 0 ? '+' : ''}{paymentsData.overview.growth.revenue.toFixed(1)}% vs el mes anterior
                 </span>
               </div>
             </div>
@@ -347,7 +347,7 @@ export const PaymentsDashboard: React.FC = () => {
                 <span className={`text-xs font-medium ${
                   paymentsData.overview.growth.transactions >= 0 ? 'text-green-700' : 'text-red-700'
                 }`}>
-                  {paymentsData.overview.growth.transactions >= 0 ? '+' : ''}{paymentsData.overview.growth.transactions}% vs el mes anterior
+                  {paymentsData.overview.growth.transactions >= 0 ? '+' : ''}{paymentsData.overview.growth.transactions.toFixed(1)}% vs el mes anterior
                 </span>
               </div>
             </div>
@@ -456,7 +456,7 @@ export const PaymentsDashboard: React.FC = () => {
                           <div className="w-32 bg-gray-200 rounded-full h-2">
                             <div className="bg-gradient-to-r from-blue-500 to-purple-600 h-2 rounded-full" style={{ width: `${method.percentage}%` }}></div>
                           </div>
-                          <span className="text-sm font-medium text-gray-900">{method.percentage}%</span>
+                          <span className="text-sm font-medium text-gray-900">{method.percentage.toFixed(1)}%</span>
                         </div>
                       </div>
                     );
@@ -740,7 +740,7 @@ export const PaymentsDashboard: React.FC = () => {
                       <div className={`p-3 rounded-lg ${color}`}>
                         <Icon className="w-6 h-6" />
                       </div>
-                      <span className="text-2xl font-bold text-gray-900">{method.percentage}%</span>
+                      <span className="text-2xl font-bold text-gray-900">{method.percentage.toFixed(1)}%</span>
                     </div>
                     <h3 className="text-lg font-semibold text-gray-900 mb-2">{method.nombre}</h3>
                     <div className="space-y-2">

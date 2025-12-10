@@ -459,7 +459,7 @@ export function AttendeeManagement({ eventId, eventTitle, onRefreshRequest }: At
               <p className="text-2xl font-bold text-gray-900">{metrics.checkedIn}</p>
               <p className="text-sm text-green-600 flex items-center mt-1">
                 <CheckCircle className="w-4 h-4 mr-1" />
-                {metrics.checkedInPercentage}% del total
+                {metrics.checkedInPercentage.toFixed(1)}% del total
               </p>
             </div>
             <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
@@ -487,9 +487,9 @@ export function AttendeeManagement({ eventId, eventTitle, onRefreshRequest }: At
         <div className="bg-gradient-to-br from-purple-50 to-purple-100 border border-purple-200 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-200 backdrop-blur-lg p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Tasa Asistencia</p>
-              <p className="text-2xl font-bold text-gray-900">{metrics.attendanceRate}%</p>
-              <p className="text-sm text-purple-600 flex items-center mt-1">
+              <p className="text-sm font-medium text-gray-600">Tasa de Asistencia</p>
+              <p className="text-2xl font-bold text-gray-900">{metrics.attendanceRate.toFixed(1)}%</p>
+              <p className="text-sm text-gray-500 flex items-center mt-1">
                 <CheckCircle className="w-4 h-4 mr-1" />
                 {parseFloat(metrics.attendanceRate) >= 80 ? 'Excelente' : parseFloat(metrics.attendanceRate) >= 60 ? 'Bueno' : 'Regular'}
               </p>

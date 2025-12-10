@@ -2052,7 +2052,7 @@ export function OrganizerDashboard() {
                                   <Icon className={`w-4 h-4 md:w-5 md:h-5 ${colors.icon} flex-shrink-0`} />
                                   <div className="min-w-0 flex-1">
                                     <h5 className="font-medium text-gray-900 text-xs md:text-sm truncate">{method.nombre}</h5>
-                                    <p className="text-xs md:text-sm text-gray-600 truncate">{method.proveedor} • {method.comision_porcentaje}% comisión</p>
+                                    <p className="text-xs md:text-sm text-gray-600 truncate">{method.proveedor} • {method.comision_porcentaje.toFixed(1)}% comisión</p>
                                   </div>
                                 </div>
                                 <div className="flex items-center space-x-2">
@@ -2250,7 +2250,7 @@ export function OrganizerDashboard() {
                     <div className="space-y-4">
                       <div className="grid grid-cols-2 gap-4">
                         <div className="p-3 bg-green-50 rounded-lg">
-                          <div className="text-2xl font-bold text-green-600">{attendanceStats.attendanceRate}%</div>
+                          <div className="text-2xl font-bold text-green-600">{attendanceStats.attendanceRate.toFixed(1)}%</div>
                           <div className="text-sm text-gray-600">Tasa de Asistencia</div>
                       </div>
                         <div className="p-3 bg-blue-50 rounded-lg">

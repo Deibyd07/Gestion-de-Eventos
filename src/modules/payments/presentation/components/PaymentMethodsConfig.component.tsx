@@ -176,7 +176,7 @@ export const PaymentMethodsConfig: React.FC<PaymentMethodsConfigProps> = ({
                   </div>
                 </div>
                 <div className="text-xs text-gray-500">
-                  <p>Comisión: {method.processingFee}%</p>
+                  <p>Comisión: {method.processingFee.toFixed(1)}%</p>
                   <p>Rango: ${method.minAmount.toLocaleString()} - ${method.maxAmount.toLocaleString()}</p>
                 </div>
               </button>
@@ -257,7 +257,7 @@ export const PaymentMethodsConfig: React.FC<PaymentMethodsConfigProps> = ({
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
               <div>
                 <span className="text-gray-500">Comisión:</span>
-                <p className="font-medium">{method.processingFee}%</p>
+                <p className="font-medium">{method.processingFee.toFixed(1)}%</p>
               </div>
               <div>
                 <span className="text-gray-500">Monto mínimo:</span>

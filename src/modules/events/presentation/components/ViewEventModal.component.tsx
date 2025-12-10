@@ -281,7 +281,7 @@ export const ViewEventModal: React.FC<ViewEventModalProps> = ({ isOpen, onClose,
                 const vendidos = ticket.cantidad_vendida ?? Math.max(maximos - disponibles, 0);
                 const restantes = Math.max(disponibles, 0);
                 const porcentajeVendido = maximos > 0 
-                  ? ((vendidos / maximos) * 100).toFixed(0)
+                  ? ((vendidos / maximos) * 100).toFixed(1)
                   : '0';
                 
                 return (

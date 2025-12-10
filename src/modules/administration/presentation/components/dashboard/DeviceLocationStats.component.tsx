@@ -37,7 +37,7 @@ export const DeviceLocationStats: React.FC<DeviceLocationStatsProps> = ({
                   <div className="w-32 bg-gray-200 rounded-full h-2">
                     <div className="bg-gradient-to-r from-blue-500 to-purple-600 h-2 rounded-full" style={{ width: `${percentage}%` }}></div>
                   </div>
-                  <span className="text-sm font-medium text-gray-900">{percentage}%</span>
+                  <span className="text-sm font-medium text-gray-900">{percentage.toFixed(1)}%</span>
                 </div>
               </div>
             ))

@@ -119,7 +119,7 @@ export const AllLocationsModal: React.FC<AllLocationsModalProps> = ({
                         ></div>
                       </div>
                       <div className="w-16 text-right">
-                        <span className="text-lg font-bold text-blue-600">{location.percentage}%</span>
+                        <span className="text-lg font-bold text-blue-600">{location.percentage.toFixed(1)}%</span>
                       </div>
                     </div>
                   </div>

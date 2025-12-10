@@ -127,7 +127,7 @@ export class PaymentMethodService {
     const totalCompletadas = compras?.length || 0;
     const uso = metodos.map(m => {
       const transacciones = compras?.filter(c => c.id_metodo_pago === m.id).length || 0;
-      const porcentaje = totalCompletadas > 0 ? (transacciones / totalCompletadas) * 100 : 0;
+      const porcentaje = totalCompletadas > 0 ? parseFloat(((transacciones / totalCompletadas) * 100).toFixed(1)) : 0;
       console.log(`📊 [STATS] Método ${m.nombre}: ${transacciones} transacciones (${porcentaje.toFixed(1)}%)`);
       return {
         id: m.id,

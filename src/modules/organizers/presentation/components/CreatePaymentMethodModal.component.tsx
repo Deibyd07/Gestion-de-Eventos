@@ -609,8 +609,8 @@ export function CreatePaymentMethodModal({ isOpen, onClose, onSave, isLoading = 
               </p>
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
-                  <p className="text-gray-500">Comisión:</p>
-                  <p className="font-semibold">{formData.processingFee}%</p>
+                  <p className="text-gray-600 text-sm">Comisión</p>
+                  <p className="font-semibold">{formData.processingFee.toFixed(1)}%</p>
                 </div>
                 <div>
                   <p className="text-gray-500">Procesamiento:</p>

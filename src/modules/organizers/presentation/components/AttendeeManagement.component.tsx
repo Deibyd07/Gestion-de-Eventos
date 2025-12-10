@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useCallback } from 'react';
 import { 
   Users, 
   Search, 
@@ -29,6 +29,7 @@ import {
 } from 'lucide-react';
 import { useEventStore } from '../../../events/infrastructure/store/Event.store';
 import { formatPrice } from '@shared/lib/utils/Currency.utils';
+import { parseDateString } from '@shared/lib/utils/Date.utils';
 import { useAuthStore } from '../../../authentication/infrastructure/store/Auth.store';
 import { AttendeeService, type AttendeeRow } from '@shared/lib/api/services/Attendee.service';
 // (Export functionality removed: PDF/Excel dependencies eliminated)
@@ -82,12 +83,6 @@ export function AttendeeManagement({ eventId, eventTitle, onRefreshRequest }: At
   const { user } = useAuthStore();
   const { events: storeEvents } = useEventStore();
 
-  // Exponer función de recarga al componente padre
-  useEffect(() => {
-    if (onRefreshRequest) {
-      (window as any).__attendeeRefresh = loadAttendees;
-    }
-  }, [onRefreshRequest]);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
   const [filterTicketType, setFilterTicketType] = useState('all');
@@ -103,12 +98,6 @@ export function AttendeeManagement({ eventId, eventTitle, onRefreshRequest }: At
   const [qrModalOpen, setQrModalOpen] = useState(false);
   const [selectedAttendee, setSelectedAttendee] = useState<Attendee | null>(null);
   
-  // Auto-expandir el evento si viene seleccionado
-  useEffect(() => {
-    if (eventId) {
-      setExpandedEvent(eventId);
-    }
-  }, [eventId]);
   const [toast, setToast] = useState<{ show: boolean; variant: 'success'|'error'|'info'; message: string }>(
     { show: false, variant: 'success', message: '' }
   );
@@ -116,6 +105,10 @@ export function AttendeeManagement({ eventId, eventTitle, onRefreshRequest }: At
   const realtimeReloadTimer = useRef<NodeJS.Timeout | null>(null);
   // Set de purchases escaneadas (para fallback cuando RLS impide leer filas QR/asistencia)
   const scannedPurchaseIdsRef = useRef<Set<string>>(new Set());
+  
+  // Filtrar eventos del organizador actual
+  const events = storeEvents.filter(event => event.organizerId === user?.id);
+  
   // Al montar, recuperar escaneos previos persistidos localmente
   useEffect(() => {
     try {
@@ -127,16 +120,19 @@ export function AttendeeManagement({ eventId, eventTitle, onRefreshRequest }: At
     } catch {}
   }, []);
 
-  // Filtrar eventos del organizador actual
-  const events = storeEvents.filter(event => event.organizerId === user?.id);
+  // Auto-expandir el evento si viene seleccionado
+  useEffect(() => {
+    if (eventId) {
+      setExpandedEvent(eventId);
+    }
+  }, [eventId]);
   
   // Función para cargar asistentes desde Supabase
-  const loadAttendees = async () => {
+  const loadAttendees = useCallback(async () => {
     if (!user?.id) return;
     try {
       setLoading(true);
       const rows: AttendeeRow[] = await AttendeeService.getOrganizerAttendees(user.id, eventId);
-      console.log('📋 Asistentes cargados desde servicio:', rows.map(r => ({ nombre: r.name, email: r.email })));
       let mapped: Attendee[] = rows.map((r: AttendeeRow) => ({
         id: r.userId,
         name: r.name,
@@ -174,7 +170,7 @@ export function AttendeeManagement({ eventId, eventTitle, onRefreshRequest }: At
     } finally {
       setLoading(false);
     }
-  };
+  }, [user?.id, eventId]);
 
   // PDF export removed
 
@@ -184,10 +180,17 @@ export function AttendeeManagement({ eventId, eventTitle, onRefreshRequest }: At
 
   // Export exposure removed
 
+  // Exponer función de recarga al componente padre
+  useEffect(() => {
+    if (onRefreshRequest) {
+      (window as any).__attendeeRefresh = loadAttendees;
+    }
+  }, [onRefreshRequest, loadAttendees]);
+
   // Cargar asistentes al montar y cuando cambien las dependencias
   useEffect(() => {
     loadAttendees();
-  }, [user?.id, eventId]);
+  }, [loadAttendees]);
 
   // Suscripción en tiempo real a cambios en QR y asistencias
   useEffect(() => {
@@ -201,7 +204,6 @@ export function AttendeeManagement({ eventId, eventTitle, onRefreshRequest }: At
       }, (payload) => {
         const nuevo = payload.new as any;
         if (!eventId || nuevo.id_evento === eventId) {
-          console.log('🔄 Realtime UPDATE QR payload:', nuevo);
           // Actualización optimista: marcar como checked-in si coincide por id_compra
           setAttendees(prev => {
             if (!nuevo.id_compra) return prev;
@@ -239,7 +241,6 @@ export function AttendeeManagement({ eventId, eventTitle, onRefreshRequest }: At
       }, (payload) => {
         const nuevo = payload.new as any;
         if (!eventId || nuevo.id_evento === eventId) {
-          console.log('📝 Realtime INSERT asistencia payload:', nuevo);
           // Actualización optimista para asistencia manual
           setAttendees(prev => {
             if (!nuevo.id_compra) return prev;
@@ -290,17 +291,13 @@ export function AttendeeManagement({ eventId, eventTitle, onRefreshRequest }: At
           }, 400);
         }
       })
-      .subscribe((status) => {
-        if (status === 'SUBSCRIBED') {
-          console.log('🔔 Suscripción en tiempo real asistentes activa');
-        }
-      });
+      .subscribe();
 
     return () => {
       if (realtimeReloadTimer.current) clearTimeout(realtimeReloadTimer.current);
       supabase.removeChannel(channel);
     };
-  }, [user?.id, eventId]);
+  }, [user?.id, eventId, loadAttendees]);
 
   // Si hay un evento específico seleccionado para filtros manuales
   const filteredEvents = useMemo(() => (
@@ -392,7 +389,7 @@ export function AttendeeManagement({ eventId, eventTitle, onRefreshRequest }: At
   };
 
   const handleBulkAction = (action: string) => {
-    console.log(`Acción masiva ${action} para asistentes:`, selectedAttendees);
+    // TODO: Implementar acciones masivas
   };
 
   const toggleEventExpansion = (eventId: string) => {
@@ -405,7 +402,7 @@ export function AttendeeManagement({ eventId, eventTitle, onRefreshRequest }: At
     const checkedIn = attendees.filter(a => a.checkInStatus === 'checked-in').length;
     const pending = attendees.filter(a => a.checkInStatus === 'pending').length;
     const noShow = attendees.filter(a => a.checkInStatus === 'no-show').length;
-    const attendanceRate = total > 0 ? ((checkedIn / total) * 100).toFixed(1) : '0.0';
+    const attendanceRate = total > 0 ? ((checkedIn / total) * 100) : 0;
     const checkedInPercentage = total > 0 ? Math.round((checkedIn / total) * 100) : 0;
 
     return {
@@ -487,11 +484,11 @@ export function AttendeeManagement({ eventId, eventTitle, onRefreshRequest }: At
         <div className="bg-gradient-to-br from-purple-50 to-purple-100 border border-purple-200 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-200 backdrop-blur-lg p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Tasa Asistencia</p>
-              <p className="text-2xl font-bold text-gray-900">{metrics.attendanceRate}%</p>
-              <p className="text-sm text-purple-600 flex items-center mt-1">
+              <p className="text-sm font-medium text-gray-600">Tasa de Asistencia</p>
+              <p className="text-2xl font-bold text-gray-900">{metrics.attendanceRate.toFixed(1)}%</p>
+              <p className="text-sm text-gray-500 flex items-center mt-1">
                 <CheckCircle className="w-4 h-4 mr-1" />
-                {parseFloat(metrics.attendanceRate) >= 80 ? 'Excelente' : parseFloat(metrics.attendanceRate) >= 60 ? 'Bueno' : 'Regular'}
+                {metrics.attendanceRate >= 80 ? 'Excelente' : metrics.attendanceRate >= 60 ? 'Bueno' : 'Regular'}
               </p>
             </div>
             <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">

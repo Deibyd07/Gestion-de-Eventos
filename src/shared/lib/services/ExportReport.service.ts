@@ -1,4 +1,6 @@
 import * as XLSX from 'xlsx';
+import { jsPDF } from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 interface ReportData {
   totalEvents: number;
@@ -70,6 +72,253 @@ interface ExportFilters {
 
 export class ExportReportService {
   /**
+   * Exporta el reporte a formato PDF
+   */
+  static exportToPDF(data: ReportData, filters: ExportFilters): void {
+    try {
+      const doc = new jsPDF();
+      const filteredData = this.filterDataByPeriod(data, filters);
+
+    // Configuración de colores
+    const primaryColor: [number, number, number] = [79, 70, 229]; // Indigo
+    const secondaryColor: [number, number, number] = [99, 102, 241]; // Indigo claro
+    
+    let yPosition = 20;
+
+    // Encabezado principal
+    doc.setFillColor(...primaryColor);
+    doc.rect(0, 0, 210, 35, 'F');
+    
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(22);
+    doc.setFont('helvetica', 'bold');
+    doc.text('REPORTE DE ANALYTICS', 105, 15, { align: 'center' });
+    
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'normal');
+    doc.text('EventHub - Sistema de Gestión de Eventos', 105, 25, { align: 'center' });
+
+    // Información del período
+    const monthNames = [
+      'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+      'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+    ];
+    const periodText = filters.month
+      ? `${monthNames[parseInt(filters.month) - 1]} ${filters.year}`
+      : `Año ${filters.year}`;
+
+    doc.setTextColor(0, 0, 0);
+    doc.setFontSize(10);
+    yPosition = 45;
+    doc.text(`Período: ${periodText}`, 20, yPosition);
+    doc.text(`Fecha de generación: ${new Date().toLocaleDateString('es-CO')}`, 20, yPosition + 5);
+
+    // Sección: Resumen Ejecutivo
+    yPosition = 60;
+    this.addSectionTitle(doc, 'RESUMEN EJECUTIVO', yPosition, primaryColor);
+    yPosition += 10;
+
+    const summaryData = [
+      ['Total de Eventos', filteredData.totalEvents.toLocaleString('es-CO')],
+      ['Ingresos Totales', `$${filteredData.totalRevenue.toLocaleString('es-CO')} COP`],
+      ['Total Asistentes', filteredData.totalAttendees.toLocaleString('es-CO')],
+      ['Tasa de Conversión', `${filteredData.conversionRate.toFixed(1)}%`],
+      ['Precio Promedio Ticket', `$${filteredData.averageTicketPrice.toLocaleString('es-CO')} COP`]
+    ];
+
+    autoTable(doc, {
+      startY: yPosition,
+      head: [['Métrica', 'Valor']],
+      body: summaryData,
+      theme: 'grid',
+      headStyles: { fillColor: primaryColor, textColor: 255, fontStyle: 'bold' },
+      styles: { fontSize: 10 },
+      columnStyles: {
+        0: { cellWidth: 80 },
+        1: { cellWidth: 90, halign: 'right' }
+      }
+    });
+
+    yPosition = (doc as any).lastAutoTable.finalY + 15;
+
+    // Sección: Eventos Destacados
+    if (filteredData.topEvents.length > 0) {
+      if (yPosition > 250) {
+        doc.addPage();
+        yPosition = 20;
+      }
+
+      this.addSectionTitle(doc, 'EVENTOS DESTACADOS', yPosition, primaryColor);
+      yPosition += 10;
+
+      const topEventsData = filteredData.topEvents.slice(0, 5).map((event, index) => [
+        (index + 1).toString(),
+        (event.title || 'Sin título').substring(0, 40) + ((event.title || '').length > 40 ? '...' : ''),
+        `$${event.revenue.toLocaleString('es-CO')}`,
+        event.attendees.toString()
+      ]);
+
+      autoTable(doc, {
+        startY: yPosition,
+        head: [['#', 'Evento', 'Ingresos', 'Asistentes']],
+        body: topEventsData,
+        theme: 'striped',
+        headStyles: { fillColor: secondaryColor, textColor: 255 },
+        styles: { fontSize: 9 },
+        columnStyles: {
+          0: { cellWidth: 15, halign: 'center' },
+          1: { cellWidth: 90 },
+          2: { cellWidth: 40, halign: 'right' },
+          3: { cellWidth: 30, halign: 'center' }
+        }
+      });
+
+      yPosition = (doc as any).lastAutoTable.finalY + 15;
+    }
+
+    // Sección: Ingresos Mensuales
+    if (filteredData.revenueByMonth.length > 0) {
+      if (yPosition > 250) {
+        doc.addPage();
+        yPosition = 20;
+      }
+
+      this.addSectionTitle(doc, 'INGRESOS MENSUALES', yPosition, primaryColor);
+      yPosition += 10;
+
+      const revenueData = filteredData.revenueByMonth.map(month => [
+        `${month.month} ${month.year}`,
+        month.events.toString(),
+        `$${month.revenue.toLocaleString('es-CO')}`,
+        `${month.growthVsPrevMonth >= 0 ? '+' : ''}${month.growthVsPrevMonth.toFixed(1)}%`
+      ]);
+
+      autoTable(doc, {
+        startY: yPosition,
+        head: [['Período', 'Eventos', 'Ingresos', 'Crecimiento']],
+        body: revenueData,
+        theme: 'grid',
+        headStyles: { fillColor: secondaryColor, textColor: 255 },
+        styles: { fontSize: 9 },
+        columnStyles: {
+          0: { cellWidth: 50 },
+          1: { cellWidth: 30, halign: 'center' },
+          2: { cellWidth: 50, halign: 'right' },
+          3: { cellWidth: 35, halign: 'right' }
+        }
+      });
+
+      yPosition = (doc as any).lastAutoTable.finalY + 15;
+    }
+
+    // Sección: Ventas por Tipo de Entrada
+    if (filteredData.ticketSalesByType.length > 0) {
+      if (yPosition > 250) {
+        doc.addPage();
+        yPosition = 20;
+      }
+
+      this.addSectionTitle(doc, 'VENTAS POR TIPO DE ENTRADA', yPosition, primaryColor);
+      yPosition += 10;
+
+      const ticketData = filteredData.ticketSalesByType.slice(0, 10).map(ticket => [
+        ticket.type || 'General',
+        (ticket.eventName || 'Sin nombre').substring(0, 30) + ((ticket.eventName || '').length > 30 ? '...' : ''),
+        ticket.sales.toString(),
+        `$${ticket.revenue.toLocaleString('es-CO')}`
+      ]);
+
+      autoTable(doc, {
+        startY: yPosition,
+        head: [['Tipo', 'Evento', 'Ventas', 'Ingresos']],
+        body: ticketData,
+        theme: 'striped',
+        headStyles: { fillColor: secondaryColor, textColor: 255 },
+        styles: { fontSize: 9 },
+        columnStyles: {
+          0: { cellWidth: 40 },
+          1: { cellWidth: 60 },
+          2: { cellWidth: 30, halign: 'center' },
+          3: { cellWidth: 45, halign: 'right' }
+        }
+      });
+
+      yPosition = (doc as any).lastAutoTable.finalY + 15;
+    }
+
+    // Sección: Métricas de Precios
+    if (yPosition > 230) {
+      doc.addPage();
+      yPosition = 20;
+    }
+
+    this.addSectionTitle(doc, 'MÉTRICAS DE PRECIOS', yPosition, primaryColor);
+    yPosition += 10;
+
+    const priceData = [
+      ['Precio Promedio', `$${filteredData.priceMetrics.averagePrice.toLocaleString('es-CO')} COP`],
+      ['Ticket Más Caro', `$${filteredData.priceMetrics.maxPrice.toLocaleString('es-CO')} COP`],
+      ['Ticket Más Barato', `$${filteredData.priceMetrics.minPrice.toLocaleString('es-CO')} COP`]
+    ];
+
+    autoTable(doc, {
+      startY: yPosition,
+      head: [['Métrica', 'Valor']],
+      body: priceData,
+      theme: 'grid',
+      headStyles: { fillColor: secondaryColor, textColor: 255 },
+      styles: { fontSize: 10 },
+      columnStyles: {
+        0: { cellWidth: 80 },
+        1: { cellWidth: 90, halign: 'right' }
+      }
+    });
+
+    // Pie de página en todas las páginas
+    const pageCount = doc.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      doc.setFontSize(8);
+      doc.setTextColor(128, 128, 128);
+      doc.text(
+        `EventHub © ${new Date().getFullYear()} - Página ${i} de ${pageCount}`,
+        105,
+        290,
+        { align: 'center' }
+      );
+    }
+
+    // Generar nombre del archivo
+    const fileName = this.generateFileName(filters, 'pdf');
+
+    // Descargar PDF
+    doc.save(fileName);
+    } catch (error) {
+      console.error('Error al exportar PDF:', error);
+      alert('Error al generar el PDF. Por favor intente nuevamente.');
+    }
+  }
+
+  /**
+   * Agrega un título de sección al PDF
+   */
+  private static addSectionTitle(
+    doc: jsPDF,
+    title: string,
+    yPosition: number,
+    color: [number, number, number]
+  ): void {
+    doc.setFillColor(...color);
+    doc.rect(15, yPosition - 5, 180, 8, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'bold');
+    doc.text(title, 20, yPosition);
+    doc.setTextColor(0, 0, 0);
+    doc.setFont('helvetica', 'normal');
+  }
+
+  /**
    * Exporta el reporte a formato Excel (.xlsx)
    */
   static exportToExcel(data: ReportData, filters: ExportFilters): void {
@@ -97,7 +346,7 @@ export class ExportReportService {
     this.addGeographicDataSheet(workbook, filteredData);
 
     // Generar nombre del archivo
-    const fileName = this.generateFileName(filters);
+    const fileName = this.generateFileName(filters, 'xlsx');
 
     // Descargar archivo
     XLSX.writeFile(workbook, fileName);
@@ -232,15 +481,15 @@ export class ExportReportService {
         ['Total de Eventos', data.totalEvents.toString()],
         ['Ingresos Totales', `$${data.totalRevenue.toLocaleString('es-CO')}`],
         ['Total Asistentes', data.totalAttendees.toString()],
-        ['Tasa de Conversión', `${data.conversionRate}%`],
+        ['Tasa de Conversión', `${data.conversionRate.toFixed(1)}%`],
         ['Precio Promedio Ticket', `$${data.averageTicketPrice.toLocaleString('es-CO')}`]
       );
     } else {
       summaryData.push(
-        ['Total de Eventos', data.totalEvents.toString(), `Crecimiento: ${data.growth.events}%`],
-        ['Ingresos Totales', `$${data.totalRevenue.toLocaleString('es-CO')}`, `Crecimiento: ${data.growth.revenue}%`],
-        ['Total Asistentes', data.totalAttendees.toString(), `Crecimiento: ${data.growth.attendees}%`],
-        ['Tasa de Conversión', `${data.conversionRate}%`, `Crecimiento: ${data.growth.conversionRate}%`],
+        ['Total de Eventos', data.totalEvents.toString(), `Crecimiento: ${data.growth.events.toFixed(1)}%`],
+        ['Ingresos Totales', `$${data.totalRevenue.toLocaleString('es-CO')}`, `Crecimiento: ${data.growth.revenue.toFixed(1)}%`],
+        ['Total Asistentes', data.totalAttendees.toString(), `Crecimiento: ${data.growth.attendees.toFixed(1)}%`],
+        ['Tasa de Conversión', `${data.conversionRate.toFixed(1)}%`, `Crecimiento: ${data.growth.conversionRate.toFixed(1)}%`],
         ['Precio Promedio Ticket', `$${data.averageTicketPrice.toLocaleString('es-CO')}`]
       );
     }
@@ -253,7 +502,7 @@ export class ExportReportService {
       ['Ticket Más Barato', `$${data.priceMetrics.minPrice.toLocaleString('es-CO')}`],
       [],
       ['ESTADÍSTICAS DE ASISTENCIA'],
-      ['Tasa de Asistencia Promedio', `${data.attendanceStats.averageAttendanceRate}%`],
+      ['Tasa de Asistencia Promedio', `${data.attendanceStats.averageAttendanceRate.toFixed(1)}%`],
       ['Mejor Día de la Semana', data.attendanceStats.bestDayOfWeek],
       ['Hora Pico de Registro', data.attendanceStats.peakCheckInHour]
     );
@@ -277,10 +526,10 @@ export class ExportReportService {
     const headers = ['Posición', 'Evento', 'Ingresos', 'Asistentes', 'Fecha'];
     const rows = data.topEvents.map((event, index) => [
       (index + 1).toString(),
-      event.title,
+      event.title || 'Sin título',
       `$${event.revenue.toLocaleString('es-CO')}`,
       event.attendees.toString(),
-      new Date(event.date).toLocaleDateString('es-CO')
+      event.date ? new Date(event.date).toLocaleDateString('es-CO') : 'N/A'
     ]);
 
     const wsData = [
@@ -314,7 +563,7 @@ export class ExportReportService {
         `${monthData.month} ${monthData.year}`,
         `$${monthData.revenue.toLocaleString('es-CO')}`,
         monthData.events.toString(),
-        `${monthData.growthVsPrevMonth >= 0 ? '+' : ''}${monthData.growthVsPrevMonth}%`,
+        `${monthData.growthVsPrevMonth >= 0 ? '+' : ''}${monthData.growthVsPrevMonth.toFixed(1)}%`,
         '' // Columna para fechas
       ]);
 
@@ -334,7 +583,7 @@ export class ExportReportService {
             `  → ${event.title}`,
             `$${event.revenue.toLocaleString('es-CO')}`,
             '',
-            `${event.percentage}%`,
+            `${event.percentage.toFixed(1)}%`,
             `Fecha del Evento: ${eventDate} | Periodo de Ventas: Desde ${salesStart}`
           ]);
         });
@@ -368,8 +617,8 @@ export class ExportReportService {
   private static addTicketSalesSheet(workbook: XLSX.WorkBook, data: ReportData): void {
     const headers = ['Tipo de Entrada', 'Evento', 'Ventas', 'Ingresos'];
     const rows = data.ticketSalesByType.map(ticket => [
-      ticket.type,
-      ticket.eventName,
+      ticket.type || 'General',
+      ticket.eventName || 'Sin nombre',
       ticket.sales.toString(),
       `$${ticket.revenue.toLocaleString('es-CO')}`
     ]);
@@ -480,19 +729,20 @@ export class ExportReportService {
   /**
    * Genera el nombre del archivo basado en los filtros
    */
-  private static generateFileName(filters: ExportFilters): string {
+  private static generateFileName(filters: ExportFilters, format: 'xlsx' | 'pdf' = 'xlsx'): string {
     const monthNames = [
       'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
       'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
     ];
 
     const timestamp = new Date().toISOString().split('T')[0];
+    const extension = format === 'pdf' ? 'pdf' : 'xlsx';
 
     if (filters.month) {
       const monthName = monthNames[parseInt(filters.month) - 1];
-      return `Reporte_EventHub_${monthName}_${filters.year}_${timestamp}.xlsx`;
+      return `Reporte_EventHub_${monthName}_${filters.year}_${timestamp}.${extension}`;
     }
 
-    return `Reporte_EventHub_${filters.year}_${timestamp}.xlsx`;
+    return `Reporte_EventHub_${filters.year}_${timestamp}.${extension}`;
   }
 }

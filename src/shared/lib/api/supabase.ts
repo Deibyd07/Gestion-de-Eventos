@@ -105,6 +105,7 @@ export interface Database {
           id: string;
           id_evento: string;
           nombre_tipo: string;
+          tipo?: string;
           precio: number;
           descripcion: string;
           cantidad_maxima: number;
@@ -116,6 +117,7 @@ export interface Database {
           id?: string;
           id_evento: string;
           nombre_tipo: string;
+          tipo?: string;
           precio: number;
           descripcion: string;
           cantidad_maxima: number;
@@ -123,6 +125,7 @@ export interface Database {
         };
         Update: {
           nombre_tipo?: string;
+          tipo?: string;
           precio?: number;
           descripcion?: string;
           cantidad_maxima?: number;

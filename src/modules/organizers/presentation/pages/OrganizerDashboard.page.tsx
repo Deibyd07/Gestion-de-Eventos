@@ -43,6 +43,7 @@ import { DeleteEventConfirmation } from '../../../events/presentation/components
 import { ConfigureEventModal } from '../../../events/presentation/components/ConfigureEventModal.component';
 import { CreateTicketModal, CreateTicketFormData } from '../components/CreateTicketModal.component';
 import { TicketTypeService } from '@shared/lib/api/services/TicketType.service';
+import { StorageService } from '@shared/lib/services/Storage.service';
 import { PaymentMethodService } from '@shared/lib/api/services/PaymentMethod.service';
 import { CreatePromotionModal, CreatePromotionFormData } from '../components/CreatePromotionModal.component';
 import { UploadImageModal } from '../../../events/presentation/components/UploadImageModal.component';
@@ -205,6 +206,8 @@ export function OrganizerDashboard() {
   const [isDeletePaymentMethodModalOpen, setIsDeletePaymentMethodModalOpen] = useState(false);
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<any | null>(null);
   const [isLoadingPaymentMethodDetails, setIsLoadingPaymentMethodDetails] = useState(false);
+  // Ingresos reales por tipo de entrada (considerando descuentos) para la pestaña de tickets
+  const [ticketRevenueByType, setTicketRevenueByType] = useState<Record<string, number>>({});
   const [isDeletingPaymentMethod, setIsDeletingPaymentMethod] = useState(false);
   const [openPaymentMethodDropdown, setOpenPaymentMethodDropdown] = useState<string | null>(null);
   const [eventPaymentStats, setEventPaymentStats] = useState<any | null>(null);
@@ -362,9 +365,12 @@ export function OrganizerDashboard() {
       await loadEventPaymentStats();
       setIsEditPaymentMethodModalOpen(false);
       setSelectedPaymentMethod(null);
-      alert('Método de pago actualizado exitosamente');
+      setToastMessage('Método de pago actualizado exitosamente');
+      setShowSuccessToast(true);
     } catch (error) {
       console.error('Error al actualizar método de pago:', error);
+      setToastMessage('Error al actualizar el método de pago');
+      setShowErrorToast(true);
       throw error;
     }
   };
@@ -627,6 +633,16 @@ export function OrganizerDashboard() {
     }
   }, [user?.id, finalEvents.length, selectedEventId]);
 
+  // Cargar ingresos reales por tipo de entrada al entrar en la pestaña de tickets
+  useEffect(() => {
+    const loadRevenue = async () => {
+      if (activeTab !== 'tickets' || !selectedEventId) return;
+      const map = await calculateTicketRevenue(selectedEventId);
+      setTicketRevenueByType(map);
+    };
+    loadRevenue();
+  }, [activeTab, selectedEventId]);
+
   // Effect para cargar estadísticas de asistencia
   useEffect(() => {
     if (activeTab === 'attendance' && selectedEvent) {
@@ -661,6 +677,23 @@ export function OrganizerDashboard() {
 
   // Status functions removed - not used in current implementation
 
+  const mapDbEstadoToStatus = (estado?: string) => {
+    switch ((estado || '').toLowerCase()) {
+      case 'publicado':
+        return 'upcoming';
+      case 'borrador':
+        return 'draft';
+      case 'pausado':
+        return 'paused';
+      case 'cancelado':
+        return 'cancelled';
+      case 'finalizado':
+        return 'completed';
+      default:
+        return 'upcoming';
+    }
+  };
+
   const handleRefresh = async () => {
     console.log('Actualizando datos...');
     // Recargar eventos del organizador
@@ -684,9 +717,24 @@ export function OrganizerDashboard() {
           currentAttendees: dbEvent.asistentes_actuales || 0,
           organizerId: dbEvent.id_organizador,
           organizerName: dbEvent.nombre_organizador || user.name,
-          status: dbEvent.estado || 'upcoming',
+          status: mapDbEstadoToStatus(dbEvent.estado),
           tags: dbEvent.etiquetas || [],
-          ticketTypes: dbEvent.tipos_entrada || []
+          ticketTypes: (dbEvent.tipos_entrada || []).map((t: any) => ({
+            id: t.id,
+            name: t.nombre_tipo,
+            description: t.descripcion,
+            price: t.precio,
+            originalPrice: undefined,
+            available: t.cantidad_disponible,
+            sold: (t.cantidad_maxima || 0) - (t.cantidad_disponible || 0),
+            type: t.tipo || 'general',
+            isActive: true,
+            salesStartDate: undefined,
+            salesEndDate: undefined,
+            maxPerUser: undefined,
+            features: [],
+            eventId: dbEvent.id
+          }))
         }));
         
         const otherEvents = storeEvents.filter(e => e.organizerId !== user.id);
@@ -784,6 +832,28 @@ export function OrganizerDashboard() {
       throw new Error('No hay asistentes para este evento');
     }
     return attendees;
+  };
+
+  // Calcula ingresos reales por tipo de entrada (considerando descuentos) para un evento específico
+  const calculateTicketRevenue = async (eventId: string) => {
+    if (!user?.id) return {};
+    try {
+      const attendees = await AttendeeService.getOrganizerAttendees(user.id, eventId);
+      const revenueMap: Record<string, number> = {};
+
+      attendees.forEach((att) => {
+        const qty = att.purchaseQuantity && att.purchaseQuantity > 0 ? att.purchaseQuantity : 1;
+        const paid = typeof att.purchaseTotalPaid === 'number' ? att.purchaseTotalPaid : (att.ticketPrice || 0) * qty;
+        const ticketKey = att.ticketType || 'general';
+        if (!revenueMap[ticketKey]) revenueMap[ticketKey] = 0;
+        revenueMap[ticketKey] += paid;
+      });
+
+      return revenueMap;
+    } catch (e) {
+      console.error('Error calculando ingresos por tipo de entrada:', e);
+      return {};
+    }
   };
 
   const exportToExcel = async (sheets: Array<{ name: string; rows: Record<string, any>[] }>, fileName: string) => {
@@ -1053,24 +1123,63 @@ export function OrganizerDashboard() {
   };
 
   const handleCreateEvent = async (formData: CreateEventFormData) => {
+    if (!user?.id) {
+      setToastMessage('Debes iniciar sesión para crear eventos');
+      setShowErrorToast(true);
+      return;
+    }
+
     setIsCreatingEvent(true);
     
     try {
-      // Simular llamada a API
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Aquí iría la lógica real para crear el evento
-      console.log('Creando evento:', formData);
-      
-      // Cerrar modal
+      // Subir imagen si el usuario adjuntó una
+      let imageUrl = 'https://images.pexels.com/photos/3184287/pexels-photo-3184287.jpeg';
+      if (formData.image) {
+        try {
+          imageUrl = await StorageService.uploadImage(formData.image as File);
+        } catch (uploadError: any) {
+          console.error('No se pudo subir la imagen, usando placeholder:', uploadError);
+          setToastMessage(uploadError?.message || 'No se pudo subir la imagen, usando imagen por defecto');
+          setShowErrorToast(true);
+        }
+      }
+
+      const nuevoEvento = {
+        titulo: formData.title.trim(),
+        descripcion: formData.description.trim(),
+        url_imagen: imageUrl,
+        fecha_evento: formData.date,
+        hora_evento: formData.time,
+        ubicacion: `${formData.city}, ${formData.country}`,
+        categoria: 'General',
+        maximo_asistentes: formData.maxAttendees,
+        asistentes_actuales: 0,
+        id_organizador: user.id,
+        nombre_organizador: user.name || 'Organizador',
+        estado: 'publicado',
+        etiquetas: []
+      } as any;
+
+      const createdEvent = await EventService.crearEvento(nuevoEvento);
+
+      await TicketTypeService.crearTipoEntrada({
+        id_evento: createdEvent.id,
+        nombre_tipo: 'General',
+        tipo: 'general',
+        precio: formData.ticketPrice ?? 0,
+        descripcion: 'Entrada general',
+        cantidad_maxima: formData.maxAttendees,
+        cantidad_disponible: formData.maxAttendees
+      });
+
+      await handleRefresh();
       setIsCreateEventModalOpen(false);
-      
-      // Mostrar mensaje de éxito (puedes implementar un toast)
-      console.log('Evento creado exitosamente');
-      
-    } catch (error) {
+      setToastMessage('Evento creado exitosamente');
+      setShowSuccessToast(true);
+    } catch (error: any) {
       console.error('Error al crear evento:', error);
-      // Aquí podrías mostrar un mensaje de error
+      setToastMessage(error?.message || 'No se pudo crear el evento');
+      setShowErrorToast(true);
     } finally {
       setIsCreatingEvent(false);
     }
@@ -1086,6 +1195,7 @@ export function OrganizerDashboard() {
         id_evento: selectedEvent.id,
   nombre_evento: selectedEvent.title,
         nombre_tipo: formData.name,
+          tipo: formData.type,
         precio: formData.price,
         descripcion: formData.description,
         cantidad_maxima: formData.available,
@@ -1401,7 +1511,8 @@ export function OrganizerDashboard() {
       const evento = await EventService.obtenerEventoPorId(eventId);
       
       if (!evento) {
-        alert('No se pudo cargar el evento');
+        setToastMessage('No se pudo cargar el evento');
+        setShowErrorToast(true);
         return;
       }
 
@@ -1409,7 +1520,8 @@ export function OrganizerDashboard() {
       setIsConfigureEventModalOpen(true);
     } catch (error: any) {
       console.error('Error al cargar evento para configurar:', error);
-      alert(error.message || 'Error al cargar el evento');
+      setToastMessage(error.message || 'Error al cargar el evento');
+      setShowErrorToast(true);
     } finally {
       setIsLoadingEventDetails(false);
     }
@@ -1424,8 +1536,8 @@ export function OrganizerDashboard() {
       
       // Recargar eventos
       await handleRefresh();
-      
-      alert('Estado del evento actualizado correctamente');
+      setToastMessage('Estado del evento actualizado correctamente');
+      setShowSuccessToast(true);
       setIsConfigureEventModalOpen(false);
       setSelectedEventForConfigure(null);
     } catch (error: any) {
@@ -1644,9 +1756,12 @@ export function OrganizerDashboard() {
                         {selectedEvent.title}
                       </span>
                       <span className="hidden lg:inline text-xs text-blue-200">
-                        ({selectedEvent.status === 'upcoming' ? 'Próximo' : 
-                          selectedEvent.status === 'ongoing' ? 'En curso' : 
-                          selectedEvent.status === 'completed' ? 'Completado' : 'Cancelado'})
+                        ({selectedEvent.status === 'upcoming' ? 'Próximo' :
+                          selectedEvent.status === 'ongoing' ? 'En curso' :
+                          selectedEvent.status === 'completed' ? 'Completado' :
+                          selectedEvent.status === 'cancelled' ? 'Cancelado' :
+                          selectedEvent.status === 'paused' ? 'Pausado' :
+                          selectedEvent.status === 'draft' ? 'Borrador' : 'Próximo'})
                       </span>
                     </div>
                   )}
@@ -1844,10 +1959,11 @@ export function OrganizerDashboard() {
                       available: t.cantidad_disponible || t.available || 0,
                       sold: (t.cantidad_maxima || t.maxQuantity || 0) - (t.cantidad_disponible || t.available || 0)
                     })),
-                    status: selectedEvent.status === 'upcoming' ? 'published' : 
-                           selectedEvent.status === 'ongoing' ? 'published' : 
-                           selectedEvent.status === 'completed' ? 'completed' : 
-                           selectedEvent.status === 'cancelled' ? 'cancelled' : 'draft'
+                          status: selectedEvent.status === 'draft' ? 'draft'
+                            : selectedEvent.status === 'paused' ? 'paused'
+                            : selectedEvent.status === 'cancelled' ? 'cancelled'
+                            : selectedEvent.status === 'completed' ? 'completed'
+                            : 'published' // upcoming/ongoing → published
                   }] : []}
                   onCreateEvent={() => setIsCreateEventModalOpen(true)}
                   onEditEvent={handleEditEvent}
@@ -1895,18 +2011,22 @@ export function OrganizerDashboard() {
                 </div>
                 
                 <TicketManagement
-                  tickets={selectedEvent?.ticketTypes?.map(ticket => ({
+                  tickets={(selectedEvent?.ticketTypes || []).map((ticket: any) => {
+                    const key = (ticket.type ?? ticket.tipo ?? ticket.name ?? ticket.nombre_tipo ?? 'general') as string;
+                    return {
                     id: ticket.id,
-                    name: ticket.nombre_tipo || 'Sin nombre',
-                    description: ticket.descripcion || '',
-                    price: ticket.precio || 0,
-                    available: ticket.cantidad_disponible || 0,
-                    sold: (ticket.cantidad_maxima || 0) - (ticket.cantidad_disponible || 0),
-                    type: 'general' as const,
+                    name: ticket.name ?? ticket.nombre_tipo ?? 'Sin nombre',
+                    description: ticket.description ?? ticket.descripcion ?? '',
+                    price: ticket.price ?? ticket.precio ?? 0,
+                    available: ticket.available ?? ticket.cantidad_disponible ?? 0,
+                    sold: ticket.sold ?? ((ticket.cantidad_maxima || 0) - (ticket.cantidad_disponible || 0)),
+                    type: ticket.type ?? ticket.tipo ?? 'general',
+                    revenue: ticketRevenueByType[key] ?? undefined,
                     isActive: true,
-                    features: [],
+                    features: ticket.features ?? [],
                     eventId: selectedEvent.id
-                  })) || []}
+                  };
+                  })}
                   onCreateTicket={() => setIsCreateTicketModalOpen(true)}
                   onEditTicket={handleEditTicket}
                   onDeleteTicket={handleDeleteTicket}

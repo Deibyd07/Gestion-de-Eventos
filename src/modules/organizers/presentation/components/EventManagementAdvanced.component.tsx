@@ -34,7 +34,7 @@ interface Event {
   date: string;
   time: string;
   location: string;
-  status: 'draft' | 'published' | 'cancelled' | 'completed';
+  status: 'draft' | 'published' | 'cancelled' | 'completed' | 'paused';
   maxAttendees: number;
   currentAttendees: number;
   revenue: number;
@@ -74,7 +74,7 @@ export const EventManagementAdvanced: React.FC<EventManagementAdvancedProps> = (
   onCustomizeEvent,
 }) => {
   const navigate = useNavigate();
-  const [filterStatus, setFilterStatus] = useState<'all' | 'draft' | 'published' | 'cancelled' | 'completed'>('all');
+  const [filterStatus, setFilterStatus] = useState<'all' | 'draft' | 'published' | 'cancelled' | 'completed' | 'paused'>('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState<'date' | 'title' | 'revenue' | 'attendees'>('date');
 
@@ -82,6 +82,7 @@ export const EventManagementAdvanced: React.FC<EventManagementAdvancedProps> = (
     switch (status) {
       case 'published': return 'bg-green-100 text-green-800 border-green-200';
       case 'draft': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+      case 'paused': return 'bg-amber-100 text-amber-800 border-amber-200';
       case 'cancelled': return 'bg-red-100 text-red-800 border-red-200';
       case 'completed': return 'bg-blue-100 text-blue-800 border-blue-200';
       default: return 'bg-gray-100 text-gray-800 border-gray-200';
@@ -92,6 +93,7 @@ export const EventManagementAdvanced: React.FC<EventManagementAdvancedProps> = (
     switch (status) {
       case 'published': return 'Publicado';
       case 'draft': return 'Borrador';
+      case 'paused': return 'Pausado';
       case 'cancelled': return 'Cancelado';
       case 'completed': return 'Completado';
       default: return 'Desconocido';
@@ -102,6 +104,7 @@ export const EventManagementAdvanced: React.FC<EventManagementAdvancedProps> = (
     switch (status) {
       case 'published': return CheckCircle;
       case 'draft': return Clock;
+      case 'paused': return Pause;
       case 'cancelled': return XCircle;
       case 'completed': return Square;
       default: return AlertCircle;
@@ -124,6 +127,13 @@ export const EventManagementAdvanced: React.FC<EventManagementAdvancedProps> = (
       default: return 0;
     }
   });
+
+  const formatDateLocal = (isoDate: string) => {
+    if (!isoDate) return '';
+    const [y, m, d] = isoDate.split('-');
+    if (!y || !m || !d) return isoDate;
+    return `${d}/${m}/${y}`;
+  };
 
   return (
     <div className="space-y-4 md:space-y-6 w-full">
@@ -155,6 +165,7 @@ export const EventManagementAdvanced: React.FC<EventManagementAdvancedProps> = (
               <option value="all">Todos</option>
               <option value="draft">Borradores</option>
               <option value="published">Publicados</option>
+              <option value="paused">Pausados</option>
               <option value="cancelled">Cancelados</option>
               <option value="completed">Completados</option>
             </select>
@@ -210,7 +221,7 @@ export const EventManagementAdvanced: React.FC<EventManagementAdvancedProps> = (
                 <div className="space-y-3 mb-4">
                   <div className="flex items-center text-sm text-gray-600">
                     <Calendar className="w-4 h-4 mr-2 text-blue-600" />
-                    <span>{new Date(event.date).toLocaleDateString('es-ES')} a las {event.time}</span>
+                    <span>{formatDateLocal(event.date)} a las {event.time}</span>
                   </div>
                   <div className="flex items-center text-sm text-gray-600">
                     <MapPin className="w-4 h-4 mr-2 text-red-600" />

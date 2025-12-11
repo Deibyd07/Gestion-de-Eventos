@@ -108,9 +108,16 @@ export const TicketManagement: React.FC<TicketManagementProps> = ({
     return matchesType && matchesStatus && matchesSearch;
   });
 
-  const totalRevenue = tickets.reduce((sum, ticket) => sum + (ticket.price * ticket.sold), 0);
+  const totalRevenue = tickets.reduce((sum, ticket) => {
+    const ticketRevenue = typeof ticket.revenue === 'number' ? ticket.revenue : (ticket.price * ticket.sold);
+    return sum + ticketRevenue;
+  }, 0);
   const totalSold = tickets.reduce((sum, ticket) => sum + ticket.sold, 0);
   const totalAvailable = tickets.reduce((sum, ticket) => sum + ticket.available, 0);
+  
+  // Contar tipos de entrada únicos (general, VIP, estudiante, etc.)
+  const uniqueTicketTypes = new Set(tickets.map(t => t.type || 'general')).size;
+  const activeUniqueTypes = new Set(tickets.filter(t => t.isActive).map(t => t.type || 'general')).size;
 
   return (
     <div className="space-y-4 md:space-y-6 w-full">
@@ -148,8 +155,8 @@ export const TicketManagement: React.FC<TicketManagementProps> = ({
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">Tipos Activos</p>
-              <p className="text-2xl font-bold text-gray-900">{tickets.filter(t => t.isActive).length}</p>
-              <p className="text-sm text-purple-600">de {tickets.length} totales</p>
+              <p className="text-2xl font-bold text-gray-900">{activeUniqueTypes}</p>
+              <p className="text-sm text-purple-600">de {uniqueTicketTypes} totales</p>
             </div>
             <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
               <Settings className="w-6 h-6 text-purple-600" />
@@ -318,7 +325,7 @@ export const TicketManagement: React.FC<TicketManagementProps> = ({
                     <p className="text-xs text-gray-600">Vendidas</p>
                   </div>
                   <div className="text-center p-3 bg-gray-50 rounded-lg">
-                    <p className="text-2xl font-bold text-gray-900">{formatCurrency(ticket.price * ticket.sold)}</p>
+                    <p className="text-2xl font-bold text-gray-900">{formatCurrency((typeof ticket.revenue === 'number' ? ticket.revenue : ticket.price * ticket.sold))}</p>
                     <p className="text-xs text-gray-600">Ingresos</p>
                   </div>
                 </div>

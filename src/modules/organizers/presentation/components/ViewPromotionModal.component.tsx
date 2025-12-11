@@ -1,6 +1,16 @@
 import React from 'react';
 import { Modal } from '@shared/ui';
 
+// Función para formatear fechas sin conversión de timezone
+const formatDateLocal = (isoDate: string) => {
+  if (!isoDate) return '';
+  // Extraer solo la parte de fecha si viene con timestamp
+  const datePart = isoDate.split('T')[0];
+  const [y, m, d] = datePart.split('-');
+  if (!y || !m || !d) return isoDate;
+  return `${d}/${m}/${y}`;
+};
+
 export const ViewPromotionModal = ({ isOpen, onClose, promotion }: { isOpen: boolean; onClose: () => void; promotion: any }) => {
   if (!promotion) return null;
   
@@ -54,11 +64,11 @@ export const ViewPromotionModal = ({ isOpen, onClose, promotion }: { isOpen: boo
         <div className="flex flex-wrap gap-4 text-sm text-gray-700">
           <span className="inline-flex items-center gap-1">
             <span className="font-medium text-purple-700">Válido desde:</span>
-            <span>{new Date(promotion.fecha_inicio).toLocaleDateString('es-ES')}</span>
+            <span>{formatDateLocal(promotion.fecha_inicio)}</span>
           </span>
           <span className="inline-flex items-center gap-1">
             <span className="font-medium text-purple-700">Válido hasta:</span>
-            <span>{new Date(promotion.fecha_fin).toLocaleDateString('es-ES')}</span>
+            <span>{formatDateLocal(promotion.fecha_fin)}</span>
           </span>
         </div>
       </div>

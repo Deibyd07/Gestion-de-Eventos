@@ -241,7 +241,7 @@ export function AttendeeDetailsModal({ isOpen, onClose, attendee }: AttendeeDeta
                 </div>
               </div>
 
-              {attendee.purchaseTotalPaid ? (
+              {typeof attendee.purchaseTotalPaid === 'number' ? (
                 <div className="flex items-start space-x-3">
                   <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
                     <CreditCard className="w-5 h-5 text-green-600" />
@@ -249,7 +249,7 @@ export function AttendeeDetailsModal({ isOpen, onClose, attendee }: AttendeeDeta
                   <div>
                     <p className="text-sm text-gray-500">Total Pagado</p>
                     <p className="font-medium text-gray-900">{formatPrice(attendee.purchaseTotalPaid)}</p>
-                    <p className="text-xs text-gray-600 mt-1">Precio unitario: {formatPrice(attendee.ticketPrice)}</p>
+                    <p className="text-xs text-gray-600 mt-1">Precio unitario: {formatPrice((() => { const qty = attendee.purchaseQuantity && attendee.purchaseQuantity > 0 ? attendee.purchaseQuantity : 1; return qty > 0 ? (attendee.purchaseTotalPaid as number) / qty : (attendee.ticketPrice || 0); })())}</p>
                   </div>
                 </div>
               ) : (
@@ -271,14 +271,11 @@ export function AttendeeDetailsModal({ isOpen, onClose, attendee }: AttendeeDeta
                 <div>
                   <p className="text-sm text-gray-500">Fecha de Compra</p>
                   <p className="font-medium text-gray-900">
-                    {new Date(attendee.purchaseDate).toLocaleDateString('es-ES', {
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric',
-                      hour: '2-digit',
-                      minute: '2-digit'
-                    })}
+                    {(() => { const iso = attendee.purchaseDate; const [datePart, timePartFull] = iso.split('T'); const [y,m,d] = datePart.split('-'); const timePart = (timePartFull || '').slice(0,5); return `${d}/${m}/${y}${timePart ? ` ${timePart}` : ''}`; })()}
                   </p>
+                  {attendee.purchaseOrderNumber && (
+                    <p className="text-xs text-gray-600 mt-1">Orden: {attendee.purchaseOrderNumber}</p>
+                  )}
                 </div>
               </div>
 

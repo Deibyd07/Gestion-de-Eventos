@@ -356,9 +356,7 @@ export function AttendeeManagement({ eventId, eventTitle, onRefreshRequest }: At
     }
   };
 
-  const handleAttendeeAction = async (attendeeId: string, action: string) => {
-    const attendee = attendees.find(a => a.id === attendeeId);
-    if (!attendee) return;
+  const handleAttendeeAction = async (attendee: Attendee, action: string) => {
 
     switch (action) {
       case 'view':
@@ -634,21 +632,21 @@ export function AttendeeManagement({ eventId, eventTitle, onRefreshRequest }: At
                             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                               <div className="flex items-center space-x-2">
                                 <button 
-                                  onClick={() => handleAttendeeAction(attendee.id, 'view')}
+                                  onClick={() => handleAttendeeAction(attendee, 'view')}
                                   className="text-blue-600 hover:text-blue-900"
                                   title="Ver detalles"
                                 >
                                   <Eye className="w-4 h-4" />
                                 </button>
                                 <button 
-                                  onClick={() => handleAttendeeAction(attendee.id, 'email')}
+                                  onClick={() => handleAttendeeAction(attendee, 'email')}
                                   className="text-blue-600 hover:text-blue-900"
                                   title="Enviar email"
                                 >
                                   <Mail className="w-4 h-4" />
                                 </button>
                                 <button 
-                                  onClick={() => handleAttendeeAction(attendee.id, 'qr')}
+                                  onClick={() => handleAttendeeAction(attendee, 'qr')}
                                   className="text-purple-600 hover:text-purple-900"
                                   title="Ver QR"
                                 >
@@ -784,21 +782,21 @@ export function AttendeeManagement({ eventId, eventTitle, onRefreshRequest }: At
                               <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                 <div className="flex items-center space-x-2">
                                   <button 
-                                    onClick={() => handleAttendeeAction(attendee.id, 'view')}
+                                    onClick={() => handleAttendeeAction(attendee, 'view')}
                                     className="text-blue-600 hover:text-blue-900"
                                     title="Ver detalles"
                                   >
                                     <Eye className="w-4 h-4" />
                                   </button>
                                   <button 
-                                    onClick={() => handleAttendeeAction(attendee.id, 'email')}
+                                    onClick={() => handleAttendeeAction(attendee, 'email')}
                                     className="text-blue-600 hover:text-blue-900"
                                     title="Enviar email"
                                   >
                                     <Mail className="w-4 h-4" />
                                   </button>
                                   <button 
-                                    onClick={() => handleAttendeeAction(attendee.id, 'qr')}
+                                    onClick={() => handleAttendeeAction(attendee, 'qr')}
                                     className="text-purple-600 hover:text-purple-900"
                                     title="Ver QR"
                                   >

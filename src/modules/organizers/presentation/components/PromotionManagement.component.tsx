@@ -23,6 +23,16 @@ import {
   Zap
 } from 'lucide-react';
 
+// Función para formatear fechas sin conversión de timezone
+const formatDateLocal = (isoDate: string) => {
+  if (!isoDate) return '';
+  // Extraer solo la parte de fecha si viene con timestamp
+  const datePart = isoDate.split('T')[0];
+  const [y, m, d] = datePart.split('-');
+  if (!y || !m || !d) return isoDate;
+  return `${d}/${m}/${y}`;
+};
+
 interface Promotion {
   id: string;
   code: string;
@@ -184,6 +194,15 @@ export const PromotionManagement: React.FC<PromotionManagementProps> = ({
     return p.isActive && now >= startDate && now <= endDate;
   }).length;
   const totalUsage = promotions.reduce((sum, p) => sum + p.usedCount, 0);
+  
+  // Calcular tasa de conversión real basada en límites vs usos
+  const totalLimit = promotions.reduce((sum, p) => sum + (p.usageLimit || 0), 0);
+  const conversionRate = totalLimit > 0 ? ((totalUsage / totalLimit) * 100).toFixed(1) : '0.0';
+  const conversionText = totalLimit > 0 
+    ? `${totalUsage} usos de ${totalLimit} disponibles`
+    : totalUsage > 0 
+      ? `${totalUsage} usos (sin límite)`
+      : 'Sin usos registrados';
 
   return (
     <div className="space-y-4 md:space-y-6 w-full">
@@ -221,8 +240,8 @@ export const PromotionManagement: React.FC<PromotionManagementProps> = ({
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">Tasa de Conversión</p>
-              <p className="text-2xl font-bold text-gray-900">12.5%</p>
-              <p className="text-sm text-purple-600">con descuentos aplicados</p>
+              <p className="text-2xl font-bold text-gray-900">{conversionRate}%</p>
+              <p className="text-sm text-purple-600">{conversionText}</p>
             </div>
             <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
               <Target className="w-6 h-6 text-purple-600" />
@@ -384,11 +403,11 @@ export const PromotionManagement: React.FC<PromotionManagementProps> = ({
                 <div className="mb-4 text-sm text-gray-600">
                   <div className="flex items-center space-x-2 mb-1">
                     <Calendar className="w-4 h-4" />
-                    <span>Válido desde: {new Date(promotion.startDate).toLocaleDateString('es-ES')}</span>
+                    <span>Válido desde: {formatDateLocal(promotion.startDate)}</span>
                   </div>
                   <div className="flex items-center space-x-2">
                     <Timer className="w-4 h-4" />
-                    <span>Válido hasta: {new Date(promotion.endDate).toLocaleDateString('es-ES')}</span>
+                    <span>Válido hasta: {formatDateLocal(promotion.endDate)}</span>
                   </div>
                 </div>
 

@@ -497,6 +497,7 @@ export class EventService {
             .insert({
               id_evento: eventoDuplicado.id,
               nombre_tipo: tipo.nombre_tipo,
+              tipo: tipo.tipo,
               precio: tipo.precio,
               descripcion: tipo.descripcion,
               cantidad_maxima: tipo.cantidad_maxima,

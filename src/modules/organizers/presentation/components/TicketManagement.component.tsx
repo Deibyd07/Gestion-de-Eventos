@@ -130,7 +130,7 @@ export const TicketManagement: React.FC<TicketManagementProps> = ({
             <div>
               <p className="text-sm font-medium text-gray-600">Total Vendidas</p>
               <p className="text-2xl font-bold text-gray-900">{totalSold}</p>
-              <p className="text-sm text-blue-600">de {totalAvailable} disponibles</p>
+              <p className="text-sm text-blue-600">{totalAvailable} disponibles</p>
             </div>
             <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
               <Ticket className="w-6 h-6 text-blue-600" />
@@ -143,7 +143,6 @@ export const TicketManagement: React.FC<TicketManagementProps> = ({
             <div>
               <p className="text-sm font-medium text-gray-600">Ingresos Totales</p>
               <p className="text-2xl font-bold text-gray-900">{formatCurrency(totalRevenue)}</p>
-              <p className="text-sm text-green-600">+15.2% vs mes anterior</p>
             </div>
             <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
               <DollarSign className="w-6 h-6 text-green-600" />

@@ -309,10 +309,7 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
           <div className="flex items-start sm:items-center justify-between gap-2">
             <div className="flex-1 min-w-0">
               <p className="text-xs md:text-sm font-medium text-blue-700 truncate">Total Eventos</p>
-              <p className="text-lg md:text-2xl font-semibold text-blue-900">{formatNumber(data.totalEvents)}</p>
-              <p className={`text-xs font-medium flex items-center mt-1 ${data.growth.events >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                <span className="truncate">{data.growth.events >= 0 ? '+' : ''}{data.growth.events}% vs mes anterior</span>
-              </p>
+              <p className="text-lg md:text-2xl font-bold text-blue-900">{formatNumber(data.totalEvents)}</p>
             </div>
             <div className="p-2 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg shadow-sm flex-shrink-0">
               <Calendar className="w-4 h-4 md:w-5 md:h-5 text-white" />
@@ -324,10 +321,7 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
           <div className="flex items-start sm:items-center justify-between gap-2">
             <div className="flex-1 min-w-0">
               <p className="text-xs md:text-sm font-medium text-green-700 truncate">Ingresos Totales</p>
-              <p className="text-lg md:text-2xl font-semibold text-green-900">{formatCurrency(data.totalRevenue)}</p>
-              <p className={`text-xs font-medium flex items-center mt-1 ${data.growth.revenue >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                <span className="truncate">{data.growth.revenue >= 0 ? '+' : ''}{data.growth.revenue}% vs mes anterior</span>
-              </p>
+              <p className="text-lg md:text-2xl font-bold text-green-900">{formatCurrency(data.totalRevenue)}</p>
             </div>
             <div className="p-2 bg-gradient-to-r from-green-500 to-green-600 rounded-lg shadow-sm flex-shrink-0">
               <DollarSign className="w-4 h-4 md:w-5 md:h-5 text-white" />
@@ -339,10 +333,7 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
           <div className="flex items-start sm:items-center justify-between gap-2">
             <div className="flex-1 min-w-0">
               <p className="text-xs md:text-sm font-medium text-purple-700 truncate">Total Asistentes</p>
-              <p className="text-lg md:text-2xl font-semibold text-purple-900">{formatNumber(data.totalAttendees)}</p>
-              <p className={`text-xs font-medium flex items-center mt-1 ${data.growth.attendees >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                <span className="truncate">{data.growth.attendees >= 0 ? '+' : ''}{data.growth.attendees}% vs mes anterior</span>
-              </p>
+              <p className="text-lg md:text-2xl font-bold text-purple-900">{formatNumber(data.totalAttendees)}</p>
             </div>
             <div className="p-2 bg-gradient-to-r from-purple-500 to-purple-600 rounded-lg shadow-sm flex-shrink-0">
               <Users className="w-4 h-4 md:w-5 md:h-5 text-white" />
@@ -354,10 +345,7 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
           <div className="flex items-start sm:items-center justify-between gap-2">
             <div className="flex-1 min-w-0">
               <p className="text-xs md:text-sm font-medium text-yellow-700 truncate">Tasa de Conversión</p>
-              <p className="text-lg md:text-2xl font-semibold text-yellow-900">{data.conversionRate.toFixed(1)}%</p>
-              <p className={`text-xs font-medium flex items-center mt-1 ${data.growth.conversionRate >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                <span className="truncate">{data.growth.conversionRate >= 0 ? '+' : ''}{data.growth.conversionRate}% vs mes anterior</span>
-              </p>
+              <p className="text-lg md:text-2xl font-bold text-yellow-900">{data.conversionRate.toFixed(1)}%</p>
             </div>
             <div className="p-2 bg-gradient-to-r from-yellow-500 to-yellow-600 rounded-lg shadow-sm flex-shrink-0">
               <TrendingUp className="w-4 h-4 md:w-5 md:h-5 text-white" />

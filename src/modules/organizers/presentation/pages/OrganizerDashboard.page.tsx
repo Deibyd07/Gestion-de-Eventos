@@ -1585,7 +1585,7 @@ export function OrganizerDashboard() {
       {/* Sidebar - Fixed */}
       <div className={`${
         isSidebarOpen ? 'w-64' : 'w-16'
-      } bg-white/90 backdrop-blur-md shadow-xl border-r border-white/20 transition-all duration-300 flex-shrink-0 fixed left-0 top-0 h-dvh md:h-full z-30 md:z-40 overflow-y-auto md:overflow-hidden overscroll-contain touch-pan-y ${
+      } bg-white/90 backdrop-blur-md shadow-xl border-r border-white/20 transition-all duration-300 flex-shrink-0 fixed left-0 top-0 h-screen md:h-screen lg:h-full z-30 md:z-40 overflow-hidden ${
         !isSidebarOpen ? 'hidden md:flex md:flex-col' : 'flex flex-col'
       }`}>
         {/* Sidebar Header */}
@@ -1609,71 +1609,74 @@ export function OrganizerDashboard() {
           </button>
         </div>
 
-        {/* Navigation */}
-        <nav className={`${isSidebarOpen ? 'p-4' : 'px-0 py-4 flex flex-col items-center'} space-y-2 max-h-[calc(100dvh-8rem)] overflow-y-auto md:max-h-none md:overflow-y-visible`}>
-          {navigationItems.map((item) => {
-            const Icon = item.icon;
-            return (
-              <button
-                key={item.id}
-                onClick={() => setActiveTab(item.id)}
-                className={`${
-                  isSidebarOpen 
-                    ? 'w-full flex items-start space-x-3 px-4 py-3 rounded-xl'
-                    : 'w-12 h-12 flex items-center justify-center rounded-lg'
-                } backdrop-blur-sm transition-all duration-200 ${
-                  activeTab === item.id
-                    ? (isSidebarOpen 
-                        ? 'bg-gradient-to-r from-blue-500/20 to-purple-500/20 text-blue-700 border-l-4 border-indigo-400 shadow-lg border border-white/30'
-                        : 'bg-gradient-to-r from-blue-500/20 to-purple-500/20')
-                    : (isSidebarOpen 
-                        ? 'text-gray-600 hover:bg-gradient-to-r hover:from-blue-500/10 hover:to-purple-500/10 hover:text-blue-700 hover:border-l-4 hover:border-indigo-300 hover:shadow-lg hover:border hover:border-indigo-200/30'
-                        : 'text-gray-600 hover:bg-gradient-to-r hover:from-blue-500/10 hover:to-purple-500/10')
-                }`}
-              >
-                {isSidebarOpen ? (
-                  <>
-                    <div className={`p-2 rounded-lg backdrop-blur-sm border transition-all duration-200 ${
-                      activeTab === item.id 
-                        ? 'bg-white/30 border-white/40' 
-                        : 'bg-white/10 border-white/20 hover:bg-blue-100/50 hover:border-blue-300/50'
-                    }`}>
-                      <Icon className={`w-4 h-4 transition-colors duration-200 ${
+        {/* Scrollable Content Container */}
+        <div className="flex-1 flex flex-col overflow-y-auto min-h-0">
+          {/* Navigation */}
+          <nav className={`${isSidebarOpen ? 'p-4' : 'px-0 py-4 flex flex-col items-center'} space-y-2`}>
+            {navigationItems.map((item) => {
+              const Icon = item.icon;
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => setActiveTab(item.id)}
+                  className={`${
+                    isSidebarOpen 
+                      ? 'w-full flex items-start space-x-3 px-4 py-3 rounded-xl'
+                      : 'w-12 h-12 flex items-center justify-center rounded-lg'
+                  } backdrop-blur-sm transition-all duration-200 ${
+                    activeTab === item.id
+                      ? (isSidebarOpen 
+                          ? 'bg-gradient-to-r from-blue-500/20 to-purple-500/20 text-blue-700 border-l-4 border-indigo-400 shadow-lg border border-white/30'
+                          : 'bg-gradient-to-r from-blue-500/20 to-purple-500/20')
+                      : (isSidebarOpen 
+                          ? 'text-gray-600 hover:bg-gradient-to-r hover:from-blue-500/10 hover:to-purple-500/10 hover:text-blue-700 hover:border-l-4 hover:border-indigo-300 hover:shadow-lg hover:border hover:border-indigo-200/30'
+                          : 'text-gray-600 hover:bg-gradient-to-r hover:from-blue-500/10 hover:to-purple-500/10')
+                  }`}
+                >
+                  {isSidebarOpen ? (
+                    <>
+                      <div className={`p-2 rounded-lg backdrop-blur-sm border transition-all duration-200 ${
                         activeTab === item.id 
-                          ? 'text-blue-600' 
-                          : 'text-gray-500 hover:text-blue-600'
-                      }`} />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <span className="font-semibold text-sm">{item.label}</span>
-                      <p className="text-xs text-gray-500 mt-1 leading-tight">{item.description}</p>
-                    </div>
-                  </>
-                ) : (
-                  <Icon className={`w-5 h-5 transition-colors duration-200 ${
-                    activeTab === item.id 
-                      ? 'text-blue-600' 
-                      : 'text-gray-500 hover:text-blue-600'
-                  }`} />
-                )}
-              </button>
-            );
-          })}
-        </nav>
+                          ? 'bg-white/30 border-white/40' 
+                          : 'bg-white/10 border-white/20 hover:bg-blue-100/50 hover:border-blue-300/50'
+                      }`}>
+                        <Icon className={`w-4 h-4 transition-colors duration-200 ${
+                          activeTab === item.id 
+                            ? 'text-blue-600' 
+                            : 'text-gray-500 hover:text-blue-600'
+                        }`} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <span className="font-semibold text-sm">{item.label}</span>
+                        <p className="text-xs text-gray-500 mt-1 leading-tight">{item.description}</p>
+                      </div>
+                    </>
+                  ) : (
+                    <Icon className={`w-5 h-5 transition-colors duration-200 ${
+                      activeTab === item.id 
+                        ? 'text-blue-600' 
+                        : 'text-gray-500 hover:text-blue-600'
+                    }`} />
+                  )}
+                </button>
+              );
+            })}
+          </nav>
 
-        {/* Logout Button in Sidebar */}
-        <div className={`${isSidebarOpen ? 'absolute bottom-4 left-4 right-4' : 'mt-auto pb-4 flex justify-center'}`}>
-          <button
-            onClick={handleLogout}
-            className={`${
-              isSidebarOpen 
-                ? 'w-full flex items-center justify-center space-x-2 p-3' 
-                : 'w-12 h-12 flex items-center justify-center'
-            } bg-gradient-to-r from-red-500/20 to-red-600/20 backdrop-blur-sm text-red-700 rounded-xl border border-red-200 hover:from-red-500/30 hover:to-red-600/30 hover:text-red-800 transition-all duration-200 shadow-sm hover:shadow-md`}
-          >
-            <LogOut className="w-4 h-4" />
-            {isSidebarOpen && <span className="text-sm font-medium">Cerrar Sesión</span>}
-          </button>
+          {/* Logout Button in Sidebar */}
+          <div className={`${isSidebarOpen ? 'px-4 pt-2 pb-4' : 'pt-2 pb-4 flex justify-center'} flex-shrink-0 mt-auto`}>
+            <button
+              onClick={handleLogout}
+              className={`${
+                isSidebarOpen 
+                  ? 'w-full flex items-center justify-center space-x-2 p-3' 
+                  : 'w-12 h-12 flex items-center justify-center'
+              } bg-gradient-to-r from-red-500/20 to-red-600/20 backdrop-blur-sm text-red-700 rounded-xl border border-red-200 hover:from-red-500/30 hover:to-red-600/30 hover:text-red-800 transition-all duration-200 shadow-sm hover:shadow-md`}
+            >
+              <LogOut className="w-4 h-4" />
+              {isSidebarOpen && <span className="text-sm font-medium">Cerrar Sesión</span>}
+            </button>
+          </div>
         </div>
       </div>
 

@@ -322,14 +322,6 @@ export const PaymentsDashboard: React.FC = () => {
             <div className="flex-1 min-w-0">
               <p className="text-xs md:text-sm font-medium text-green-700 truncate">Ingresos Totales</p>
               <p className="text-lg md:text-2xl font-bold text-green-900">{formatCurrency(paymentsData.overview.totalRevenue)}</p>
-              <div className="flex items-center mt-1">
-                <TrendingUp className={`w-3 h-3 mr-1 ${paymentsData.overview.growth.revenue >= 0 ? 'text-green-600' : 'text-red-600'}`} />
-                <span className={`text-xs font-medium ${
-                  paymentsData.overview.growth.revenue >= 0 ? 'text-green-700' : 'text-red-700'
-                }`}>
-                  {paymentsData.overview.growth.revenue >= 0 ? '+' : ''}{paymentsData.overview.growth.revenue}% vs el mes anterior
-                </span>
-              </div>
             </div>
             <div className="p-2 bg-gradient-to-r from-green-500 to-green-600 rounded-lg shadow-sm flex-shrink-0">
               <DollarSign className="w-4 h-4 md:w-5 md:h-5 text-white" />
@@ -342,14 +334,6 @@ export const PaymentsDashboard: React.FC = () => {
             <div className="flex-1 min-w-0">
               <p className="text-xs md:text-sm font-medium text-blue-700 truncate">Transacciones</p>
               <p className="text-lg md:text-2xl font-bold text-blue-900">{paymentsData.overview.totalTransactions.toLocaleString()}</p>
-              <div className="flex items-center mt-1">
-                <TrendingUp className={`w-3 h-3 mr-1 ${paymentsData.overview.growth.transactions >= 0 ? 'text-green-600' : 'text-red-600'}`} />
-                <span className={`text-xs font-medium ${
-                  paymentsData.overview.growth.transactions >= 0 ? 'text-green-700' : 'text-red-700'
-                }`}>
-                  {paymentsData.overview.growth.transactions >= 0 ? '+' : ''}{paymentsData.overview.growth.transactions}% vs el mes anterior
-                </span>
-              </div>
             </div>
             <div className="p-2 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg shadow-sm flex-shrink-0">
               <CreditCard className="w-4 h-4 md:w-5 md:h-5 text-white" />

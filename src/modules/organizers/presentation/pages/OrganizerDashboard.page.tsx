@@ -878,21 +878,68 @@ export function OrganizerDashboard() {
     const autoTable = (await import('jspdf-autotable')).default;
     const doc = new jsPDF();
 
-    doc.setFontSize(14);
-    doc.text(title, 14, 16);
+    // Configuración de colores (igual que en administrador)
+    const primaryColor: [number, number, number] = [79, 70, 229]; // Indigo
+    const secondaryColor: [number, number, number] = [99, 102, 241]; // Indigo claro
 
-    let startY = 22;
-    tables.forEach((table) => {
+    // Encabezado principal
+    doc.setFillColor(...primaryColor);
+    doc.rect(0, 0, 210, 35, 'F');
+    
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(22);
+    doc.setFont('helvetica', 'bold');
+    doc.text(title.toUpperCase(), 105, 15, { align: 'center' });
+    
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'normal');
+    doc.text('EventHub - Sistema de Gestión de Eventos', 105, 25, { align: 'center' });
+
+    // Información de fecha
+    doc.setTextColor(0, 0, 0);
+    doc.setFontSize(10);
+    doc.text(`Fecha de generación: ${new Date().toLocaleDateString('es-CO')}`, 20, 45);
+
+    let startY = 55;
+    tables.forEach((table, index) => {
+      if (startY > 250) {
+        doc.addPage();
+        startY = 20;
+      }
+
       const tableRows = table.rows.length > 0 ? table.rows : [['Sin datos', '—']];
+      const fillColor = index === 0 ? primaryColor : secondaryColor;
+
       autoTable(doc, {
         startY,
         head: [table.headers],
         body: tableRows,
-        styles: { fontSize: 8 }
+        theme: 'grid',
+        headStyles: { 
+          fillColor: fillColor, 
+          textColor: 255, 
+          fontStyle: 'bold',
+          fontSize: 10
+        },
+        styles: { fontSize: 9 }
       });
       const lastTable = (doc as any).lastAutoTable;
-      startY = lastTable?.finalY ? lastTable.finalY + 10 : startY + 10;
+      startY = lastTable?.finalY ? lastTable.finalY + 15 : startY + 15;
     });
+
+    // Pie de página en todas las páginas
+    const pageCount = doc.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      doc.setFontSize(8);
+      doc.setTextColor(128, 128, 128);
+      doc.text(
+        `EventHub © ${new Date().getFullYear()} - Página ${i} de ${pageCount}`,
+        105,
+        290,
+        { align: 'center' }
+      );
+    }
 
     doc.save(fileName);
   };
@@ -1585,11 +1632,11 @@ export function OrganizerDashboard() {
       {/* Sidebar - Fixed */}
       <div className={`${
         isSidebarOpen ? 'w-64' : 'w-16'
-      } bg-white/90 backdrop-blur-md shadow-xl border-r border-white/20 transition-all duration-300 flex-shrink-0 fixed left-0 top-0 h-screen md:h-screen lg:h-full z-30 md:z-40 overflow-hidden ${
+      } bg-white/90 backdrop-blur-md shadow-xl border-r border-white/20 transition-all duration-300 flex-shrink-0 fixed left-0 top-0 h-dvh md:h-full z-30 md:z-40 ${
         !isSidebarOpen ? 'hidden md:flex md:flex-col' : 'flex flex-col'
       }`}>
         {/* Sidebar Header */}
-        <div className={`h-16 flex items-center ${isSidebarOpen ? 'justify-between px-4' : 'justify-center px-2'} bg-gradient-to-r from-blue-600/90 to-purple-600/90 backdrop-blur-sm`}>
+        <div className={`h-16 flex-shrink-0 flex items-center ${isSidebarOpen ? 'justify-between px-4' : 'justify-center px-2'} bg-gradient-to-r from-blue-600/90 to-purple-600/90 backdrop-blur-sm`}>
           {isSidebarOpen && (
             <div className="flex items-center space-x-3">
               <div className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center shadow-lg border border-white/30">
@@ -1609,74 +1656,71 @@ export function OrganizerDashboard() {
           </button>
         </div>
 
-        {/* Scrollable Content Container */}
-        <div className="flex-1 flex flex-col overflow-y-auto min-h-0">
-          {/* Navigation */}
-          <nav className={`${isSidebarOpen ? 'p-4' : 'px-0 py-4 flex flex-col items-center'} space-y-2`}>
-            {navigationItems.map((item) => {
-              const Icon = item.icon;
-              return (
-                <button
-                  key={item.id}
-                  onClick={() => setActiveTab(item.id)}
-                  className={`${
-                    isSidebarOpen 
-                      ? 'w-full flex items-start space-x-3 px-4 py-3 rounded-xl'
-                      : 'w-12 h-12 flex items-center justify-center rounded-lg'
-                  } backdrop-blur-sm transition-all duration-200 ${
-                    activeTab === item.id
-                      ? (isSidebarOpen 
-                          ? 'bg-gradient-to-r from-blue-500/20 to-purple-500/20 text-blue-700 border-l-4 border-indigo-400 shadow-lg border border-white/30'
-                          : 'bg-gradient-to-r from-blue-500/20 to-purple-500/20')
-                      : (isSidebarOpen 
-                          ? 'text-gray-600 hover:bg-gradient-to-r hover:from-blue-500/10 hover:to-purple-500/10 hover:text-blue-700 hover:border-l-4 hover:border-indigo-300 hover:shadow-lg hover:border hover:border-indigo-200/30'
-                          : 'text-gray-600 hover:bg-gradient-to-r hover:from-blue-500/10 hover:to-purple-500/10')
-                  }`}
-                >
-                  {isSidebarOpen ? (
-                    <>
-                      <div className={`p-2 rounded-lg backdrop-blur-sm border transition-all duration-200 ${
-                        activeTab === item.id 
-                          ? 'bg-white/30 border-white/40' 
-                          : 'bg-white/10 border-white/20 hover:bg-blue-100/50 hover:border-blue-300/50'
-                      }`}>
-                        <Icon className={`w-4 h-4 transition-colors duration-200 ${
-                          activeTab === item.id 
-                            ? 'text-blue-600' 
-                            : 'text-gray-500 hover:text-blue-600'
-                        }`} />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <span className="font-semibold text-sm">{item.label}</span>
-                        <p className="text-xs text-gray-500 mt-1 leading-tight">{item.description}</p>
-                      </div>
-                    </>
-                  ) : (
-                    <Icon className={`w-5 h-5 transition-colors duration-200 ${
+        {/* Navigation - Scrollable Area */}
+        <nav className={`${isSidebarOpen ? 'p-4' : 'px-0 py-4 flex flex-col items-center'} space-y-2 flex-1 overflow-y-auto overflow-x-hidden overscroll-contain`}>
+          {navigationItems.map((item) => {
+            const Icon = item.icon;
+            return (
+              <button
+                key={item.id}
+                onClick={() => setActiveTab(item.id)}
+                className={`${
+                  isSidebarOpen 
+                    ? 'w-full flex items-start space-x-3 px-4 py-3 rounded-xl'
+                    : 'w-12 h-12 flex items-center justify-center rounded-lg'
+                } backdrop-blur-sm transition-all duration-200 ${
+                  activeTab === item.id
+                    ? (isSidebarOpen 
+                        ? 'bg-gradient-to-r from-blue-500/20 to-purple-500/20 text-blue-700 border-l-4 border-indigo-400 shadow-lg border border-white/30'
+                        : 'bg-gradient-to-r from-blue-500/20 to-purple-500/20')
+                    : (isSidebarOpen 
+                        ? 'text-gray-600 hover:bg-gradient-to-r hover:from-blue-500/10 hover:to-purple-500/10 hover:text-blue-700 hover:border-l-4 hover:border-indigo-300 hover:shadow-lg hover:border hover:border-indigo-200/30'
+                        : 'text-gray-600 hover:bg-gradient-to-r hover:from-blue-500/10 hover:to-purple-500/10')
+                }`}
+              >
+                {isSidebarOpen ? (
+                  <>
+                    <div className={`p-2 rounded-lg backdrop-blur-sm border transition-all duration-200 ${
                       activeTab === item.id 
-                        ? 'text-blue-600' 
-                        : 'text-gray-500 hover:text-blue-600'
-                    }`} />
-                  )}
-                </button>
-              );
-            })}
-          </nav>
+                        ? 'bg-white/30 border-white/40' 
+                        : 'bg-white/10 border-white/20 hover:bg-blue-100/50 hover:border-blue-300/50'
+                    }`}>
+                      <Icon className={`w-4 h-4 transition-colors duration-200 ${
+                        activeTab === item.id 
+                          ? 'text-blue-600' 
+                          : 'text-gray-500 hover:text-blue-600'
+                      }`} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <span className="font-semibold text-sm">{item.label}</span>
+                      <p className="text-xs text-gray-500 mt-1 leading-tight">{item.description}</p>
+                    </div>
+                  </>
+                ) : (
+                  <Icon className={`w-5 h-5 transition-colors duration-200 ${
+                    activeTab === item.id 
+                      ? 'text-blue-600' 
+                      : 'text-gray-500 hover:text-blue-600'
+                  }`} />
+                )}
+              </button>
+            );
+          })}
+        </nav>
 
-          {/* Logout Button in Sidebar */}
-          <div className={`${isSidebarOpen ? 'px-4 pt-2 pb-4' : 'pt-2 pb-4 flex justify-center'} flex-shrink-0 mt-auto`}>
-            <button
-              onClick={handleLogout}
-              className={`${
-                isSidebarOpen 
-                  ? 'w-full flex items-center justify-center space-x-2 p-3' 
-                  : 'w-12 h-12 flex items-center justify-center'
-              } bg-gradient-to-r from-red-500/20 to-red-600/20 backdrop-blur-sm text-red-700 rounded-xl border border-red-200 hover:from-red-500/30 hover:to-red-600/30 hover:text-red-800 transition-all duration-200 shadow-sm hover:shadow-md`}
-            >
-              <LogOut className="w-4 h-4" />
-              {isSidebarOpen && <span className="text-sm font-medium">Cerrar Sesión</span>}
-            </button>
-          </div>
+        {/* Logout Button in Sidebar - Fixed at Bottom */}
+        <div className={`${isSidebarOpen ? 'p-4' : 'pb-4 flex justify-center'} flex-shrink-0 border-t border-gray-200/50`}>
+          <button
+            onClick={handleLogout}
+            className={`${
+              isSidebarOpen 
+                ? 'w-full flex items-center justify-center space-x-2 p-3' 
+                : 'w-12 h-12 flex items-center justify-center'
+            } bg-gradient-to-r from-red-500/20 to-red-600/20 backdrop-blur-sm text-red-700 rounded-xl border border-red-200 hover:from-red-500/30 hover:to-red-600/30 hover:text-red-800 transition-all duration-200 shadow-sm hover:shadow-md`}
+          >
+            <LogOut className="w-4 h-4" />
+            {isSidebarOpen && <span className="text-sm font-medium">Cerrar Sesión</span>}
+          </button>
         </div>
       </div>
 
@@ -2175,7 +2219,7 @@ export function OrganizerDashboard() {
                                   <Icon className={`w-4 h-4 md:w-5 md:h-5 ${colors.icon} flex-shrink-0`} />
                                   <div className="min-w-0 flex-1">
                                     <h5 className="font-medium text-gray-900 text-xs md:text-sm truncate">{method.nombre}</h5>
-                                    <p className="text-xs md:text-sm text-gray-600 truncate">{method.proveedor} • {method.comision_porcentaje}% comisión</p>
+                                    <p className="text-xs md:text-sm text-gray-600 truncate">{method.proveedor} • {method.comision_porcentaje.toFixed(1)}% comisión</p>
                                   </div>
                                 </div>
                                 <div className="flex items-center space-x-2">
@@ -2373,7 +2417,7 @@ export function OrganizerDashboard() {
                     <div className="space-y-4">
                       <div className="grid grid-cols-2 gap-4">
                         <div className="p-3 bg-green-50 rounded-lg">
-                          <div className="text-2xl font-bold text-green-600">{attendanceStats.attendanceRate}%</div>
+                          <div className="text-2xl font-bold text-green-600">{attendanceStats.attendanceRate.toFixed(1)}%</div>
                           <div className="text-sm text-gray-600">Tasa de Asistencia</div>
                       </div>
                         <div className="p-3 bg-blue-50 rounded-lg">

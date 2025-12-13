@@ -140,7 +140,7 @@ export class AnalyticsService {
 
     const totalVistas = Number(analytics?.total_visualizaciones || 0);
     const totalVentasAnalytics = Number(analytics?.total_ventas || 0);
-    const conversionRate = totalVistas > 0 ? (totalVentasAnalytics / totalVistas) * 100 : 0;
+    const conversionRate = totalVistas > 0 ? parseFloat(((totalVentasAnalytics / totalVistas) * 100).toFixed(1)) : 0;
 
     // 4) Ventas de hoy
     const { startISO, endISO } = startEndOfTodayUTC();
@@ -162,7 +162,7 @@ export class AnalyticsService {
 
     // 6) Abandono de carrito del evento
     const abandonadas = (compras || []).filter(c => ['pendiente','cancelada','fallida','reembolsada'].includes(String(c.estado))).length;
-    const abandonoCarrito = (compras && compras.length > 0) ? (abandonadas / compras.length) * 100 : 0;
+    const abandonoCarrito = (compras && compras.length > 0) ? parseFloat(((abandonadas / compras.length) * 100).toFixed(1)) : 0;
 
     // 7) Asistencia promedio desde QR con fallback a analytics
     let asistenciaPromedio = Number(analytics?.tasa_asistencia || 0);
@@ -173,7 +173,7 @@ export class AnalyticsService {
     if (!qrErr && qrRows) {
       const totalVendidosQR = qrRows.length;
       const totalUsadosQR = qrRows.filter(r => r.estado === 'usado').length;
-      const tasaQR = totalVendidosQR > 0 ? (totalUsadosQR / totalVendidosQR) * 100 : 0;
+      const tasaQR = totalVendidosQR > 0 ? parseFloat(((totalUsadosQR / totalVendidosQR) * 100).toFixed(1)) : 0;
       if (!analytics) asistenciaPromedio = tasaQR; else if (tasaQR > 0) asistenciaPromedio = tasaQR;
     }
 
@@ -340,7 +340,7 @@ export class AnalyticsService {
 
     const totalVistas = (analytics || []).reduce((s, a) => s + (a.total_visualizaciones || 0), 0);
     const totalVentasAnalytics = (analytics || []).reduce((s, a) => s + (a.total_ventas || 0), 0);
-    const conversionRate = totalVistas > 0 ? (totalVentasAnalytics / totalVistas) * 100 : 0;
+    const conversionRate = totalVistas > 0 ? parseFloat(((totalVentasAnalytics / totalVistas) * 100).toFixed(1)) : 0;
     let asistenciaPromedio = (analytics && analytics.length > 0)
       ? (analytics.reduce((s, a) => s + Number(a.tasa_asistencia || 0), 0) / analytics.length)
       : 0;
@@ -375,7 +375,7 @@ export class AnalyticsService {
       if (!qrErr && qrRows) {
         const totalVendidosQR = (qrRows || []).length;
         const totalUsadosQR = (qrRows || []).filter(r => r.estado === 'usado').length;
-        asistenciaPromedio = totalVendidosQR > 0 ? (totalUsadosQR / totalVendidosQR) * 100 : 0;
+        asistenciaPromedio = totalVendidosQR > 0 ? parseFloat(((totalUsadosQR / totalVendidosQR) * 100).toFixed(1)) : 0;
       }
     }
 
@@ -466,8 +466,18 @@ export class AnalyticsService {
     }>;
     revenueByMonth: Array<{
       month: string;
+      year: number;
       revenue: number;
       events: number;
+      eventsList: Array<{
+        id: string;
+        title: string;
+        revenue: number;
+        percentage: number;
+        eventDate?: string;
+        salesStart?: string;
+      }>;
+      growthVsPrevMonth: number;
     }>;
     attendanceTrends: Array<{
       date: string;
@@ -478,6 +488,8 @@ export class AnalyticsService {
       type: string;
       sales: number;
       revenue: number;
+      eventName: string;
+      eventId: string;
     }>;
     geographicData: Array<{
       location: string;
@@ -619,7 +631,7 @@ export class AnalyticsService {
         .eq('estado', 'completada');
 
       if (!totalCompras || totalCompras === 0) return 0;
-      return ((completadas || 0) / totalCompras) * 100;
+      return parseFloat((((completadas || 0) / totalCompras) * 100).toFixed(1));
     } catch (error) {
       console.error('Error al calcular tasa de conversión:', error);
       return 0;
@@ -986,7 +998,7 @@ export class AnalyticsService {
           const currentRevenue = monthsData[i].revenue;
           const prevRevenue = monthsData[i - 1].revenue;
           if (prevRevenue > 0) {
-            monthsData[i].growthVsPrevMonth = ((currentRevenue - prevRevenue) / prevRevenue) * 100;
+            monthsData[i].growthVsPrevMonth = parseFloat((((currentRevenue - prevRevenue) / prevRevenue) * 100).toFixed(1));
           }
         }
       }
@@ -1349,7 +1361,7 @@ export class AnalyticsService {
       // Calcular tasa de asistencia
       const totalCodigos = qrCodes.length;
       const codigosUsados = qrCodes.filter((qr: any) => qr.estado === 'usado').length;
-      const averageAttendanceRate = totalCodigos > 0 ? (codigosUsados / totalCodigos) * 100 : 0;
+      const averageAttendanceRate = totalCodigos > 0 ? parseFloat(((codigosUsados / totalCodigos) * 100).toFixed(1)) : 0;
 
       // Obtener códigos escaneados (solo los usados)
       const codigosEscaneados = qrCodes.filter((qr: any) => qr.estado === 'usado' && qr.fecha_escaneado);

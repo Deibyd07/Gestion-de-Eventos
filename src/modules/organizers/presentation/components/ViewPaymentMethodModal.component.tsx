@@ -141,7 +141,7 @@ export function ViewPaymentMethodModal({ isOpen, onClose, paymentMethod }: ViewP
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-600">Comisión Porcentual</label>
-                <p className="text-gray-900 font-medium text-lg">{paymentMethod.comision_porcentaje}%</p>
+                <p className="text-gray-900 font-medium text-lg">{paymentMethod.comision_porcentaje.toFixed(1)}%</p>
               </div>
               {paymentMethod.comision_fija && (
                 <div>

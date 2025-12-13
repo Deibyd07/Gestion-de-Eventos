@@ -27,7 +27,7 @@ export function MetricCard({
       case 'currency':
         return formatPrice(val);
       case 'percentage':
-        return `${val}%`;
+        return `${val.toFixed(1)}%`;
       default:
         return val.toLocaleString('es-CO');
     }
@@ -65,12 +65,12 @@ export function MetricCard({
           </p>
           {subtitle && (
             <p className="text-sm text-blue-600">{subtitle}</p>
-          )}
+          )
           {change !== undefined && (
             <div className={`flex items-center mt-2 text-sm ${getChangeColor()}`}>
               {getChangeIcon()}
               <span className="ml-1">
-                {change > 0 ? '+' : ''}{change}%
+                {change > 0 ? '+' : ''}{change.toFixed(1)}%
               </span>
               <span className="text-blue-500 ml-1">vs mes anterior</span>
             </div>

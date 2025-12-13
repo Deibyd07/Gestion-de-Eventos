@@ -80,89 +80,11 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
   data,
   onExportReport
 }) => {
-  const [activeTab, setActiveTab] = useState<'overview' | 'revenue' | 'attendance'>('overview');
-  const [isExportDropdownOpen, setIsExportDropdownOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<'overview' | 'revenue' | 'attendance' | 'reports'>('overview');
   const [showAllEvents, setShowAllEvents] = useState(false);
   const [showAllTicketTypes, setShowAllTicketTypes] = useState(false);
   const [expandedMonths, setExpandedMonths] = useState<Set<string>>(new Set());
-  
-  // Filtros de exportación
-  const [selectedMonth, setSelectedMonth] = useState<string>('');
-  const [selectedYear, setSelectedYear] = useState<string>(new Date().getFullYear().toString());
-
-  // Generar años disponibles (desde 2025 - año de creación del sistema - hasta el año actual)
-  const SYSTEM_START_YEAR = 2025;
-  const currentYear = new Date().getFullYear();
-  const availableYears = Array.from(
-    { length: currentYear - SYSTEM_START_YEAR + 1 }, 
-    (_, i) => currentYear - i
-  );
-
-  // Meses del año
-  const months = [
-    { value: '01', label: 'Enero' },
-    { value: '02', label: 'Febrero' },
-    { value: '03', label: 'Marzo' },
-    { value: '04', label: 'Abril' },
-    { value: '05', label: 'Mayo' },
-    { value: '06', label: 'Junio' },
-    { value: '07', label: 'Julio' },
-    { value: '08', label: 'Agosto' },
-    { value: '09', label: 'Septiembre' },
-    { value: '10', label: 'Octubre' },
-    { value: '11', label: 'Noviembre' },
-    { value: '12', label: 'Diciembre' }
-  ];
-
-  // Detectar meses con datos basándose en revenueByMonth
-  const availableMonths = React.useMemo(() => {
-    if (!data.revenueByMonth || data.revenueByMonth.length === 0) {
-      return new Set<string>();
-    }
-
-    const monthsWithData = new Set<string>();
-    data.revenueByMonth.forEach((item) => {
-      if (item.year.toString() === selectedYear) {
-        // Extraer mes del string "Noviembre", "Diciembre", etc.
-        const monthIndex = months.findIndex(m => m.label === item.month);
-        if (monthIndex !== -1) {
-          monthsWithData.add(months[monthIndex].value);
-        }
-      }
-    });
-
-    return monthsWithData;
-  }, [data.revenueByMonth, selectedYear]);
-
-  // Filtrar meses disponibles para el año seleccionado
-  const filteredMonths = months.filter(month => 
-    availableMonths.has(month.value)
-  );
-
-  // Resetear mes cuando cambia el año si el mes seleccionado no está disponible
-  React.useEffect(() => {
-    if (selectedMonth && !availableMonths.has(selectedMonth)) {
-      setSelectedMonth('');
-    }
-  }, [selectedYear, selectedMonth, availableMonths]);
-
-  // Cerrar dropdown cuando se hace clic fuera
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as HTMLElement;
-      if (!target.closest('.export-dropdown')) {
-        setIsExportDropdownOpen(false);
-      }
-    };
-
-    if (isExportDropdownOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [isExportDropdownOpen]);
+  const [isExportingReport, setIsExportingReport] = useState<string | null>(null);
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('es-CO', {
@@ -205,111 +127,22 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
   const tabs = [
     { id: 'overview', label: 'Resumen General', icon: TrendingUp },
     { id: 'revenue', label: 'Ingresos', icon: DollarSign },
-    { id: 'attendance', label: 'Asistencia', icon: Users }
+    { id: 'attendance', label: 'Asistencia', icon: Users },
+    { id: 'reports', label: 'Reportes', icon: Download }
   ] as const;
 
   return (
     <div className="space-y-6 admin-panel panel-consistent-width">
-      {/* Filtros de Período y Exportación */}
-      <div className="bg-gradient-to-br from-white to-indigo-50 rounded-xl p-4 shadow-sm border border-indigo-100">
-        <div className="flex flex-wrap items-end gap-4">
-          {/* Selector de Año */}
-          <div className="flex-1 min-w-[150px]">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Año
-            </label>
-            <select
-              value={selectedYear}
-              onChange={(e) => setSelectedYear(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white"
-            >
-              {availableYears.map(year => (
-                <option key={year} value={year}>{year}</option>
-              ))}
-            </select>
-          </div>
-
-          {/* Selector de Mes */}
-          <div className="flex-1 min-w-[200px]">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Mes {filteredMonths.length > 0 && <span className="text-xs text-gray-500">({filteredMonths.length} disponibles)</span>}
-            </label>
-            <select
-              value={selectedMonth}
-              onChange={(e) => setSelectedMonth(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white"
-              disabled={filteredMonths.length === 0}
-            >
-              <option value="">Todos los meses</option>
-              {filteredMonths.map(month => (
-                <option key={month.value} value={month.value}>{month.label}</option>
-              ))}
-              {filteredMonths.length === 0 && (
-                <option value="" disabled>No hay datos para este año</option>
-              )}
-            </select>
-          </div>
-
-          {/* Botón Exportar */}
-          <div className="relative export-dropdown">
-            <button 
-              onClick={() => setIsExportDropdownOpen(!isExportDropdownOpen)}
-              className="inline-flex items-center px-6 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all duration-200 shadow-md hover:shadow-lg"
-            >
-              <Download className="w-4 h-4 mr-2" />
-              Exportar Reporte
-            </button>
-            {isExportDropdownOpen && (
-              <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl border border-gray-200 z-10">
-                <button
-                  onClick={() => {
-                    onExportReport('excel', {
-                      month: selectedMonth || undefined,
-                      year: selectedYear
-                    });
-                    setIsExportDropdownOpen(false);
-                  }}
-                  className="w-full text-left px-4 py-3 hover:bg-indigo-50 transition-colors text-gray-700 font-medium rounded-t-lg"
-                >
-                  Excel (.xlsx)
-                </button>
-                <button
-                  onClick={() => {
-                    onExportReport('pdf', {
-                      month: selectedMonth || undefined,
-                      year: selectedYear
-                    });
-                    setIsExportDropdownOpen(false);
-                  }}
-                  className="w-full text-left px-4 py-3 hover:bg-indigo-50 transition-colors text-gray-700 font-medium rounded-b-lg"
-                >
-                  PDF
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Indicador de período seleccionado */}
-        {selectedMonth && (
-          <div className="mt-3 text-sm text-indigo-600 font-medium">
-            📅 Período seleccionado: {months.find(m => m.value === selectedMonth)?.label} {selectedYear}
-          </div>
-        )}
-        {!selectedMonth && (
-          <div className="mt-3 text-sm text-gray-600">
-            📅 Mostrando todo el año {selectedYear}
-          </div>
-        )}
-      </div>
-
       {/* Key Metrics */}
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-3">
         <div className="bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-xl md:rounded-2xl p-3 sm:p-4 shadow-xl hover:shadow-2xl transition-all duration-200 backdrop-blur-lg">
           <div className="flex items-start sm:items-center justify-between gap-2">
             <div className="flex-1 min-w-0">
               <p className="text-xs md:text-sm font-medium text-blue-700 truncate">Total Eventos</p>
-              <p className="text-lg md:text-2xl font-bold text-blue-900">{formatNumber(data.totalEvents)}</p>
+              <p className="text-lg md:text-2xl font-semibold text-blue-900">{formatNumber(data.totalEvents)}</p>
+              <p className={`text-xs font-medium flex items-center mt-1 ${data.growth.events >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                <span className="truncate">{data.growth.events >= 0 ? '+' : ''}{data.growth.events.toFixed(1)}% vs mes anterior</span>
+              </p>
             </div>
             <div className="p-2 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg shadow-sm flex-shrink-0">
               <Calendar className="w-4 h-4 md:w-5 md:h-5 text-white" />
@@ -321,7 +154,10 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
           <div className="flex items-start sm:items-center justify-between gap-2">
             <div className="flex-1 min-w-0">
               <p className="text-xs md:text-sm font-medium text-green-700 truncate">Ingresos Totales</p>
-              <p className="text-lg md:text-2xl font-bold text-green-900">{formatCurrency(data.totalRevenue)}</p>
+              <p className="text-lg md:text-2xl font-semibold text-green-900">{formatCurrency(data.totalRevenue)}</p>
+              <p className={`text-xs font-medium flex items-center mt-1 ${data.growth.revenue >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                <span className="truncate">{data.growth.revenue >= 0 ? '+' : ''}{data.growth.revenue.toFixed(1)}% vs mes anterior</span>
+              </p>
             </div>
             <div className="p-2 bg-gradient-to-r from-green-500 to-green-600 rounded-lg shadow-sm flex-shrink-0">
               <DollarSign className="w-4 h-4 md:w-5 md:h-5 text-white" />
@@ -333,7 +169,10 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
           <div className="flex items-start sm:items-center justify-between gap-2">
             <div className="flex-1 min-w-0">
               <p className="text-xs md:text-sm font-medium text-purple-700 truncate">Total Asistentes</p>
-              <p className="text-lg md:text-2xl font-bold text-purple-900">{formatNumber(data.totalAttendees)}</p>
+              <p className="text-lg md:text-2xl font-semibold text-purple-900">{formatNumber(data.totalAttendees)}</p>
+              <p className={`text-xs font-medium flex items-center mt-1 ${data.growth.attendees >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                <span className="truncate">{data.growth.attendees >= 0 ? '+' : ''}{data.growth.attendees.toFixed(1)}% vs mes anterior</span>
+              </p>
             </div>
             <div className="p-2 bg-gradient-to-r from-purple-500 to-purple-600 rounded-lg shadow-sm flex-shrink-0">
               <Users className="w-4 h-4 md:w-5 md:h-5 text-white" />
@@ -345,7 +184,10 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
           <div className="flex items-start sm:items-center justify-between gap-2">
             <div className="flex-1 min-w-0">
               <p className="text-xs md:text-sm font-medium text-yellow-700 truncate">Tasa de Conversión</p>
-              <p className="text-lg md:text-2xl font-bold text-yellow-900">{data.conversionRate.toFixed(1)}%</p>
+              <p className="text-lg md:text-2xl font-semibold text-yellow-900">{data.conversionRate.toFixed(1)}%</p>
+              <p className={`text-xs font-medium flex items-center mt-1 ${data.growth.conversionRate >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                <span className="truncate">{data.growth.conversionRate >= 0 ? '+' : ''}{data.growth.conversionRate.toFixed(1)}% vs mes anterior</span>
+              </p>
             </div>
             <div className="p-2 bg-gradient-to-r from-yellow-500 to-yellow-600 rounded-lg shadow-sm flex-shrink-0">
               <TrendingUp className="w-4 h-4 md:w-5 md:h-5 text-white" />
@@ -663,7 +505,7 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
               <div className="space-y-3">
                 <div className="flex justify-between">
                   <span className="text-sm text-gray-600">Tasa de Asistencia Promedio</span>
-                  <span className="font-medium text-gray-900">{data.attendanceStats.averageAttendanceRate}%</span>
+                  <span className="font-medium text-gray-900">{data.attendanceStats.averageAttendanceRate.toFixed(1)}%</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-sm text-gray-600">Mejor Día de la Semana</span>
@@ -718,6 +560,69 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
                   <span className="text-sm text-gray-600">Crecimiento Regional</span>
                   <span className="font-medium text-green-600">+23% Valle del Cauca</span>
                 </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Reports Tab */}
+        {activeTab === 'reports' && (
+          <div className="space-y-6">
+            {/* Reports Section */}
+            <div className="bg-gradient-to-br from-white to-indigo-100/98 backdrop-blur-lg shadow-xl border border-white/20 rounded-xl md:rounded-2xl p-4 md:p-6">
+              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-4">
+                <h4 className="font-semibold text-gray-900 text-sm md:text-base">Reportes de Analytics</h4>
+              </div>
+              <div className="max-w-md">
+                {/* General Report */}
+                <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                  <h5 className="font-medium text-gray-900 mb-2">Reporte General</h5>
+                  <p className="text-sm text-gray-600 mb-3">Métricas y análisis generales del sistema</p>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      onClick={() => {
+                        setIsExportingReport('general-pdf');
+                        onExportReport('pdf', {
+                          year: new Date().getFullYear().toString()
+                        });
+                        setTimeout(() => setIsExportingReport(null), 2000);
+                      }}
+                      disabled={isExportingReport === 'general-pdf'}
+                      className="px-3 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-xl hover:from-blue-600 hover:to-purple-700 transition-all duration-200 text-sm disabled:opacity-60 disabled:cursor-not-allowed"
+                    >
+                      <Download className="w-4 h-4 mr-1 inline" />
+                      {isExportingReport === 'general-pdf' ? 'Generando...' : 'PDF'}
+                    </button>
+                    <button
+                      onClick={() => {
+                        setIsExportingReport('general-excel');
+                        onExportReport('excel', {
+                          year: new Date().getFullYear().toString()
+                        });
+                        setTimeout(() => setIsExportingReport(null), 2000);
+                      }}
+                      disabled={isExportingReport === 'general-excel'}
+                      className="px-3 py-2 bg-white text-blue-700 border border-blue-200 rounded-xl hover:bg-blue-50 transition-all duration-200 text-sm disabled:opacity-60 disabled:cursor-not-allowed"
+                    >
+                      <Download className="w-4 h-4 mr-1 inline" />
+                      {isExportingReport === 'general-excel' ? 'Generando...' : 'Excel'}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Report Information */}
+            <div className="bg-gradient-to-br from-indigo-50 to-blue-50 rounded-xl p-6 border border-indigo-200">
+              <h4 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                <AlertCircle className="w-5 h-5 text-indigo-600" />
+                Información sobre Reportes
+              </h4>
+              <div className="space-y-2 text-sm text-gray-700">
+                <p>• El reporte general incluye todas las métricas principales del sistema</p>
+                <p>• Contiene análisis de eventos, ingresos, asistencia y tendencias</p>
+                <p>• Formato PDF: Ideal para presentaciones y documentos oficiales</p>
+                <p>• Formato Excel: Permite análisis y manipulación de datos personalizada</p>
               </div>
             </div>
           </div>

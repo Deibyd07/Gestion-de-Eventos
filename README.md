@@ -463,21 +463,19 @@ npm run typecheck    # Verificación de tipos TypeScript
 
 ---
 
-## 🔐 Usuarios de Prueba (Desarrollo)
-
-Solo disponibles si ejecutaste `database/datos_ejemplo.sql`:
+## 🔐 Usuarios de Prueba 
 
 ```
 Administrador:
-Email: admin@eventhub.co
+Email: admin@eventhub.com
 Password: admin123
 
 Organizador:
-Email: organizador1@eventhub.co
+Email: organizador1@eventhub.com
 Password: organizador123
 
 Asistente:
-Email: usuario1@email.com
+Email: bayfrox@gmail.com
 Password: usuario123
 ```
 

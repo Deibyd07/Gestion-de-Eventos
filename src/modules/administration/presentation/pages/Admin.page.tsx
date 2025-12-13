@@ -324,7 +324,7 @@ export function AdminPage() {
                     if (format === 'excel') {
                       ExportReportService.exportToExcel(analyticsData, filters);
                     } else if (format === 'pdf') {
-                      console.log('Exportación a PDF próximamente');
+                      ExportReportService.exportToPDF(analyticsData, filters);
                     }
                   }}
                   onFilterChange={(filters) => console.log('Filtros:', filters)} 

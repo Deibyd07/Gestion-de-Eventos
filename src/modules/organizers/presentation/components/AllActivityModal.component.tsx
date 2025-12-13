@@ -62,8 +62,8 @@ export function AllActivityModal({
                 <button
                   onClick={onRefresh}
                   disabled={isLoading}
-                  className="p-2 rounded-lg hover:bg-white/50 transition-colors disabled:opacity-50"
-                  title="Actualizar"
+                  className="p-2 rounded-lg hover:bg-white/50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  title={isLoading ? 'Actualizando...' : 'Actualizar'}
                 >
                   <RefreshCw className={`w-5 h-5 text-gray-600 ${isLoading ? 'animate-spin' : ''}`} />
                 </button>

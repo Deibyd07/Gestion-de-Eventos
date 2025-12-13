@@ -137,6 +137,7 @@ export function OrganizerDashboard() {
     recentScans: [] as Array<{ name: string; time: string }>
   });
   const [isExportingReport, setIsExportingReport] = useState<string | null>(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   // Actividad reciente del organizador
   const [recentActivity, setRecentActivity] = useState<Array<{ type: 'venta' | 'escaneo' | string; timeISO: string; title: string; description: string; badge?: string; eventTitle?: string }>>([]);
@@ -699,6 +700,7 @@ export function OrganizerDashboard() {
     // Recargar eventos del organizador
     if (!user?.id) return;
     
+    setIsRefreshing(true);
     try {
       const dbEvents = await EventService.obtenerEventosUsuario(user.id);
       
@@ -744,6 +746,25 @@ export function OrganizerDashboard() {
       // Recargar también métodos de pago
       await loadPaymentMethods();
 
+      // Recargar métricas
+      await loadMetrics();
+
+      // Recalcular ingresos reales por tipo de entrada (incluye descuentos) al refrescar
+      if (activeTab === 'tickets') {
+        const currentEventId = selectedEventId || convertedEvents[0]?.id;
+        if (currentEventId) {
+          try {
+            const revenueMap = await calculateTicketRevenue(currentEventId);
+            setTicketRevenueByType(revenueMap);
+          } catch (revenueErr) {
+            console.error('Error recalculando ingresos por tipo de entrada:', revenueErr);
+          }
+        } else {
+          // Si no hay evento, limpiar el mapa para no mostrar valores desactualizados
+          setTicketRevenueByType({});
+        }
+      }
+
       // Si estamos en la pestaña de asistentes, recargar asistentes también
       if (activeTab === 'attendees' && (window as any).__attendeeRefresh) {
         await (window as any).__attendeeRefresh();
@@ -755,6 +776,8 @@ export function OrganizerDashboard() {
       }
     } catch (error) {
       console.error('Error al refrescar eventos:', error);
+    } finally {
+      setIsRefreshing(false);
     }
   };
 
@@ -834,19 +857,52 @@ export function OrganizerDashboard() {
     return attendees;
   };
 
+  // Normaliza clave de tipo de entrada para coincidir nombres/tipos con o sin mayúsculas
+  const normalizeTicketKey = (raw?: string | null) => {
+    return (raw || 'general').toString().trim().toLowerCase();
+  };
+
   // Calcula ingresos reales por tipo de entrada (considerando descuentos) para un evento específico
   const calculateTicketRevenue = async (eventId: string) => {
     if (!user?.id) return {};
     try {
       const attendees = await AttendeeService.getOrganizerAttendees(user.id, eventId);
       const revenueMap: Record<string, number> = {};
+      // Agrupar por purchaseId para evitar contar múltiples veces la misma compra
+      const purchaseMap = new Map<string, { totalPaid: number; quantity: number; ticketType: string }>();
 
+      // Primero, agrupar por compra para obtener el total pagado por compra
       attendees.forEach((att) => {
         const qty = att.purchaseQuantity && att.purchaseQuantity > 0 ? att.purchaseQuantity : 1;
-        const paid = typeof att.purchaseTotalPaid === 'number' ? att.purchaseTotalPaid : (att.ticketPrice || 0) * qty;
-        const ticketKey = att.ticketType || 'general';
+        const ticketKey = normalizeTicketKey(att.ticketType);
+        const totalPaid = typeof att.purchaseTotalPaid === 'number' ? att.purchaseTotalPaid : (att.ticketPrice || 0) * qty;
+
+        // Si tiene purchaseId, agrupamos para evitar contarla varias veces
+        if (att.purchaseId) {
+          if (!purchaseMap.has(att.purchaseId)) {
+            purchaseMap.set(att.purchaseId, {
+              totalPaid,
+              quantity: qty,
+              ticketType: ticketKey
+            });
+          }
+          return;
+        }
+
+        // Si no hay purchaseId (caso legacy/fallback), contamos el ingreso individualmente
         if (!revenueMap[ticketKey]) revenueMap[ticketKey] = 0;
-        revenueMap[ticketKey] += paid;
+        revenueMap[ticketKey] += totalPaid;
+      });
+
+      // Ahora calcular ingresos por tipo de entrada agrupados por purchaseId
+      purchaseMap.forEach((purchase) => {
+        const ticketKey = normalizeTicketKey(purchase.ticketType);
+        // El precio por ticket es el total pagado dividido por la cantidad
+        // Esto ya incluye descuentos porque totalPaid es el valor neto pagado
+        const totalRevenueForThisPurchase = purchase.totalPaid; // Total de la compra
+        
+        if (!revenueMap[ticketKey]) revenueMap[ticketKey] = 0;
+        revenueMap[ticketKey] += totalRevenueForThisPurchase;
       });
 
       return revenueMap;
@@ -1888,6 +1944,8 @@ export function OrganizerDashboard() {
                     formatRevenue={formatRevenue}
                     recentActivity={recentActivity}
                     onViewAllActivity={() => setIsAllActivityModalOpen(true)}
+                    onRefresh={handleRefresh}
+                    isRefreshing={isRefreshing}
                   />
                 )}
               </>
@@ -1931,10 +1989,11 @@ export function OrganizerDashboard() {
                   <div className="flex flex-wrap gap-2 w-full sm:w-auto">
             <button 
               onClick={handleRefresh}
-                      className="flex-1 sm:flex-none inline-flex items-center justify-center px-3 md:px-4 py-2 bg-gradient-to-r from-orange-500 to-red-600 text-white font-medium rounded-xl hover:from-orange-600 hover:to-red-700 transition-all duration-200 shadow-sm text-sm"
+              disabled={isRefreshing}
+                      className="flex-1 sm:flex-none inline-flex items-center justify-center px-3 md:px-4 py-2 bg-gradient-to-r from-orange-500 to-red-600 text-white font-medium rounded-xl hover:from-orange-600 hover:to-red-700 transition-all duration-200 shadow-sm text-sm disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <RefreshCw className="w-4 h-4 sm:mr-2" />
-              <span className="hidden sm:inline">Actualizar</span>
+              <RefreshCw className={`w-4 h-4 sm:mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
+              <span className="hidden sm:inline">{isRefreshing ? 'Actualizando...' : 'Actualizar'}</span>
             </button>
             <button 
                       onClick={() => setIsCreateEventModalOpen(true)}
@@ -1995,10 +2054,11 @@ export function OrganizerDashboard() {
                   <div className="flex flex-wrap gap-2 w-full sm:w-auto">
                     <button 
                       onClick={handleRefresh}
-                      className="flex-1 sm:flex-none inline-flex items-center justify-center px-3 md:px-4 py-2 bg-gradient-to-r from-orange-500 to-red-600 text-white font-medium rounded-xl hover:from-orange-600 hover:to-red-700 transition-all duration-200 shadow-sm text-sm"
+                      disabled={isRefreshing}
+                      className="flex-1 sm:flex-none inline-flex items-center justify-center px-3 md:px-4 py-2 bg-gradient-to-r from-orange-500 to-red-600 text-white font-medium rounded-xl hover:from-orange-600 hover:to-red-700 transition-all duration-200 shadow-sm text-sm disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      <RefreshCw className="w-4 h-4 sm:mr-2" />
-                      <span className="hidden sm:inline">Actualizar</span>
+                      <RefreshCw className={`w-4 h-4 sm:mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
+                      <span className="hidden sm:inline">{isRefreshing ? 'Actualizando...' : 'Actualizar'}</span>
                     </button>
                     <button 
                       onClick={() => setIsCreateTicketModalOpen(true)}
@@ -2012,7 +2072,8 @@ export function OrganizerDashboard() {
                 
                 <TicketManagement
                   tickets={(selectedEvent?.ticketTypes || []).map((ticket: any) => {
-                    const key = (ticket.type ?? ticket.tipo ?? ticket.name ?? ticket.nombre_tipo ?? 'general') as string;
+                    const keyRaw = (ticket.type ?? ticket.tipo ?? ticket.name ?? ticket.nombre_tipo ?? 'general') as string;
+                    const key = normalizeTicketKey(keyRaw);
                     return {
                     id: ticket.id,
                     name: ticket.name ?? ticket.nombre_tipo ?? 'Sin nombre',
@@ -2078,10 +2139,11 @@ export function OrganizerDashboard() {
                   <div className="flex flex-wrap gap-2 w-full sm:w-auto">
                     <button 
                       onClick={handleRefresh}
-                      className="flex-1 sm:flex-none inline-flex items-center justify-center px-3 md:px-4 py-2 bg-gradient-to-r from-orange-500 to-red-600 text-white font-medium rounded-xl hover:from-orange-600 hover:to-red-700 transition-all duration-200 shadow-sm text-sm"
+                      disabled={isRefreshing}
+                      className="flex-1 sm:flex-none inline-flex items-center justify-center px-3 md:px-4 py-2 bg-gradient-to-r from-orange-500 to-red-600 text-white font-medium rounded-xl hover:from-orange-600 hover:to-red-700 transition-all duration-200 shadow-sm text-sm disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      <RefreshCw className="w-4 h-4 sm:mr-2" />
-                      <span className="hidden sm:inline">Actualizar</span>
+                      <RefreshCw className={`w-4 h-4 sm:mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
+                      <span className="hidden sm:inline">{isRefreshing ? 'Actualizando...' : 'Actualizar'}</span>
                     </button>
                     <button 
                       onClick={() => setIsCreatePromotionModalOpen(true)}
@@ -2132,10 +2194,11 @@ export function OrganizerDashboard() {
                   <div className="flex flex-wrap gap-2 w-full sm:w-auto">
                     <button 
                       onClick={handleRefresh}
-                      className="flex-1 sm:flex-none inline-flex items-center justify-center px-3 md:px-4 py-2 bg-gradient-to-r from-orange-500 to-red-600 text-white font-medium rounded-xl hover:from-orange-600 hover:to-red-700 transition-all duration-200 shadow-sm gap-2"
+                      disabled={isRefreshing}
+                      className="flex-1 sm:flex-none inline-flex items-center justify-center px-3 md:px-4 py-2 bg-gradient-to-r from-orange-500 to-red-600 text-white font-medium rounded-xl hover:from-orange-600 hover:to-red-700 transition-all duration-200 shadow-sm gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      <RefreshCw className="w-4 h-4" />
-                      <span className="hidden sm:inline">Actualizar</span>
+                      <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+                      <span className="hidden sm:inline">{isRefreshing ? 'Actualizando...' : 'Actualizar'}</span>
                     </button>
                     <button 
                       onClick={() => setIsCreatePaymentMethodModalOpen(true)}
@@ -2377,10 +2440,11 @@ export function OrganizerDashboard() {
                   </div>
                   <button 
                     onClick={handleRefresh}
-                    className="inline-flex items-center justify-center px-4 py-2 bg-gradient-to-r from-orange-500 to-red-600 text-white font-medium rounded-xl hover:from-orange-600 hover:to-red-700 transition-all duration-200 shadow-sm"
+                    disabled={isRefreshing}
+                    className="inline-flex items-center justify-center px-4 py-2 bg-gradient-to-r from-orange-500 to-red-600 text-white font-medium rounded-xl hover:from-orange-600 hover:to-red-700 transition-all duration-200 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    <RefreshCw className="w-4 h-4 mr-2" />
-                    Actualizar
+                    <RefreshCw className={`w-4 h-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
+                    {isRefreshing ? 'Actualizando...' : 'Actualizar'}
                   </button>
                 </div>
                 
@@ -2540,11 +2604,12 @@ export function OrganizerDashboard() {
                   <div className="flex flex-wrap gap-2 w-full sm:w-auto">
                     <button 
                       onClick={handleRefresh}
+                      disabled={isRefreshing}
                       aria-label="Actualizar asistentes"
-                      className="flex-1 sm:flex-none inline-flex items-center justify-center px-3 md:px-4 py-2 bg-gradient-to-r from-orange-500 to-red-600 text-white font-medium rounded-xl hover:from-orange-600 hover:to-red-700 transition-all duration-200 shadow-sm"
+                      className="flex-1 sm:flex-none inline-flex items-center justify-center px-3 md:px-4 py-2 bg-gradient-to-r from-orange-500 to-red-600 text-white font-medium rounded-xl hover:from-orange-600 hover:to-red-700 transition-all duration-200 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      <RefreshCw className="w-4 h-4" />
-                      <span className="ml-2 text-xs sm:text-sm">Actualizar</span>
+                      <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+                      <span className="ml-2 text-xs sm:text-sm">{isRefreshing ? 'Actualizando...' : 'Actualizar'}</span>
                     </button>
                     {/* Export format selector removed */}
                   </div>

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { LogOut, User, Menu, X, BarChart3, Users, Calendar, CreditCard, TrendingUp } from 'lucide-react';
+import { LogOut, User, Menu, X, BarChart3, Users, Calendar, CreditCard, TrendingUp, RefreshCw } from 'lucide-react';
 import { useAuthStore } from '../../../authentication/infrastructure/store/Auth.store';
 import { useNavigate } from 'react-router-dom';
 import { AdminDashboard } from '../components/AdminDashboard.component';
@@ -21,6 +21,7 @@ export function AdminPage() {
   const [isLoadingStats, setIsLoadingStats] = useState(true);
   const [isLoadingAnalytics, setIsLoadingAnalytics] = useState(false);
   const [analyticsData, setAnalyticsData] = useState<any>(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [adminStats, setAdminStats] = useState({
     totalUsers: 0,
     totalEvents: 0,
@@ -95,7 +96,18 @@ export function AdminPage() {
 
   const handleRefresh = async () => {
     console.log('Actualizando datos...');
-    await loadDashboardStats();
+    setIsRefreshing(true);
+    try {
+      await loadDashboardStats();
+      // Si estamos en la pestaña de analytics, también recargar esos datos
+      if (activeTab === 'analytics') {
+        await loadAnalyticsData();
+      }
+    } catch (error) {
+      console.error('Error al refrescar datos:', error);
+    } finally {
+      setIsRefreshing(false);
+    }
   };
 
   const handleExportData = (type: string) => {
@@ -237,6 +249,16 @@ export function AdminPage() {
                 className="md:hidden p-2 rounded-xl hover:bg-white/20 backdrop-blur-sm transition-all duration-200 text-white border border-white/20"
               >
                 <Menu className="w-5 h-5" />
+              </button>
+              
+              {/* Refresh Button */}
+              <button
+                onClick={handleRefresh}
+                disabled={isRefreshing}
+                className="p-2 rounded-xl hover:bg-white/20 backdrop-blur-sm transition-all duration-200 text-white border border-white/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                title="Actualizar datos"
+              >
+                <RefreshCw className={`w-5 h-5 ${isRefreshing ? 'animate-spin' : ''}`} />
               </button>
               
               <div className="flex items-center space-x-2 md:space-x-3 flex-1 min-w-0">

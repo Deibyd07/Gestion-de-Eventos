@@ -43,10 +43,6 @@ export function OrganizerMetrics({ stats, formatRevenue }: OrganizerMetricsProps
             <div className="flex-1 min-w-0">
               <p className="text-xs md:text-sm font-medium text-gray-600">Eventos Activos</p>
               <p className="text-xl md:text-2xl font-bold text-gray-900">{stats.activeEvents}</p>
-              <p className="text-xs md:text-sm text-green-600 flex items-center mt-1">
-                <TrendingUp className="w-3 h-3 md:w-4 md:h-4 mr-1" />
-                <span className="truncate">+2 este mes</span>
-              </p>
             </div>
             <div className="w-10 h-10 md:w-12 md:h-12 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0 ml-2">
               <Calendar className="w-5 h-5 md:w-6 md:h-6 text-blue-600" />
@@ -60,10 +56,6 @@ export function OrganizerMetrics({ stats, formatRevenue }: OrganizerMetricsProps
             <div className="flex-1 min-w-0">
               <p className="text-xs md:text-sm font-medium text-gray-600">Ingresos Totales</p>
               <p className="text-xl md:text-2xl font-bold text-gray-900 truncate">{formatCurrency(stats.totalRevenue)}</p>
-              <p className="text-xs md:text-sm text-green-600 flex items-center mt-1">
-                <TrendingUp className="w-3 h-3 md:w-4 md:h-4 mr-1" />
-                <span className="truncate">+12.5% vs mes anterior</span>
-              </p>
             </div>
             <div className="w-10 h-10 md:w-12 md:h-12 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0 ml-2">
               <DollarSign className="w-5 h-5 md:w-6 md:h-6 text-green-600" />
@@ -94,10 +86,6 @@ export function OrganizerMetrics({ stats, formatRevenue }: OrganizerMetricsProps
             <div className="flex-1 min-w-0">
               <p className="text-xs md:text-sm font-medium text-gray-600">Ventas Hoy</p>
               <p className="text-xl md:text-2xl font-bold text-gray-900">{stats.ventasHoy ?? 0}</p>
-              <p className="text-xs md:text-sm text-orange-600 flex items-center mt-1">
-                <Activity className="w-3 h-3 md:w-4 md:h-4 mr-1" />
-                <span className="truncate">+23% vs ayer</span>
-              </p>
             </div>
             <div className="w-10 h-10 md:w-12 md:h-12 bg-orange-100 rounded-lg flex items-center justify-center flex-shrink-0 ml-2">
               <TrendingUp className="w-5 h-5 md:w-6 md:h-6 text-orange-600" />

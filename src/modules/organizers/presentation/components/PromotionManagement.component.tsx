@@ -215,7 +215,6 @@ export const PromotionManagement: React.FC<PromotionManagementProps> = ({
             <div>
               <p className="text-sm font-medium text-gray-600">Total Descuentos</p>
               <p className="text-2xl font-bold text-gray-900">{totalPromotions}</p>
-              <p className="text-sm text-blue-600">{activePromotions} activos</p>
             </div>
             <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
               <Percent className="w-6 h-6 text-blue-600" />
@@ -228,7 +227,6 @@ export const PromotionManagement: React.FC<PromotionManagementProps> = ({
             <div>
               <p className="text-sm font-medium text-gray-600">Usos Totales</p>
               <p className="text-2xl font-bold text-gray-900">{totalUsage}</p>
-              <p className="text-sm text-green-600">+23% vs mes anterior</p>
             </div>
             <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
               <Users className="w-6 h-6 text-green-600" />

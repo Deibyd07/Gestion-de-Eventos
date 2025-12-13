@@ -25,6 +25,7 @@ import { EditEventModal } from './events/EditEventModal.component';
 import { DeleteEventModal } from './events/DeleteEventModal.component';
 import { CreateEventModal, EventCreateData } from './events/CreateEventModal.component';
 import { useAuthStore } from '../../../authentication/infrastructure/store/Auth.store';
+import { supabase } from '@shared/lib/api/supabase';
 
 // Tipo de evento según la base de datos
 interface Event {
@@ -59,6 +60,7 @@ export const EventManagement: React.FC = () => {
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [totalAttendees, setTotalAttendees] = useState<number>(0);
   
   // Estados para los modales
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
@@ -81,11 +83,35 @@ export const EventManagement: React.FC = () => {
       setError(null);
       const data = await EventService.obtenerTodosEventos();
       setEvents(data || []);
+      
+      // Calcular total de asistentes desde compras completadas
+      await loadTotalAttendees();
     } catch (err) {
       console.error('Error al cargar eventos:', err);
       setError('Error al cargar los eventos. Por favor, intenta de nuevo.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadTotalAttendees = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('compras')
+        .select('cantidad')
+        .eq('estado', 'completada');
+
+      if (error) {
+        console.error('Error al obtener total de asistentes:', error);
+        return;
+      }
+
+      const total = (data as Array<{ cantidad: number }>)?.reduce((sum, compra) => 
+        sum + (compra.cantidad || 0), 0) || 0;
+      
+      setTotalAttendees(total);
+    } catch (err) {
+      console.error('Error al calcular total de asistentes:', err);
     }
   };
 
@@ -293,7 +319,7 @@ export const EventManagement: React.FC = () => {
           <div className="flex items-start sm:items-center justify-between gap-2">
             <div className="flex-1 min-w-0">
               <p className="text-xs md:text-sm font-medium text-purple-700 truncate">Total Asistentes</p>
-              <p className="text-lg md:text-2xl font-bold text-purple-900">{loading ? '...' : events.reduce((sum, e) => sum + (e.asistentes_actuales || 0), 0)}</p>
+              <p className="text-lg md:text-2xl font-bold text-purple-900">{loading ? '...' : totalAttendees}</p>
               <p className="text-xs text-purple-600 font-medium flex items-center mt-1">
                 <span className="truncate">Registrados</span>
               </p>

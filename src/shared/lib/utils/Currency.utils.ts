@@ -9,7 +9,7 @@
  * @returns String formateado con el símbolo de peso colombiano
  */
 export function formatPrice(
-  amount: number, 
+  amount: number,
   options: {
     showSymbol?: boolean;
     showDecimals?: boolean;
@@ -30,11 +30,11 @@ export function formatPrice(
   });
 
   const formatted = formatter.format(amount);
-  
+
   if (!showSymbol) {
     return formatted.replace('COP', '').trim();
   }
-  
+
   return formatted;
 }
 
@@ -47,7 +47,7 @@ export function formatPriceDisplay(amount: number): string {
   if (amount === 0) {
     return 'Gratis';
   }
-  
+
   return formatPrice(amount, { showDecimals: false });
 }
 
@@ -68,10 +68,10 @@ export function formatPriceInput(amount: number): string {
 export function parsePrice(priceString: string): number {
   // Remover símbolos y espacios
   const cleanString = priceString.replace(/[^\d.,]/g, '');
-  
+
   // Reemplazar coma por punto para decimales
   const normalizedString = cleanString.replace(',', '.');
-  
+
   return parseFloat(normalizedString) || 0;
 }
 
@@ -85,11 +85,11 @@ export function formatPriceRange(min: number, max: number): string {
   if (min === 0 && max === 0) {
     return 'Gratis';
   }
-  
+
   if (min === max) {
     return formatPriceDisplay(min);
   }
-  
+
   return `${formatPriceDisplay(min)} - ${formatPriceDisplay(max)}`;
 }
 
@@ -113,10 +113,19 @@ export function formatRevenue(amount: number): string {
   if (amount >= 1000000) {
     return `${formatPrice(amount / 1000000, { showSymbol: false })}M COP`;
   }
-  
+
   if (amount >= 1000) {
     return `${formatPrice(amount / 1000, { showSymbol: false })}K COP`;
   }
-  
+
+  return formatPrice(amount);
+}
+
+/**
+ * Formatea ingresos mostrando el valor completo sin abreviaciones
+ * @param amount - Cantidad a formatear
+ * @returns String formateado completo (ej. $ 20.000 COP)
+ */
+export function formatFullRevenue(amount: number): string {
   return formatPrice(amount);
 }

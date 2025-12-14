@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { 
-  Calendar, 
-  Users, 
-  Plus, 
-  Ticket, 
+import {
+  Calendar,
+  Users,
+  Plus,
+  Ticket,
   Download,
   BarChart3,
   RefreshCw,
@@ -48,8 +48,8 @@ import { PaymentMethodService } from '@shared/lib/api/services/PaymentMethod.ser
 import { CreatePromotionModal, CreatePromotionFormData } from '../components/CreatePromotionModal.component';
 import { UploadImageModal } from '../../../events/presentation/components/UploadImageModal.component';
 import { DuplicateEventModal } from '../../../events/presentation/components/DuplicateEventModal.component';
-import { 
-  CreatePaymentMethodModal, 
+import {
+  CreatePaymentMethodModal,
   CreatePaymentMethodFormData,
   ViewPaymentMethodModal,
   EditPaymentMethodModal,
@@ -124,7 +124,7 @@ export function OrganizerDashboard() {
   const [selectedEventForConfigure, setSelectedEventForConfigure] = useState<any | null>(null);
   const [isLoadingEventDetails, setIsLoadingEventDetails] = useState(false);
   const [isDeletingEvent, setIsDeletingEvent] = useState(false);
-  
+
   // Estado para el modal de escáner QR
   const [isQRScannerOpen, setIsQRScannerOpen] = useState(false);
 
@@ -148,54 +148,62 @@ export function OrganizerDashboard() {
   const [showErrorToast, setShowErrorToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
 
-    // Estados para los modales CRUD de tipo de entrada
-    const [isViewTicketModalOpen, setIsViewTicketModalOpen] = useState(false);
-    const [isEditTicketModalOpen, setIsEditTicketModalOpen] = useState(false);
-    const [isDuplicateTicketModalOpen, setIsDuplicateTicketModalOpen] = useState(false);
-    const [isDeleteTicketModalOpen, setIsDeleteTicketModalOpen] = useState(false);
-    const [selectedTicket, setSelectedTicket] = useState<any | null>(null);
+  // Estados para los modales CRUD de tipo de entrada
+  const [isViewTicketModalOpen, setIsViewTicketModalOpen] = useState(false);
+  const [isEditTicketModalOpen, setIsEditTicketModalOpen] = useState(false);
+  const [isDuplicateTicketModalOpen, setIsDuplicateTicketModalOpen] = useState(false);
+  const [isDeleteTicketModalOpen, setIsDeleteTicketModalOpen] = useState(false);
+  const [selectedTicket, setSelectedTicket] = useState<any | null>(null);
 
-    // Handlers para CRUD de tipo de entrada
-    const handleViewTicket = (ticketId: string) => {
-      const ticket = selectedEvent?.ticketTypes?.find((t: any) => t.id === ticketId);
-      setSelectedTicket(ticket);
-      setIsViewTicketModalOpen(true);
-    };
-
-    const handleEditTicket = (ticketId: string) => {
-      const ticket = selectedEvent?.ticketTypes?.find((t: any) => t.id === ticketId);
-      setSelectedTicket(ticket);
-      setIsEditTicketModalOpen(true);
-    };
-
-    const handleDuplicateTicket = (ticketId: string) => {
-      const ticket = selectedEvent?.ticketTypes?.find((t: any) => t.id === ticketId);
-      setSelectedTicket(ticket);
-      setIsDuplicateTicketModalOpen(true);
-    };
-
-    const handleDeleteTicket = (ticketId: string) => {
-      const ticket = selectedEvent?.ticketTypes?.find((t: any) => t.id === ticketId);
-      setSelectedTicket(ticket);
-      setIsDeleteTicketModalOpen(true);
-    };
-
-    // Callbacks para cerrar modales
-    const closeTicketModals = () => {
-      setIsViewTicketModalOpen(false);
-      setIsEditTicketModalOpen(false);
-      setIsDuplicateTicketModalOpen(false);
-      setIsDeleteTicketModalOpen(false);
+  // Handlers para CRUD de tipo de entrada
+  const handleViewTicket = (ticketId: string) => {
+    const ticket = selectedEvent?.ticketTypes?.find((t: any) => t.id === ticketId);
+    if (ticket) {
+      // Normalizar clave para buscar el revenue correspondiente
+      const key = normalizeTicketKey(ticket.name || ticket.nombre_tipo);
+      const revenue = ticketRevenueByType[key];
+      // Inyectar el revenue calculado al objeto ticket para que el modal lo pueda leer
+      setSelectedTicket({ ...ticket, revenue });
+    } else {
       setSelectedTicket(null);
-    };
+    }
+    setIsViewTicketModalOpen(true);
+  };
 
-    // Estados para los modales CRUD de promociones
-    const [isViewPromotionModalOpen, setIsViewPromotionModalOpen] = useState(false);
-    const [isEditPromotionModalOpen, setIsEditPromotionModalOpen] = useState(false);
-    const [isDuplicatePromotionModalOpen, setIsDuplicatePromotionModalOpen] = useState(false);
-    const [isDeletePromotionModalOpen, setIsDeletePromotionModalOpen] = useState(false);
-    const [selectedPromotion, setSelectedPromotion] = useState<any | null>(null);
-    const [promotions, setPromotions] = useState<any[]>([]);
+  const handleEditTicket = (ticketId: string) => {
+    const ticket = selectedEvent?.ticketTypes?.find((t: any) => t.id === ticketId);
+    setSelectedTicket(ticket);
+    setIsEditTicketModalOpen(true);
+  };
+
+  const handleDuplicateTicket = (ticketId: string) => {
+    const ticket = selectedEvent?.ticketTypes?.find((t: any) => t.id === ticketId);
+    setSelectedTicket(ticket);
+    setIsDuplicateTicketModalOpen(true);
+  };
+
+  const handleDeleteTicket = (ticketId: string) => {
+    const ticket = selectedEvent?.ticketTypes?.find((t: any) => t.id === ticketId);
+    setSelectedTicket(ticket);
+    setIsDeleteTicketModalOpen(true);
+  };
+
+  // Callbacks para cerrar modales
+  const closeTicketModals = () => {
+    setIsViewTicketModalOpen(false);
+    setIsEditTicketModalOpen(false);
+    setIsDuplicateTicketModalOpen(false);
+    setIsDeleteTicketModalOpen(false);
+    setSelectedTicket(null);
+  };
+
+  // Estados para los modales CRUD de promociones
+  const [isViewPromotionModalOpen, setIsViewPromotionModalOpen] = useState(false);
+  const [isEditPromotionModalOpen, setIsEditPromotionModalOpen] = useState(false);
+  const [isDuplicatePromotionModalOpen, setIsDuplicatePromotionModalOpen] = useState(false);
+  const [isDeletePromotionModalOpen, setIsDeletePromotionModalOpen] = useState(false);
+  const [selectedPromotion, setSelectedPromotion] = useState<any | null>(null);
+  const [promotions, setPromotions] = useState<any[]>([]);
 
   // Estados para métodos de pago
   const [paymentMethods, setPaymentMethods] = useState<any[]>([]);
@@ -214,94 +222,94 @@ export function OrganizerDashboard() {
   const [eventPaymentStats, setEventPaymentStats] = useState<any | null>(null);
   const [isLoadingEventPaymentStats, setIsLoadingEventPaymentStats] = useState(false);
 
-    // Handlers para CRUD de promociones
-    const handleViewPromotion = (promotionId: string) => {
-      const promotion = promotions.find((p: any) => p.id === promotionId);
-      setSelectedPromotion(promotion);
-      setIsViewPromotionModalOpen(true);
-    };
+  // Handlers para CRUD de promociones
+  const handleViewPromotion = (promotionId: string) => {
+    const promotion = promotions.find((p: any) => p.id === promotionId);
+    setSelectedPromotion(promotion);
+    setIsViewPromotionModalOpen(true);
+  };
 
-    const handleEditPromotion = (promotionId: string) => {
-      const promotion = promotions.find((p: any) => p.id === promotionId);
-      setSelectedPromotion(promotion);
-      setIsEditPromotionModalOpen(true);
-    };
+  const handleEditPromotion = (promotionId: string) => {
+    const promotion = promotions.find((p: any) => p.id === promotionId);
+    setSelectedPromotion(promotion);
+    setIsEditPromotionModalOpen(true);
+  };
 
-    const handleDuplicatePromotion = (promotionId: string) => {
-      const promotion = promotions.find((p: any) => p.id === promotionId);
-      setSelectedPromotion(promotion);
-      setIsDuplicatePromotionModalOpen(true);
-    };
+  const handleDuplicatePromotion = (promotionId: string) => {
+    const promotion = promotions.find((p: any) => p.id === promotionId);
+    setSelectedPromotion(promotion);
+    setIsDuplicatePromotionModalOpen(true);
+  };
 
-    const handleDeletePromotion = (promotionId: string) => {
-      const promotion = promotions.find((p: any) => p.id === promotionId);
-      setSelectedPromotion(promotion);
-      setIsDeletePromotionModalOpen(true);
-    };
+  const handleDeletePromotion = (promotionId: string) => {
+    const promotion = promotions.find((p: any) => p.id === promotionId);
+    setSelectedPromotion(promotion);
+    setIsDeletePromotionModalOpen(true);
+  };
 
-    // Callbacks para cerrar modales de promociones
-    const closePromotionModals = () => {
-      setIsViewPromotionModalOpen(false);
-      setIsEditPromotionModalOpen(false);
-      setIsDuplicatePromotionModalOpen(false);
-      setIsDeletePromotionModalOpen(false);
-      setSelectedPromotion(null);
-    };
+  // Callbacks para cerrar modales de promociones
+  const closePromotionModals = () => {
+    setIsViewPromotionModalOpen(false);
+    setIsEditPromotionModalOpen(false);
+    setIsDuplicatePromotionModalOpen(false);
+    setIsDeletePromotionModalOpen(false);
+    setSelectedPromotion(null);
+  };
 
-    // Función para cargar promociones
-    const loadPromotions = async () => {
-      try {
-        if (user?.id) {
-          const PromotionService = (await import('@shared/lib/api/services/Promotion.service')).PromotionService;
-          const data = selectedEventId
-            ? await PromotionService.obtenerPromocionesEvento(selectedEventId)
-            : await PromotionService.obtenerPromocionesOrganizador(user.id);
-          setPromotions(data || []);
-        }
-      } catch (error) {
-        console.error('Error al cargar promociones:', error);
+  // Función para cargar promociones
+  const loadPromotions = async () => {
+    try {
+      if (user?.id) {
+        const PromotionService = (await import('@shared/lib/api/services/Promotion.service')).PromotionService;
+        const data = selectedEventId
+          ? await PromotionService.obtenerPromocionesEvento(selectedEventId)
+          : await PromotionService.obtenerPromocionesOrganizador(user.id);
+        setPromotions(data || []);
       }
-    };
+    } catch (error) {
+      console.error('Error al cargar promociones:', error);
+    }
+  };
 
-    // Función para cargar métodos de pago (estrictamente por evento si hay uno seleccionado)
-    const loadPaymentMethods = async () => {
-      if (!user?.id) return;
-      setIsLoadingPaymentMethods(true);
-      try {
-        // Solo mostrar métodos del evento seleccionado; si no hay evento, lista vacía
-        if (!selectedEventId) {
-          setPaymentMethods([]);
-          setEventPaymentStats(null);
-          return;
-        }
-        const data = await PaymentMethodService.obtenerMetodosPagoEvento(selectedEventId) || [];
-        setPaymentMethods(data);
-        // Cargar estadísticas inmediatamente después de cargar métodos
-        await loadEventPaymentStats();
-      } catch (error) {
-        console.error('❌ Error al cargar métodos de pago:', error);
-        setPaymentMethods([]);
-      } finally {
-        setIsLoadingPaymentMethods(false);
-      }
-    };
-
-    const loadEventPaymentStats = async () => {
+  // Función para cargar métodos de pago (estrictamente por evento si hay uno seleccionado)
+  const loadPaymentMethods = async () => {
+    if (!user?.id) return;
+    setIsLoadingPaymentMethods(true);
+    try {
+      // Solo mostrar métodos del evento seleccionado; si no hay evento, lista vacía
       if (!selectedEventId) {
+        setPaymentMethods([]);
         setEventPaymentStats(null);
         return;
       }
-      setIsLoadingEventPaymentStats(true);
-      try {
-        const stats = await PaymentMethodService.obtenerEstadisticasMetodosPagoEvento(selectedEventId);
-        setEventPaymentStats(stats);
-      } catch (error) {
-        console.error('❌ Error cargando estadísticas de métodos de pago del evento:', error);
-        setEventPaymentStats(null);
-      } finally {
-        setIsLoadingEventPaymentStats(false);
-      }
-    };
+      const data = await PaymentMethodService.obtenerMetodosPagoEvento(selectedEventId) || [];
+      setPaymentMethods(data);
+      // Cargar estadísticas inmediatamente después de cargar métodos
+      await loadEventPaymentStats();
+    } catch (error) {
+      console.error('❌ Error al cargar métodos de pago:', error);
+      setPaymentMethods([]);
+    } finally {
+      setIsLoadingPaymentMethods(false);
+    }
+  };
+
+  const loadEventPaymentStats = async () => {
+    if (!selectedEventId) {
+      setEventPaymentStats(null);
+      return;
+    }
+    setIsLoadingEventPaymentStats(true);
+    try {
+      const stats = await PaymentMethodService.obtenerEstadisticasMetodosPagoEvento(selectedEventId);
+      setEventPaymentStats(stats);
+    } catch (error) {
+      console.error('❌ Error cargando estadísticas de métodos de pago del evento:', error);
+      setEventPaymentStats(null);
+    } finally {
+      setIsLoadingEventPaymentStats(false);
+    }
+  };
 
   // Handlers para CRUD de métodos de pago
   const handleViewPaymentMethod = async (paymentMethodId: string) => {
@@ -336,7 +344,7 @@ export function OrganizerDashboard() {
 
   const handleSavePaymentMethodChanges = async (formData: any) => {
     if (!selectedPaymentMethod) return;
-    
+
     try {
       console.log('Guardando cambios en método de pago:', formData);
       await PaymentMethodService.actualizarMetodoPago(selectedPaymentMethod.id, {
@@ -400,7 +408,7 @@ export function OrganizerDashboard() {
 
   const handleConfirmDeletePaymentMethod = async () => {
     if (!selectedPaymentMethod) return;
-    
+
     setIsDeletingPaymentMethod(true);
     try {
       console.log('Confirmando eliminación del método de pago:', selectedPaymentMethod.id);
@@ -437,7 +445,7 @@ export function OrganizerDashboard() {
   const { events: storeEvents, setEvents } = useEventStore();
   const [isLoadingEvents, setIsLoadingEvents] = useState(true);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
-  
+
   // Cargar eventos reales del organizador desde Supabase
   useEffect(() => {
     const loadOrganizerEvents = async () => {
@@ -445,13 +453,13 @@ export function OrganizerDashboard() {
         console.log('No hay usuario autenticado');
         return;
       }
-      
+
       console.log('Cargando eventos para usuario:', user.id);
       setIsLoadingEvents(true);
       try {
         const dbEvents = await EventService.obtenerEventosUsuario(user.id);
         console.log('Eventos obtenidos de la BD:', dbEvents);
-        
+
         if (dbEvents && dbEvents.length > 0) {
           // Convertir eventos de BD al formato del store
           const convertedEvents = dbEvents.map((dbEvent: any) => ({
@@ -472,9 +480,9 @@ export function OrganizerDashboard() {
             tags: dbEvent.etiquetas || [],
             ticketTypes: dbEvent.tipos_entrada || []
           }));
-          
+
           console.log('Eventos convertidos:', convertedEvents);
-          
+
           // Actualizar el store global (solo reemplazar los del organizador)
           const otherEvents = storeEvents.filter(e => e.organizerId !== user.id);
           setEvents([...otherEvents, ...convertedEvents]);
@@ -487,33 +495,33 @@ export function OrganizerDashboard() {
         setIsLoadingEvents(false);
       }
     };
-    
+
     loadOrganizerEvents();
   }, [user?.id]);
-  
+
   // Filtrar eventos del organizador actual
   const events = storeEvents.filter(event => event.organizerId === user?.id);
-  
+
   console.log('Eventos filtrados para el organizador:', events);
-  
+
   console.log('Eventos filtrados para el organizador:', events);
-  
+
   // IMPORTANTE: No usar eventos mock - solo eventos reales de la BD
   // Si no hay eventos, mostrar mensaje para crear uno
   const finalEvents = events;
-  
+
   // Seleccionar automáticamente el primer evento si no hay uno seleccionado
-  const selectedEvent = selectedEventId 
+  const selectedEvent = selectedEventId
     ? finalEvents.find(event => event.id === selectedEventId)
     : finalEvents.length > 0 ? finalEvents[0] : null;
-  
+
   console.log('Evento seleccionado:', selectedEvent);
-  
+
   // Si no hay evento seleccionado pero hay eventos disponibles, seleccionar el primero
   if (!selectedEventId && finalEvents.length > 0) {
     setSelectedEventId(finalEvents[0].id);
   }
-  
+
   // Métricas reales agregadas del organizador
   const [metricsLoading, setMetricsLoading] = useState(true);
   const [metricsError, setMetricsError] = useState<string | null>(null);
@@ -530,31 +538,31 @@ export function OrganizerDashboard() {
 
   const loadMetrics = async () => {
     const eventIdAtStart = selectedEvent?.id || null;
-          console.group('METRICAS-ASISTENCIA');
-          // Calcular a partir de todos los asistentes del organizador (evita depender de status)
-          let eventosEnCurso = 0;
-          let totalVendidos = 0;
-          let totalCheckin = 0;
-          let ultimoEscaneoISO: string | null = null;
-          try {
-            const attendeesAll = await AttendeeService.getOrganizerAttendees(user.id);
-            console.log('attendeesAll:', attendeesAll?.length);
-            totalVendidos = attendeesAll.length;
-            const checkinsAll = attendeesAll.filter(a => a.estado_qr === 'usado');
-            totalCheckin = checkinsAll.length;
-            // eventosEnCurso = número de eventos únicos con asistentes (aproximación operativa)
-            const eventIdSet = new Set(attendeesAll.map(a => a.eventId));
-            eventosEnCurso = eventIdSet.size;
-            for (const a of checkinsAll) {
-              if (a.fecha_escaneado && (!ultimoEscaneoISO || new Date(a.fecha_escaneado) > new Date(ultimoEscaneoISO))) {
-                ultimoEscaneoISO = a.fecha_escaneado as string;
-              }
-            }
-          } catch (e) {
-            console.warn('Error obteniendo attendeesAll para métricas:', (e as any)?.message);
-          }
-          console.log('Totales:', { eventosEnCurso, totalVendidos, totalCheckin, ultimoEscaneoISO });
-          console.groupEnd();
+    console.group('METRICAS-ASISTENCIA');
+    // Calcular a partir de todos los asistentes del organizador (evita depender de status)
+    let eventosEnCurso = 0;
+    let totalVendidos = 0;
+    let totalCheckin = 0;
+    let ultimoEscaneoISO: string | null = null;
+    try {
+      const attendeesAll = await AttendeeService.getOrganizerAttendees(user.id);
+      console.log('attendeesAll:', attendeesAll?.length);
+      totalVendidos = attendeesAll.length;
+      const checkinsAll = attendeesAll.filter(a => a.estado_qr === 'usado');
+      totalCheckin = checkinsAll.length;
+      // eventosEnCurso = número de eventos únicos con asistentes (aproximación operativa)
+      const eventIdSet = new Set(attendeesAll.map(a => a.eventId));
+      eventosEnCurso = eventIdSet.size;
+      for (const a of checkinsAll) {
+        if (a.fecha_escaneado && (!ultimoEscaneoISO || new Date(a.fecha_escaneado) > new Date(ultimoEscaneoISO))) {
+          ultimoEscaneoISO = a.fecha_escaneado as string;
+        }
+      }
+    } catch (e) {
+      console.warn('Error obteniendo attendeesAll para métricas:', (e as any)?.message);
+    }
+    console.log('Totales:', { eventosEnCurso, totalVendidos, totalCheckin, ultimoEscaneoISO });
+    console.groupEnd();
     if (!user?.id) return;
     setMetricsLoading(true);
     setMetricsError(null);
@@ -575,9 +583,9 @@ export function OrganizerDashboard() {
         eventosEnCurso = selectedEvent ? (eventIdSet.size > 0 ? 1 : 0) : eventIdSet.size;
         const last = attendeesAll
           .filter(a => !!a.fecha_escaneado)
-          .sort((a,b) => new Date(String(b.fecha_escaneado)).getTime() - new Date(String(a.fecha_escaneado)).getTime())[0];
+          .sort((a, b) => new Date(String(b.fecha_escaneado)).getTime() - new Date(String(a.fecha_escaneado)).getTime())[0];
         ultimoEscaneoISO = last?.fecha_escaneado ?? null;
-      } catch {}
+      } catch { }
       // Evitar race conditions: si el evento cambió mientras cargábamos, no sobrescribir
       if (eventIdAtStart !== (selectedEvent?.id || null)) {
         return;
@@ -656,15 +664,15 @@ export function OrganizerDashboard() {
     const handleClickOutside = (event: MouseEvent) => {
       if (openPaymentMethodDropdown) {
         const target = event.target as Element;
-        
+
         // No cerrar si el clic fue dentro del dropdown o en el botón del dropdown
         if (target && (
-          target.closest('.dropdown-menu') || 
+          target.closest('.dropdown-menu') ||
           target.closest('[data-dropdown-button]')
         )) {
           return;
         }
-        
+
         console.log('🚫 CLOSING DROPDOWN: Cerrando dropdown por clic fuera');
         setOpenPaymentMethodDropdown(null);
       }
@@ -699,11 +707,11 @@ export function OrganizerDashboard() {
     console.log('Actualizando datos...');
     // Recargar eventos del organizador
     if (!user?.id) return;
-    
+
     setIsRefreshing(true);
     try {
       const dbEvents = await EventService.obtenerEventosUsuario(user.id);
-      
+
       if (dbEvents && dbEvents.length > 0) {
         const convertedEvents = dbEvents.map((dbEvent: any) => ({
           id: dbEvent.id,
@@ -738,7 +746,7 @@ export function OrganizerDashboard() {
             eventId: dbEvent.id
           }))
         }));
-        
+
         const otherEvents = storeEvents.filter(e => e.organizerId !== user.id);
         setEvents([...otherEvents, ...convertedEvents]);
       }
@@ -769,7 +777,7 @@ export function OrganizerDashboard() {
       if (activeTab === 'attendees' && (window as any).__attendeeRefresh) {
         await (window as any).__attendeeRefresh();
       }
-      
+
       // Si estamos en la pestaña de attendance, recargar estadísticas
       if (activeTab === 'attendance' && selectedEvent) {
         await loadAttendanceStats(selectedEvent.id);
@@ -784,17 +792,17 @@ export function OrganizerDashboard() {
   // Función para cargar estadísticas de asistencia en tiempo real
   const loadAttendanceStats = async (eventId: string) => {
     if (!user?.id) return;
-    
+
     try {
       const { AttendeeService } = await import('@shared/lib/api/services/Attendee.service');
       const attendees = await AttendeeService.getOrganizerAttendees(user.id, eventId);
-      
+
       // Calcular estadísticas
       const total = attendees.length;
       const checkedIn = attendees.filter(a => a.estado_qr === 'usado').length;
       const pending = attendees.filter(a => a.estado_qr === 'activo').length;
       const rate = total > 0 ? Math.round((checkedIn / total) * 100) : 0;
-      
+
       // Obtener últimos 3 escaneos
       const recentScans = attendees
         .filter(a => a.fecha_escaneado)
@@ -802,12 +810,12 @@ export function OrganizerDashboard() {
         .slice(0, 3)
         .map(a => ({
           name: a.name,
-          time: new Date(a.fecha_escaneado!).toLocaleTimeString('es-ES', { 
-            hour: '2-digit', 
-            minute: '2-digit' 
+          time: new Date(a.fecha_escaneado!).toLocaleTimeString('es-ES', {
+            hour: '2-digit',
+            minute: '2-digit'
           })
         }));
-      
+
       setAttendanceStats({
         totalAttendees: total,
         checkedIn,
@@ -900,7 +908,7 @@ export function OrganizerDashboard() {
         // El precio por ticket es el total pagado dividido por la cantidad
         // Esto ya incluye descuentos porque totalPaid es el valor neto pagado
         const totalRevenueForThisPurchase = purchase.totalPaid; // Total de la compra
-        
+
         if (!revenueMap[ticketKey]) revenueMap[ticketKey] = 0;
         revenueMap[ticketKey] += totalRevenueForThisPurchase;
       });
@@ -941,12 +949,12 @@ export function OrganizerDashboard() {
     // Encabezado principal
     doc.setFillColor(...primaryColor);
     doc.rect(0, 0, 210, 35, 'F');
-    
+
     doc.setTextColor(255, 255, 255);
     doc.setFontSize(22);
     doc.setFont('helvetica', 'bold');
     doc.text(title.toUpperCase(), 105, 15, { align: 'center' });
-    
+
     doc.setFontSize(12);
     doc.setFont('helvetica', 'normal');
     doc.text('EventHub - Sistema de Gestión de Eventos', 105, 25, { align: 'center' });
@@ -971,9 +979,9 @@ export function OrganizerDashboard() {
         head: [table.headers],
         body: tableRows,
         theme: 'grid',
-        headStyles: { 
-          fillColor: fillColor, 
-          textColor: 255, 
+        headStyles: {
+          fillColor: fillColor,
+          textColor: 255,
           fontStyle: 'bold',
           fontSize: 10
         },
@@ -1186,7 +1194,7 @@ export function OrganizerDashboard() {
     }
 
     setIsCreatingEvent(true);
-    
+
     try {
       // Subir imagen si el usuario adjuntó una
       let imageUrl = 'https://images.pexels.com/photos/3184287/pexels-photo-3184287.jpeg';
@@ -1249,9 +1257,9 @@ export function OrganizerDashboard() {
       // Construir el objeto para la tabla tipos_entrada
       const datosTipo = {
         id_evento: selectedEvent.id,
-  nombre_evento: selectedEvent.title,
+        nombre_evento: selectedEvent.title,
         nombre_tipo: formData.name,
-          tipo: formData.type,
+        tipo: formData.type,
         precio: formData.price,
         descripcion: formData.description,
         cantidad_maxima: formData.available,
@@ -1263,9 +1271,9 @@ export function OrganizerDashboard() {
       await TicketTypeService.crearTipoEntrada(datosTipo);
 
       // Cerrar modal y mostrar éxito
-  setIsCreateTicketModalOpen(false);
-  console.log('Tipo de entrada creado exitosamente');
-  await handleRefresh();
+      setIsCreateTicketModalOpen(false);
+      console.log('Tipo de entrada creado exitosamente');
+      await handleRefresh();
     } catch (error) {
       console.error('Error al crear tipo de entrada:', error);
       // TODO: Implementar un toast de error
@@ -1280,7 +1288,7 @@ export function OrganizerDashboard() {
 
   const handleCreatePaymentMethod = async (formData: CreatePaymentMethodFormData) => {
     setIsCreatingPaymentMethod(true);
-    
+
     try {
       if (!user?.id) {
         throw new Error('No hay usuario autenticado');
@@ -1310,31 +1318,31 @@ export function OrganizerDashboard() {
         },
         id_organizador: user.id,
       };
-      
+
       // Crear el método de pago usando el servicio real de Supabase
       // Asignar al evento si hay uno seleccionado
       const metodoPagoCreado: any = await PaymentMethodService.crearMetodoPago({
         ...datosMetodoPago,
         id_evento: selectedEventId || null
       });
-      
+
       // Cerrar modal
       setIsCreatePaymentMethodModalOpen(false);
-      
+
       // Refrescar métodos de pago (evitar recargar todo el dashboard)
       await loadPaymentMethods();
-      
+
       // Mostrar mensaje de éxito
       setToastMessage('Método de pago creado exitosamente');
       setShowSuccessToast(true);
-      
+
     } catch (error: any) {
       console.error('❌ Error al crear método de pago:', error);
-      
+
       // Mostrar mensaje de error al usuario
       const errorMessage = error.message || 'Error al crear el método de pago';
       alert(`❌ Error: ${errorMessage}`);
-      
+
       // Re-lanzar el error para que el modal lo maneje si es necesario
       throw error;
     } finally {
@@ -1349,7 +1357,7 @@ export function OrganizerDashboard() {
       alert('No puedes actualizar imágenes de eventos de ejemplo. Por favor crea un evento real desde "Crear Evento".');
       return;
     }
-    
+
     // Encontrar el evento seleccionado
     const event = finalEvents.find(e => e.id === eventId);
     if (event) {
@@ -1369,14 +1377,14 @@ export function OrganizerDashboard() {
     try {
       // Actualizar la imagen del evento en la base de datos
       await EventService.actualizarImagenEvento(selectedEventForImage.id, imageUrl);
-      
+
       // Refrescar la lista de eventos
       handleRefresh();
-      
+
       // Cerrar modal
       setIsUploadImageModalOpen(false);
       setSelectedEventForImage(null);
-      
+
       console.log('Imagen actualizada exitosamente');
     } catch (error) {
       console.error('Error al actualizar imagen del evento:', error);
@@ -1385,19 +1393,19 @@ export function OrganizerDashboard() {
 
   const handleDuplicateEvent = (eventId: string) => {
     console.log('Duplicando evento:', eventId);
-    
+
     // Validar que no sea un evento mock
     if (eventId.startsWith('org-')) {
       console.error('No se puede duplicar eventos mock');
       alert('No puedes duplicar eventos de ejemplo. Por favor crea un evento real primero.');
       return;
     }
-    
+
     // Encontrar el evento a duplicar
     const event = finalEvents.find(e => e.id === eventId);
     if (event) {
       console.log('Evento encontrado para duplicar:', event);
-      
+
       // Convertir al formato que espera el modal
       const eventData = {
         id: event.id,
@@ -1416,7 +1424,7 @@ export function OrganizerDashboard() {
           cantidad_maxima: ticket.cantidad_maxima || ticket.maxQuantity || 0
         }))
       };
-      
+
       console.log('Datos del evento para modal:', eventData);
       setSelectedEventForDuplication(eventData);
       setIsDuplicateEventModalOpen(true);
@@ -1438,7 +1446,7 @@ export function OrganizerDashboard() {
     try {
       console.log('🔄 Iniciando duplicación con ajustes:', adjustments);
       console.log('📋 Evento a duplicar:', selectedEventForDuplication);
-      
+
       // Llamar al servicio de duplicación
       const eventoDuplicado = await EventService.duplicarEvento(
         selectedEventForDuplication.id,
@@ -1446,12 +1454,12 @@ export function OrganizerDashboard() {
       );
 
       console.log('✅ Evento duplicado exitosamente:', eventoDuplicado);
-      
+
       // Refrescar la lista de eventos
       console.log('🔄 Refrescando lista de eventos...');
       await handleRefresh();
       console.log('✅ Lista de eventos actualizada');
-      
+
       // Cerrar modal
       setIsDuplicateEventModalOpen(false);
       setSelectedEventForDuplication(null);
@@ -1497,7 +1505,7 @@ export function OrganizerDashboard() {
 
   const handleSaveEventChanges = async (formData: EditEventFormData) => {
     if (!selectedEventForEdit) return;
-    
+
     try {
       console.log('Guardando cambios:', formData);
       await EventService.actualizarEvento(selectedEventForEdit.id, formData);
@@ -1543,7 +1551,7 @@ export function OrganizerDashboard() {
 
   const handleConfirmDeleteEvent = async () => {
     if (!selectedEventForDelete) return;
-    
+
     setIsDeletingEvent(true);
     try {
       console.log('Confirmando eliminación del evento:', selectedEventForDelete.id);
@@ -1565,7 +1573,7 @@ export function OrganizerDashboard() {
     try {
       setIsLoadingEventDetails(true);
       const evento = await EventService.obtenerEventoPorId(eventId);
-      
+
       if (!evento) {
         setToastMessage('No se pudo cargar el evento');
         setShowErrorToast(true);
@@ -1589,7 +1597,7 @@ export function OrganizerDashboard() {
 
     try {
       await EventService.cambiarEstadoEvento(selectedEventForConfigure.id, newStatus);
-      
+
       // Recargar eventos
       await handleRefresh();
       setToastMessage('Estado del evento actualizado correctamente');
@@ -1604,52 +1612,52 @@ export function OrganizerDashboard() {
 
 
   const navigationItems = [
-    { 
-      id: 'overview', 
-      label: 'Panel Principal', 
-      icon: BarChart3, 
+    {
+      id: 'overview',
+      label: 'Panel Principal',
+      icon: BarChart3,
       color: 'text-blue-600',
       description: 'Resumen y métricas en tiempo real'
     },
-    { 
-      id: 'events', 
-      label: 'Gestión de Eventos', 
-      icon: Calendar, 
+    {
+      id: 'events',
+      label: 'Gestión de Eventos',
+      icon: Calendar,
       color: 'text-purple-600',
       description: 'Crear, editar y gestionar eventos'
     },
-    { 
-      id: 'tickets', 
-      label: 'Tipos de Entradas', 
-      icon: Ticket, 
+    {
+      id: 'tickets',
+      label: 'Tipos de Entradas',
+      icon: Ticket,
       color: 'text-green-600',
       description: 'Configurar entradas y precios'
     },
-    { 
-      id: 'promotions', 
-      label: 'Descuentos', 
-      icon: Percent, 
+    {
+      id: 'promotions',
+      label: 'Descuentos',
+      icon: Percent,
       color: 'text-emerald-600',
       description: 'Códigos promocionales y descuentos'
     },
-    { 
-      id: 'payments', 
-      label: 'Métodos de Pago', 
-      icon: CreditCard, 
+    {
+      id: 'payments',
+      label: 'Métodos de Pago',
+      icon: CreditCard,
       color: 'text-orange-600',
       description: 'Configurar pagos y reconciliación'
     },
-    { 
-      id: 'attendance', 
-      label: 'Control de Asistencia', 
-      icon: QrCode, 
+    {
+      id: 'attendance',
+      label: 'Control de Asistencia',
+      icon: QrCode,
       color: 'text-pink-600',
       description: 'Escanear QR y reportes de asistencia'
     },
-    { 
-      id: 'attendees', 
-      label: 'Asistentes', 
-      icon: Users, 
+    {
+      id: 'attendees',
+      label: 'Asistentes',
+      icon: Users,
       color: 'text-cyan-600',
       description: 'Gestionar participantes'
     }
@@ -1679,18 +1687,16 @@ export function OrganizerDashboard() {
     <div className="min-h-screen bg-gray-50 flex overflow-hidden w-full max-w-full">
       {/* Mobile Sidebar Overlay */}
       {isSidebarOpen && (
-        <div 
+        <div
           className="fixed inset-0 bg-black/50 z-20 md:hidden"
           onClick={() => setIsSidebarOpen(false)}
         />
       )}
-      
+
       {/* Sidebar - Fixed */}
-      <div className={`${
-        isSidebarOpen ? 'w-64' : 'w-16'
-      } bg-white/90 backdrop-blur-md shadow-xl border-r border-white/20 transition-all duration-300 flex-shrink-0 fixed left-0 top-0 h-dvh md:h-full z-30 md:z-40 ${
-        !isSidebarOpen ? 'hidden md:flex md:flex-col' : 'flex flex-col'
-      }`}>
+      <div className={`${isSidebarOpen ? 'w-64' : 'w-16'
+        } bg-white/90 backdrop-blur-md shadow-xl border-r border-white/20 transition-all duration-300 flex-shrink-0 fixed left-0 top-0 h-dvh md:h-full z-30 md:z-40 ${!isSidebarOpen ? 'hidden md:flex md:flex-col' : 'flex flex-col'
+        }`}>
         {/* Sidebar Header */}
         <div className={`h-16 flex-shrink-0 flex items-center ${isSidebarOpen ? 'justify-between px-4' : 'justify-center px-2'} bg-gradient-to-r from-blue-600/90 to-purple-600/90 backdrop-blur-sm`}>
           {isSidebarOpen && (
@@ -1720,32 +1726,28 @@ export function OrganizerDashboard() {
               <button
                 key={item.id}
                 onClick={() => setActiveTab(item.id)}
-                className={`${
-                  isSidebarOpen 
-                    ? 'w-full flex items-start space-x-3 px-4 py-3 rounded-xl'
-                    : 'w-12 h-12 flex items-center justify-center rounded-lg'
-                } backdrop-blur-sm transition-all duration-200 ${
-                  activeTab === item.id
-                    ? (isSidebarOpen 
-                        ? 'bg-gradient-to-r from-blue-500/20 to-purple-500/20 text-blue-700 border-l-4 border-indigo-400 shadow-lg border border-white/30'
-                        : 'bg-gradient-to-r from-blue-500/20 to-purple-500/20')
-                    : (isSidebarOpen 
-                        ? 'text-gray-600 hover:bg-gradient-to-r hover:from-blue-500/10 hover:to-purple-500/10 hover:text-blue-700 hover:border-l-4 hover:border-indigo-300 hover:shadow-lg hover:border hover:border-indigo-200/30'
-                        : 'text-gray-600 hover:bg-gradient-to-r hover:from-blue-500/10 hover:to-purple-500/10')
-                }`}
+                className={`${isSidebarOpen
+                  ? 'w-full flex items-start space-x-3 px-4 py-3 rounded-xl'
+                  : 'w-12 h-12 flex items-center justify-center rounded-lg'
+                  } backdrop-blur-sm transition-all duration-200 ${activeTab === item.id
+                    ? (isSidebarOpen
+                      ? 'bg-gradient-to-r from-blue-500/20 to-purple-500/20 text-blue-700 border-l-4 border-indigo-400 shadow-lg border border-white/30'
+                      : 'bg-gradient-to-r from-blue-500/20 to-purple-500/20')
+                    : (isSidebarOpen
+                      ? 'text-gray-600 hover:bg-gradient-to-r hover:from-blue-500/10 hover:to-purple-500/10 hover:text-blue-700 hover:border-l-4 hover:border-indigo-300 hover:shadow-lg hover:border hover:border-indigo-200/30'
+                      : 'text-gray-600 hover:bg-gradient-to-r hover:from-blue-500/10 hover:to-purple-500/10')
+                  }`}
               >
                 {isSidebarOpen ? (
                   <>
-                    <div className={`p-2 rounded-lg backdrop-blur-sm border transition-all duration-200 ${
-                      activeTab === item.id 
-                        ? 'bg-white/30 border-white/40' 
-                        : 'bg-white/10 border-white/20 hover:bg-blue-100/50 hover:border-blue-300/50'
-                    }`}>
-                      <Icon className={`w-4 h-4 transition-colors duration-200 ${
-                        activeTab === item.id 
-                          ? 'text-blue-600' 
-                          : 'text-gray-500 hover:text-blue-600'
-                      }`} />
+                    <div className={`p-2 rounded-lg backdrop-blur-sm border transition-all duration-200 ${activeTab === item.id
+                      ? 'bg-white/30 border-white/40'
+                      : 'bg-white/10 border-white/20 hover:bg-blue-100/50 hover:border-blue-300/50'
+                      }`}>
+                      <Icon className={`w-4 h-4 transition-colors duration-200 ${activeTab === item.id
+                        ? 'text-blue-600'
+                        : 'text-gray-500 hover:text-blue-600'
+                        }`} />
                     </div>
                     <div className="flex-1 min-w-0">
                       <span className="font-semibold text-sm">{item.label}</span>
@@ -1753,11 +1755,10 @@ export function OrganizerDashboard() {
                     </div>
                   </>
                 ) : (
-                  <Icon className={`w-5 h-5 transition-colors duration-200 ${
-                    activeTab === item.id 
-                      ? 'text-blue-600' 
-                      : 'text-gray-500 hover:text-blue-600'
-                  }`} />
+                  <Icon className={`w-5 h-5 transition-colors duration-200 ${activeTab === item.id
+                    ? 'text-blue-600'
+                    : 'text-gray-500 hover:text-blue-600'
+                    }`} />
                 )}
               </button>
             );
@@ -1768,11 +1769,10 @@ export function OrganizerDashboard() {
         <div className={`${isSidebarOpen ? 'p-4' : 'pb-4 flex justify-center'} flex-shrink-0 border-t border-gray-200/50`}>
           <button
             onClick={handleLogout}
-            className={`${
-              isSidebarOpen 
-                ? 'w-full flex items-center justify-center space-x-2 p-3' 
-                : 'w-12 h-12 flex items-center justify-center'
-            } bg-gradient-to-r from-red-500/20 to-red-600/20 backdrop-blur-sm text-red-700 rounded-xl border border-red-200 hover:from-red-500/30 hover:to-red-600/30 hover:text-red-800 transition-all duration-200 shadow-sm hover:shadow-md`}
+            className={`${isSidebarOpen
+              ? 'w-full flex items-center justify-center space-x-2 p-3'
+              : 'w-12 h-12 flex items-center justify-center'
+              } bg-gradient-to-r from-red-500/20 to-red-600/20 backdrop-blur-sm text-red-700 rounded-xl border border-red-200 hover:from-red-500/30 hover:to-red-600/30 hover:text-red-800 transition-all duration-200 shadow-sm hover:shadow-md`}
           >
             <LogOut className="w-4 h-4" />
             {isSidebarOpen && <span className="text-sm font-medium">Cerrar Sesión</span>}
@@ -1781,15 +1781,12 @@ export function OrganizerDashboard() {
       </div>
 
       {/* Main Content */}
-      <div className={`flex-1 flex flex-col transition-all duration-300 ${
-        isSidebarOpen ? 'md:ml-64' : 'md:ml-16'
-      } ${
-        !isSidebarOpen ? 'ml-0' : 'ml-0'
-      }`}>
+      <div className={`flex-1 flex flex-col transition-all duration-300 ${isSidebarOpen ? 'md:ml-64' : 'md:ml-16'
+        } ${!isSidebarOpen ? 'ml-0' : 'ml-0'
+        }`}>
         {/* Top Header */}
-        <div className={`fixed top-0 right-0 z-20 bg-gradient-to-r from-purple-600/90 via-purple-600/90 to-blue-500/90 backdrop-blur-md shadow-xl transition-all duration-300 ${
-          isSidebarOpen ? 'md:left-64' : 'md:left-16'
-        } left-0`}>
+        <div className={`fixed top-0 right-0 z-20 bg-gradient-to-r from-purple-600/90 via-purple-600/90 to-blue-500/90 backdrop-blur-md shadow-xl transition-all duration-300 ${isSidebarOpen ? 'md:left-64' : 'md:left-16'
+          } left-0`}>
           <div className="h-16 flex items-center justify-between px-3 md:px-6 gap-2 md:gap-4">
             <div className="flex items-center space-x-2 md:space-x-4 flex-1 min-w-0">
               {/* Hamburger Menu Button for Mobile */}
@@ -1799,7 +1796,7 @@ export function OrganizerDashboard() {
               >
                 <Menu className="w-5 h-5" />
               </button>
-              
+
               <div className="flex items-center space-x-2 md:space-x-3 flex-1 min-w-0">
                 <div className="min-w-0 flex-1">
                   <h2 className="text-base md:text-2xl font-bold text-white truncate">
@@ -1814,10 +1811,10 @@ export function OrganizerDashboard() {
                       <span className="hidden lg:inline text-xs text-blue-200">
                         ({selectedEvent.status === 'upcoming' ? 'Próximo' :
                           selectedEvent.status === 'ongoing' ? 'En curso' :
-                          selectedEvent.status === 'completed' ? 'Completado' :
-                          selectedEvent.status === 'cancelled' ? 'Cancelado' :
-                          selectedEvent.status === 'paused' ? 'Pausado' :
-                          selectedEvent.status === 'draft' ? 'Borrador' : 'Próximo'})
+                            selectedEvent.status === 'completed' ? 'Completado' :
+                              selectedEvent.status === 'cancelled' ? 'Cancelado' :
+                                selectedEvent.status === 'paused' ? 'Pausado' :
+                                  selectedEvent.status === 'draft' ? 'Borrador' : 'Próximo'})
                       </span>
                     </div>
                   )}
@@ -1847,7 +1844,7 @@ export function OrganizerDashboard() {
                   <span className="text-yellow-200 text-xs md:text-sm font-medium hidden sm:inline">Sin eventos</span>
                 </div>
               )}
-              
+
               {/* Profile Menu */}
               <div className="relative flex-shrink-0">
                 <button
@@ -1869,7 +1866,7 @@ export function OrganizerDashboard() {
                       <p className="text-sm font-medium text-gray-900">{user?.name || 'Organizador'}</p>
                       <p className="text-xs text-gray-500">{user?.email || 'organizador@eventhub.com'}</p>
                     </div>
-                    
+
                     <div
                       onClick={() => {
                         console.log('Click en Mi Perfil');
@@ -1881,7 +1878,7 @@ export function OrganizerDashboard() {
                       <User className="w-4 h-4" />
                       <span>Mi Perfil</span>
                     </div>
-                    
+
                     <div
                       onClick={() => {
                         console.log('Click en Cerrar Sesión');
@@ -1901,7 +1898,7 @@ export function OrganizerDashboard() {
         </div>
 
         {/* Content Area */}
-        <div className="flex-1 min-w-0 overflow-y-auto bg-gray-100 mt-16 w-full px-3 sm:px-4 md:px-6 py-3 sm:py-4 md:py-6 box-border" style={{height: 'calc(100vh - 80px)'}}>
+        <div className="flex-1 min-w-0 overflow-y-auto bg-gray-100 mt-16 w-full px-3 sm:px-4 md:px-6 py-3 sm:py-4 md:py-6 box-border" style={{ height: 'calc(100vh - 80px)' }}>
           {/* Content Header */}
           <div className="mb-4 md:mb-6 w-full max-w-full px-0">
             <div>
@@ -1970,7 +1967,7 @@ export function OrganizerDashboard() {
                     </button>
                   </div>
                 )}
-                
+
                 {/* Loading state */}
                 {isLoadingEvents && (
                   <div className="bg-gradient-to-br from-white to-indigo-100/98 backdrop-blur-lg shadow-xl border border-white/20 rounded-2xl p-8 text-center">
@@ -1978,60 +1975,60 @@ export function OrganizerDashboard() {
                     <p className="text-gray-600">Cargando eventos...</p>
                   </div>
                 )}
-                
+
                 {/* Event Management Actions - Solo mostrar si hay eventos */}
                 {!isLoadingEvents && finalEvents.length > 0 && (
                   <>
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
-                  <div>
-                    <h3 className="text-lg font-semibold text-gray-900">Gestión de Eventos</h3>
-                  </div>
-                  <div className="flex flex-wrap gap-2 w-full sm:w-auto">
-            <button 
-              onClick={handleRefresh}
-              disabled={isRefreshing}
-                      className="flex-1 sm:flex-none inline-flex items-center justify-center px-3 md:px-4 py-2 bg-gradient-to-r from-orange-500 to-red-600 text-white font-medium rounded-xl hover:from-orange-600 hover:to-red-700 transition-all duration-200 shadow-sm text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <RefreshCw className={`w-4 h-4 sm:mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
-              <span className="hidden sm:inline">{isRefreshing ? 'Actualizando...' : 'Actualizar'}</span>
-            </button>
-            <button 
-                      onClick={() => setIsCreateEventModalOpen(true)}
-              className="flex-1 sm:flex-none inline-flex items-center justify-center px-3 md:px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-medium rounded-xl hover:from-green-600 hover:to-emerald-700 transition-all duration-200 shadow-sm text-sm"
-            >
-              <Plus className="w-4 h-4 sm:mr-2" />
-              <span className="hidden sm:inline">Nuevo</span>
-            </button>
-                  </div>
-          </div>
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
+                      <div>
+                        <h3 className="text-lg font-semibold text-gray-900">Gestión de Eventos</h3>
+                      </div>
+                      <div className="flex flex-wrap gap-2 w-full sm:w-auto">
+                        <button
+                          onClick={handleRefresh}
+                          disabled={isRefreshing}
+                          className="flex-1 sm:flex-none inline-flex items-center justify-center px-3 md:px-4 py-2 bg-gradient-to-r from-orange-500 to-red-600 text-white font-medium rounded-xl hover:from-orange-600 hover:to-red-700 transition-all duration-200 shadow-sm text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          <RefreshCw className={`w-4 h-4 sm:mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
+                          <span className="hidden sm:inline">{isRefreshing ? 'Actualizando...' : 'Actualizar'}</span>
+                        </button>
+                        <button
+                          onClick={() => setIsCreateEventModalOpen(true)}
+                          className="flex-1 sm:flex-none inline-flex items-center justify-center px-3 md:px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-medium rounded-xl hover:from-green-600 hover:to-emerald-700 transition-all duration-200 shadow-sm text-sm"
+                        >
+                          <Plus className="w-4 h-4 sm:mr-2" />
+                          <span className="hidden sm:inline">Nuevo</span>
+                        </button>
+                      </div>
+                    </div>
 
-                <EventManagementAdvanced
-                  events={selectedEvent ? [{
-                    ...selectedEvent,
-                    revenue: selectedEvent.price || 0,
-                    views: Math.floor(Math.random() * 1000),
-                    conversionRate: Math.random() * 10,
-                    ticketTypes: (selectedEvent.ticketTypes || []).map((t: any) => ({
-                      id: t.id,
-                      name: t.nombre_tipo || t.name || 'Sin nombre',
-                      price: t.precio || t.price || 0,
-                      available: t.cantidad_disponible || t.available || 0,
-                      sold: (t.cantidad_maxima || t.maxQuantity || 0) - (t.cantidad_disponible || t.available || 0)
-                    })),
-                          status: selectedEvent.status === 'draft' ? 'draft'
-                            : selectedEvent.status === 'paused' ? 'paused'
+                    <EventManagementAdvanced
+                      events={selectedEvent ? [{
+                        ...selectedEvent,
+                        revenue: selectedEvent.price || 0,
+                        views: Math.floor(Math.random() * 1000),
+                        conversionRate: Math.random() * 10,
+                        ticketTypes: (selectedEvent.ticketTypes || []).map((t: any) => ({
+                          id: t.id,
+                          name: t.nombre_tipo || t.name || 'Sin nombre',
+                          price: t.precio || t.price || 0,
+                          available: t.cantidad_disponible || t.available || 0,
+                          sold: (t.cantidad_maxima || t.maxQuantity || 0) - (t.cantidad_disponible || t.available || 0)
+                        })),
+                        status: selectedEvent.status === 'draft' ? 'draft'
+                          : selectedEvent.status === 'paused' ? 'paused'
                             : selectedEvent.status === 'cancelled' ? 'cancelled'
-                            : selectedEvent.status === 'completed' ? 'completed'
-                            : 'published' // upcoming/ongoing → published
-                  }] : []}
-                  onCreateEvent={() => setIsCreateEventModalOpen(true)}
-                  onEditEvent={handleEditEvent}
-                  onViewEvent={handleViewEvent}
-                  onDeleteEvent={handleDeleteEvent}
-                  onDuplicateEvent={handleDuplicateEvent}
-                  onUploadImage={handleUploadImage}
-                  onCustomizeEvent={handleConfigureEvent}
-                />
+                              : selectedEvent.status === 'completed' ? 'completed'
+                                : 'published' // upcoming/ongoing → published
+                      }] : []}
+                      onCreateEvent={() => setIsCreateEventModalOpen(true)}
+                      onEditEvent={handleEditEvent}
+                      onViewEvent={handleViewEvent}
+                      onDeleteEvent={handleDeleteEvent}
+                      onDuplicateEvent={handleDuplicateEvent}
+                      onUploadImage={handleUploadImage}
+                      onCustomizeEvent={handleConfigureEvent}
+                    />
                   </>
                 )}
               </div>
@@ -2045,14 +2042,9 @@ export function OrganizerDashboard() {
                     <h3 className="text-lg font-semibold text-gray-900">
                       Gestión de Entradas {selectedEvent && `- ${selectedEvent.title}`}
                     </h3>
-                    {selectedEvent && (
-                      <p className="text-sm text-gray-600 mt-1">
-                        {selectedEvent.location} • {new Date(selectedEvent.date).toLocaleDateString('es-ES')}
-                      </p>
-                    )}
                   </div>
                   <div className="flex flex-wrap gap-2 w-full sm:w-auto">
-                    <button 
+                    <button
                       onClick={handleRefresh}
                       disabled={isRefreshing}
                       className="flex-1 sm:flex-none inline-flex items-center justify-center px-3 md:px-4 py-2 bg-gradient-to-r from-orange-500 to-red-600 text-white font-medium rounded-xl hover:from-orange-600 hover:to-red-700 transition-all duration-200 shadow-sm text-sm disabled:opacity-50 disabled:cursor-not-allowed"
@@ -2060,7 +2052,7 @@ export function OrganizerDashboard() {
                       <RefreshCw className={`w-4 h-4 sm:mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
                       <span className="hidden sm:inline">{isRefreshing ? 'Actualizando...' : 'Actualizar'}</span>
                     </button>
-                    <button 
+                    <button
                       onClick={() => setIsCreateTicketModalOpen(true)}
                       className="flex-1 sm:flex-none inline-flex items-center justify-center px-3 md:px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-medium rounded-xl hover:from-green-600 hover:to-emerald-700 transition-all duration-200 shadow-sm text-sm"
                     >
@@ -2069,56 +2061,56 @@ export function OrganizerDashboard() {
                     </button>
                   </div>
                 </div>
-                
+
                 <TicketManagement
                   tickets={(selectedEvent?.ticketTypes || []).map((ticket: any) => {
                     const keyRaw = (ticket.type ?? ticket.tipo ?? ticket.name ?? ticket.nombre_tipo ?? 'general') as string;
                     const key = normalizeTicketKey(keyRaw);
                     return {
-                    id: ticket.id,
-                    name: ticket.name ?? ticket.nombre_tipo ?? 'Sin nombre',
-                    description: ticket.description ?? ticket.descripcion ?? '',
-                    price: ticket.price ?? ticket.precio ?? 0,
-                    available: ticket.available ?? ticket.cantidad_disponible ?? 0,
-                    sold: ticket.sold ?? ((ticket.cantidad_maxima || 0) - (ticket.cantidad_disponible || 0)),
-                    type: ticket.type ?? ticket.tipo ?? 'general',
-                    revenue: ticketRevenueByType[key] ?? undefined,
-                    isActive: true,
-                    features: ticket.features ?? [],
-                    eventId: selectedEvent.id
-                  };
+                      id: ticket.id,
+                      name: ticket.name ?? ticket.nombre_tipo ?? 'Sin nombre',
+                      description: ticket.description ?? ticket.descripcion ?? '',
+                      price: ticket.price ?? ticket.precio ?? 0,
+                      available: ticket.available ?? ticket.cantidad_disponible ?? 0,
+                      sold: ticket.sold ?? ((ticket.cantidad_maxima || 0) - (ticket.cantidad_disponible || 0)),
+                      type: ticket.type ?? ticket.tipo ?? 'general',
+                      revenue: ticketRevenueByType[key] ?? undefined,
+                      isActive: true,
+                      features: ticket.features ?? [],
+                      eventId: selectedEvent.id
+                    };
                   })}
                   onCreateTicket={() => setIsCreateTicketModalOpen(true)}
                   onEditTicket={handleEditTicket}
                   onDeleteTicket={handleDeleteTicket}
                   onDuplicateTicket={handleDuplicateTicket}
-                  onToggleTicket={(ticketId) => {}}
+                  onToggleTicket={(ticketId) => { }}
                   onViewAnalytics={handleViewTicket}
                 />
-      {/* Modales CRUD de tipo de entrada */}
-      <ViewTicketModal
-        isOpen={isViewTicketModalOpen}
-        onClose={closeTicketModals}
-        ticket={selectedTicket}
-      />
-      <EditTicketModal
-        isOpen={isEditTicketModalOpen}
-        onClose={closeTicketModals}
-        ticket={selectedTicket}
-        onSave={async () => { await handleRefresh(); closeTicketModals(); }}
-      />
-      <DuplicateTicketModal
-        isOpen={isDuplicateTicketModalOpen}
-        onClose={closeTicketModals}
-        ticket={selectedTicket}
-        onDuplicate={async () => { await handleRefresh(); closeTicketModals(); }}
-      />
-      <DeleteTicketModal
-        isOpen={isDeleteTicketModalOpen}
-        onClose={closeTicketModals}
-        ticket={selectedTicket}
-        onDelete={async () => { await handleRefresh(); closeTicketModals(); }}
-      />
+                {/* Modales CRUD de tipo de entrada */}
+                <ViewTicketModal
+                  isOpen={isViewTicketModalOpen}
+                  onClose={closeTicketModals}
+                  ticket={selectedTicket}
+                />
+                <EditTicketModal
+                  isOpen={isEditTicketModalOpen}
+                  onClose={closeTicketModals}
+                  ticket={selectedTicket}
+                  onSave={async () => { await handleRefresh(); closeTicketModals(); }}
+                />
+                <DuplicateTicketModal
+                  isOpen={isDuplicateTicketModalOpen}
+                  onClose={closeTicketModals}
+                  ticket={selectedTicket}
+                  onDuplicate={async () => { await handleRefresh(); closeTicketModals(); }}
+                />
+                <DeleteTicketModal
+                  isOpen={isDeleteTicketModalOpen}
+                  onClose={closeTicketModals}
+                  ticket={selectedTicket}
+                  onDelete={async () => { await handleRefresh(); closeTicketModals(); }}
+                />
               </div>
             )}
 
@@ -2137,7 +2129,7 @@ export function OrganizerDashboard() {
                     )}
                   </div>
                   <div className="flex flex-wrap gap-2 w-full sm:w-auto">
-                    <button 
+                    <button
                       onClick={handleRefresh}
                       disabled={isRefreshing}
                       className="flex-1 sm:flex-none inline-flex items-center justify-center px-3 md:px-4 py-2 bg-gradient-to-r from-orange-500 to-red-600 text-white font-medium rounded-xl hover:from-orange-600 hover:to-red-700 transition-all duration-200 shadow-sm text-sm disabled:opacity-50 disabled:cursor-not-allowed"
@@ -2145,7 +2137,7 @@ export function OrganizerDashboard() {
                       <RefreshCw className={`w-4 h-4 sm:mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
                       <span className="hidden sm:inline">{isRefreshing ? 'Actualizando...' : 'Actualizar'}</span>
                     </button>
-                    <button 
+                    <button
                       onClick={() => setIsCreatePromotionModalOpen(true)}
                       className="flex-1 sm:flex-none inline-flex items-center justify-center px-3 md:px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-medium rounded-xl hover:from-green-600 hover:to-emerald-700 transition-all duration-200 shadow-sm text-sm"
                     >
@@ -2181,7 +2173,7 @@ export function OrganizerDashboard() {
                   onTogglePromotion={(promotionId) => console.log('Toggle promotion:', promotionId)}
                   onViewAnalytics={handleViewPromotion}
                 />
-                    </div>
+              </div>
             )}
 
             {activeTab === 'payments' && (
@@ -2192,7 +2184,7 @@ export function OrganizerDashboard() {
                     <h3 className="text-lg font-semibold text-gray-900">Métodos de Pago y Reconciliación</h3>
                   </div>
                   <div className="flex flex-wrap gap-2 w-full sm:w-auto">
-                    <button 
+                    <button
                       onClick={handleRefresh}
                       disabled={isRefreshing}
                       className="flex-1 sm:flex-none inline-flex items-center justify-center px-3 md:px-4 py-2 bg-gradient-to-r from-orange-500 to-red-600 text-white font-medium rounded-xl hover:from-orange-600 hover:to-red-700 transition-all duration-200 shadow-sm gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -2200,7 +2192,7 @@ export function OrganizerDashboard() {
                       <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
                       <span className="hidden sm:inline">{isRefreshing ? 'Actualizando...' : 'Actualizar'}</span>
                     </button>
-                    <button 
+                    <button
                       onClick={() => setIsCreatePaymentMethodModalOpen(true)}
                       className="flex-1 sm:flex-none inline-flex items-center justify-center px-3 md:px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-medium rounded-xl hover:from-green-600 hover:to-emerald-700 transition-all duration-200 shadow-sm gap-2"
                     >
@@ -2208,7 +2200,7 @@ export function OrganizerDashboard() {
                       <span className="hidden sm:inline">Nuevo</span>
                     </button>
                   </div>
-                  </div>
+                </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                   {/* Payment Methods */}
@@ -2219,7 +2211,7 @@ export function OrganizerDashboard() {
                         <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
                       )}
                     </div>
-                    
+
                     {isLoadingPaymentMethods ? (
                       <div className="flex items-center justify-center py-8">
                         <div className="text-center">
@@ -2286,11 +2278,10 @@ export function OrganizerDashboard() {
                                   </div>
                                 </div>
                                 <div className="flex items-center space-x-2">
-                                  <span className={`px-2 py-1 text-xs rounded-full flex-shrink-0 ${
-                                    method.activo 
-                                      ? 'bg-green-100 text-green-800' 
-                                      : 'bg-red-100 text-red-800'
-                                  }`}>
+                                  <span className={`px-2 py-1 text-xs rounded-full flex-shrink-0 ${method.activo
+                                    ? 'bg-green-100 text-green-800'
+                                    : 'bg-red-100 text-red-800'
+                                    }`}>
                                     {method.activo ? 'Activo' : 'Inactivo'}
                                   </span>
                                   <div className="relative">
@@ -2310,9 +2301,8 @@ export function OrganizerDashboard() {
                                       </svg>
                                     </button>
                                     {/* Menú desplegable dinámico */}
-                                    <div className={`dropdown-menu ${
-                                      openPaymentMethodDropdown === method.id ? 'block' : 'hidden'
-                                    } absolute right-0 top-8 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-50`}
+                                    <div className={`dropdown-menu ${openPaymentMethodDropdown === method.id ? 'block' : 'hidden'
+                                      } absolute right-0 top-8 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-50`}
                                       style={{ zIndex: 9999, pointerEvents: 'auto' }}
                                       onClick={() => console.log('📋 DROPDOWN CLICK: Click en el dropdown')}>
                                       {openPaymentMethodDropdown === method.id && (() => {
@@ -2320,7 +2310,7 @@ export function OrganizerDashboard() {
                                         return null;
                                       })()}
                                       <div className="py-1">
-                                        <button 
+                                        <button
                                           onClick={(e) => {
                                             console.log('👁️ CLICK VIEW BUTTON: Ver detalles clickeado para:', method.id);
                                             e.stopPropagation();
@@ -2337,7 +2327,7 @@ export function OrganizerDashboard() {
                                           </svg>
                                           <span>Ver detalles</span>
                                         </button>
-                                        <button 
+                                        <button
                                           onClick={() => {
                                             console.log('✏️ CLICK EDIT BUTTON: Editar clickeado para:', method.id);
                                             handleEditPaymentMethod(method.id);
@@ -2351,7 +2341,7 @@ export function OrganizerDashboard() {
                                           <span>Editar</span>
                                         </button>
                                         <div className="border-t border-gray-100 my-1"></div>
-                                        <button 
+                                        <button
                                           onClick={() => {
                                             console.log('🔴 CLICK DELETE BUTTON: Botón eliminar clickeado para método:', method.id);
                                             handleDeletePaymentMethod(method.id);
@@ -2438,7 +2428,7 @@ export function OrganizerDashboard() {
                   <div>
                     <h3 className="text-lg font-semibold text-gray-900">Control de Asistencia</h3>
                   </div>
-                  <button 
+                  <button
                     onClick={handleRefresh}
                     disabled={isRefreshing}
                     className="inline-flex items-center justify-center px-4 py-2 bg-gradient-to-r from-orange-500 to-red-600 text-white font-medium rounded-xl hover:from-orange-600 hover:to-red-700 transition-all duration-200 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
@@ -2447,7 +2437,7 @@ export function OrganizerDashboard() {
                     {isRefreshing ? 'Actualizando...' : 'Actualizar'}
                   </button>
                 </div>
-                
+
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                   {/* QR Code Scanner */}
                   <div className="bg-gradient-to-br from-white to-indigo-100/98 backdrop-blur-lg shadow-xl border border-white/20 rounded-2xl p-6">
@@ -2459,18 +2449,18 @@ export function OrganizerDashboard() {
                           <div className="flex items-center space-x-2">
                             <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                             <span className="text-sm text-green-600">Activo</span>
-                      </div>
-                      </div>
+                          </div>
+                        </div>
                         <p className="text-sm text-gray-600 mb-3">
                           Escanea códigos QR de las entradas para registrar asistencia en tiempo real
                         </p>
-                        <button 
+                        <button
                           onClick={() => setIsQRScannerOpen(true)}
                           className="w-full px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-xl hover:from-blue-600 hover:to-purple-700 transition-all duration-200 flex items-center justify-center"
                         >
                           <QrCode className="w-4 h-4 mr-2" />
                           Activar Cámara
-                      </button>
+                        </button>
                       </div>
                     </div>
                   </div>
@@ -2483,11 +2473,11 @@ export function OrganizerDashboard() {
                         <div className="p-3 bg-green-50 rounded-lg">
                           <div className="text-2xl font-bold text-green-600">{attendanceStats.attendanceRate.toFixed(1)}%</div>
                           <div className="text-sm text-gray-600">Tasa de Asistencia</div>
-                      </div>
+                        </div>
                         <div className="p-3 bg-blue-50 rounded-lg">
                           <div className="text-2xl font-bold text-blue-600">{attendanceStats.checkedIn}</div>
                           <div className="text-sm text-gray-600">Asistentes Registrados</div>
-                      </div>
+                        </div>
                       </div>
                       <div className="p-4 bg-gray-50 rounded-lg">
                         <h5 className="font-medium text-gray-900 mb-2">Últimos Escaneos</h5>
@@ -2537,7 +2527,7 @@ export function OrganizerDashboard() {
                           {isExportingReport === 'event-excel' ? 'Generando...' : 'Excel'}
                         </button>
                       </div>
-                  </div>
+                    </div>
                     <div className="p-4 bg-green-50 rounded-lg border border-green-200">
                       <h5 className="font-medium text-gray-900 mb-2">Estadísticas Generales</h5>
                       <p className="text-sm text-gray-600 mb-3">Métricas y análisis de asistencia</p>
@@ -2600,9 +2590,9 @@ export function OrganizerDashboard() {
                         {selectedEvent.currentAttendees}/{selectedEvent.maxAttendees} asistentes registrados
                       </p>
                     )}
-          </div>
+                  </div>
                   <div className="flex flex-wrap gap-2 w-full sm:w-auto">
-                    <button 
+                    <button
                       onClick={handleRefresh}
                       disabled={isRefreshing}
                       aria-label="Actualizar asistentes"
@@ -2614,11 +2604,11 @@ export function OrganizerDashboard() {
                     {/* Export format selector removed */}
                   </div>
                 </div>
-                
-                <AttendeeManagement 
+
+                <AttendeeManagement
                   eventId={selectedEvent?.id}
                   eventTitle={selectedEvent?.title}
-                  onRefreshRequest={() => {}}
+                  onRefreshRequest={() => { }}
                 />
               </div>
             )}

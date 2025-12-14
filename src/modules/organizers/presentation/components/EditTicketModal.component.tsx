@@ -15,12 +15,28 @@ export const EditTicketModal = ({ isOpen, onClose, ticket, onSave }: { isOpen: b
   // Actualizar formulario cuando cambia el ticket
   useEffect(() => {
     if (ticket && isOpen) {
+      // Normalizar datos para soportar estructura de BD y del Store
+      const name = ticket.nombre_tipo || ticket.name || '';
+      const price = ticket.precio !== undefined ? ticket.precio : (ticket.price ?? 0);
+      const description = ticket.descripcion || ticket.description || '';
+
+      // Calcular cantidades normalizadas
+      const available = ticket.cantidad_disponible !== undefined ? ticket.cantidad_disponible : (ticket.available ?? 0);
+      const sold = ticket.cantidad_vendida !== undefined ? ticket.cantidad_vendida : (ticket.sold ?? 0);
+
+      // Si no hay maximos explícitos, inferir de disponible + vendido si aplica
+      let max = ticket.cantidad_maxima !== undefined ? ticket.cantidad_maxima : ticket.maxAttendees; // Algunos stores usan maxAttendees
+      if (max === undefined && (ticket.cantidad_maxima === undefined)) {
+        // Fallback logic, intentar inferir o usar disponible actual como base si no hay más info
+        max = (available + sold) > 0 ? (available + sold) : 0;
+      }
+
       setForm({
-        nombre_tipo: ticket.nombre_tipo || '',
-        precio: Number(ticket.precio) || 0,
-        descripcion: ticket.descripcion || '',
-        cantidad_maxima: Number(ticket.cantidad_maxima) || 0,
-        cantidad_disponible: Number(ticket.cantidad_disponible) || 0,
+        nombre_tipo: name,
+        precio: Number(price),
+        descripcion: description,
+        cantidad_maxima: Number(max),
+        cantidad_disponible: Number(available),
       });
     }
   }, [ticket, isOpen]);
@@ -44,12 +60,12 @@ export const EditTicketModal = ({ isOpen, onClose, ticket, onSave }: { isOpen: b
         cantidad_maxima: Number(form.cantidad_maxima),
         cantidad_disponible: Number(form.cantidad_disponible),
       };
-      
+
       console.log('📝 Datos a actualizar:', dataToUpdate);
       console.log('🎫 ID del ticket:', ticket.id);
-      
+
       await TicketTypeService.actualizarTipoEntrada(ticket.id, dataToUpdate);
-      
+
       console.log('✅ Tipo de entrada actualizado exitosamente');
       onSave();
       onClose();
@@ -79,24 +95,25 @@ export const EditTicketModal = ({ isOpen, onClose, ticket, onSave }: { isOpen: b
         </div>
 
         {/* Tarjeta de información actual */}
+        {/* Tarjeta de información actual */}
         <div className="bg-gradient-to-br from-gray-50 to-orange-50 rounded-xl p-4 mb-6 border border-orange-100 shadow-sm">
-          <h3 className="font-bold text-orange-900 mb-1 text-lg">{ticket.nombre_tipo}</h3>
+          <h3 className="font-bold text-orange-900 mb-1 text-lg">{form.nombre_tipo || 'Sin nombre'}</h3>
           <div className="flex flex-wrap gap-4 text-sm text-gray-700 mb-2">
             <span className="inline-flex items-center gap-1">
               <span className="font-medium text-orange-700">Evento:</span>
-              <span>{ticket.nombre_evento}</span>
+              <span>{ticket.nombre_evento || ticket.eventName || 'Evento actual'}</span>
             </span>
             <span className="inline-flex items-center gap-1">
               <span className="font-medium text-orange-700">Precio:</span>
-              <span className="font-semibold">${ticket.precio}</span>
+              <span className="font-semibold">${form.precio}</span>
             </span>
             <span className="inline-flex items-center gap-1">
               <span className="font-medium text-orange-700">Disponibles:</span>
-              <span>{ticket.cantidad_disponible} / {ticket.cantidad_maxima}</span>
+              <span>{form.cantidad_disponible} / {form.cantidad_maxima}</span>
             </span>
           </div>
           <div className="text-sm text-gray-800">
-            <span className="font-medium text-orange-700">Descripción:</span> {ticket.descripcion || <span className="italic text-gray-400">Sin descripción</span>}
+            <span className="font-medium text-orange-700">Descripción:</span> {form.descripcion || <span className="italic text-gray-400">Sin descripción</span>}
           </div>
         </div>
 
@@ -111,7 +128,14 @@ export const EditTicketModal = ({ isOpen, onClose, ticket, onSave }: { isOpen: b
           </div>
           <div className="md:col-span-2">
             <label className="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
-            <input name="descripcion" value={form.descripcion} onChange={handleChange} className="w-full border p-2 rounded-xl focus:ring-2 focus:ring-orange-400" placeholder="Descripción" />
+            <textarea
+              name="descripcion"
+              value={form.descripcion}
+              onChange={handleChange}
+              rows={3}
+              className="w-full border p-2 rounded-xl focus:ring-2 focus:ring-orange-400 resize-none"
+              placeholder="Descripción detallada de la entrada (opcional)"
+            />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Cantidad máxima</label>

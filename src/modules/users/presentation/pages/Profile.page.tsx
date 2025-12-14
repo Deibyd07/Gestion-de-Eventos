@@ -1,12 +1,12 @@
 import { useEffect, useMemo, useState } from 'react';
-import { 
-  User, 
-  Mail, 
-  MapPin, 
-  Calendar, 
-  Camera, 
-  Save, 
-  Settings, 
+import {
+  User,
+  Mail,
+  MapPin,
+  Calendar,
+  Camera,
+  Save,
+  Settings,
   Ticket,
   Bell,
   Download,
@@ -201,35 +201,35 @@ export function ProfilePage() {
 
   const handleChangePassword = async () => {
     setPasswordError(null);
-    
+
     // Validations
     if (!passwordData.currentPassword || !passwordData.newPassword || !passwordData.confirmPassword) {
       setPasswordError('Todos los campos son obligatorios');
       return;
     }
-    
+
     if (passwordData.newPassword.length < 6) {
       setPasswordError('La nueva contraseña debe tener al menos 6 caracteres');
       return;
     }
-    
+
     if (passwordData.newPassword !== passwordData.confirmPassword) {
       setPasswordError('Las contraseñas no coinciden');
       return;
     }
-    
+
     if (passwordData.currentPassword === passwordData.newPassword) {
       setPasswordError('La contraseña nueva debe ser diferente a la actual');
       return;
     }
-    
+
     if (!user?.email) {
       setPasswordError('No se pudo verificar tu email');
       return;
     }
-    
+
     setIsChangingPassword(true);
-    
+
     try {
       // First, verify current password by attempting to sign in
       console.log('🔐 Verificando contraseña actual...');
@@ -237,25 +237,25 @@ export function ProfilePage() {
         email: user.email,
         password: passwordData.currentPassword
       });
-      
+
       if (signInError) {
         console.error('❌ Contraseña actual incorrecta:', signInError);
         setPasswordError('La contraseña actual es incorrecta');
         return;
       }
-      
+
       console.log('✅ Contraseña actual verificada');
-      
+
       // Now update to new password
       console.log('🔄 Actualizando contraseña...');
       const { error: updateError } = await supabase.auth.updateUser({
         password: passwordData.newPassword
       });
-      
+
       if (updateError) throw updateError;
-      
+
       console.log('✅ Contraseña actualizada exitosamente');
-      
+
       // Success
       setShowPasswordModal(false);
       setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
@@ -273,9 +273,9 @@ export function ProfilePage() {
     if (!dateString) return 'N/A';
     try {
       const date = new Date(dateString);
-      return date.toLocaleDateString('es-CO', { 
-        year: 'numeric', 
-        month: 'long', 
+      return date.toLocaleDateString('es-CO', {
+        year: 'numeric',
+        month: 'long',
         day: 'numeric',
         hour: '2-digit',
         minute: '2-digit'
@@ -360,8 +360,8 @@ export function ProfilePage() {
                   <div className="relative">
                     <div className="w-16 h-16 sm:w-20 sm:h-20 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center border-2 border-white/30 shadow-lg">
                       {user?.avatar ? (
-                        <img 
-                          src={user.avatar} 
+                        <img
+                          src={user.avatar}
                           alt={user.name}
                           className="w-16 h-16 sm:w-20 sm:h-20 rounded-full object-cover"
                         />
@@ -375,7 +375,7 @@ export function ProfilePage() {
                       </button>
                     )}
                   </div>
-                  
+
                   <div className="text-white flex-1">
                     <h2 className="text-xl sm:text-2xl font-bold">{user?.name}</h2>
                     <p className="text-blue-100 mt-1 flex items-center text-sm sm:text-base">
@@ -389,7 +389,7 @@ export function ProfilePage() {
                   </div>
                 </div>
               </div>
-              
+
               <div className="flex items-center justify-center sm:justify-end space-x-2">
                 <div className="w-3 h-3 rounded-full bg-green-400 shadow-lg" />
                 <span className="text-sm text-white font-medium">Activo</span>
@@ -411,7 +411,7 @@ export function ProfilePage() {
                   </div>
                 </div>
               </div>
-              
+
               <div className="bg-gradient-to-br from-green-50 to-green-100 border border-green-200 rounded-xl p-3 sm:p-4 shadow-sm hover:shadow-md transition-all duration-200">
                 <div className="flex items-center justify-between">
                   <div>
@@ -428,7 +428,9 @@ export function ProfilePage() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-xs sm:text-sm text-gray-600 font-medium">Total Gastado</p>
-                    <p className="text-lg sm:text-2xl font-bold text-purple-600">{formatPriceDisplay(stats.totalSpent || 0)}</p>
+                    <p className="text-lg sm:text-2xl font-bold text-purple-600">
+                      {stats.totalSpent > 0 ? formatPriceDisplay(stats.totalSpent) : '$0'}
+                    </p>
                   </div>
                   <div className="p-2 sm:p-3 bg-purple-500 rounded-lg">
                     <Save className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
@@ -447,20 +449,19 @@ export function ProfilePage() {
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
-                    className={`tab-button flex items-center space-x-1 sm:space-x-2 py-3 sm:py-4 px-2 sm:px-1 border-b-2 font-medium text-xs sm:text-sm transition-all duration-200 whitespace-nowrap ${
-                      activeTab === tab.id
+                    className={`tab-button flex items-center space-x-1 sm:space-x-2 py-3 sm:py-4 px-2 sm:px-1 border-b-2 font-medium text-xs sm:text-sm transition-all duration-200 whitespace-nowrap ${activeTab === tab.id
                         ? 'border-blue-500 text-blue-600'
                         : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                    }`}
+                      }`}
                   >
                     <Icon className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
                     <span className="hidden sm:inline">{tab.label}</span>
                     <span className="sm:hidden">
                       {tab.label === 'Mi Perfil' ? 'Mi' :
-                       tab.label === 'Mis Tickets' ? 'Tickets' :
-                       tab.label === 'Compras' ? 'Compras' :
-                       tab.label === 'Actividad' ? 'Actividad' :
-                       tab.label === 'Configuración' ? 'Config' : tab.label}
+                        tab.label === 'Mis Tickets' ? 'Tickets' :
+                          tab.label === 'Compras' ? 'Compras' :
+                            tab.label === 'Actividad' ? 'Actividad' :
+                              tab.label === 'Configuración' ? 'Config' : tab.label}
                     </span>
                   </button>
                 );
@@ -549,11 +550,10 @@ export function ProfilePage() {
                         Rol
                       </label>
                       <div className="px-3 py-2 bg-gray-50 rounded-lg">
-                        <span className={`px-3 py-1 rounded-full text-xs sm:text-sm font-medium ${
-                          user?.role === 'organizer' 
+                        <span className={`px-3 py-1 rounded-full text-xs sm:text-sm font-medium ${user?.role === 'organizer'
                             ? 'bg-purple-100 text-purple-800'
                             : 'bg-green-100 text-green-800'
-                        }`}>
+                          }`}>
                           {user?.role === 'organizer' ? 'Organizador' : 'Asistente'}
                         </span>
                       </div>
@@ -614,101 +614,101 @@ export function ProfilePage() {
                     <p className="text-sm text-gray-500 mt-1">Tus compras aparecerán aquí</p>
                   </div>
                 )}
-                
+
                 {/* Mobile Cards View */}
                 {filteredPurchases.length > 0 && (
                   <div className="block sm:hidden space-y-3">
-                  {filteredPurchases.map((purchase) => {
-                    const eventTitle = purchase.eventos?.titulo || purchase.nombre_evento || purchase.evento_nombre || purchase.descripcion || 'Evento';
-                    const purchaseDateRaw = purchase.fecha_creacion || purchase.fecha_compra || purchase.created_at;
-                    const purchaseDate = purchaseDateRaw ? formatDate(purchaseDateRaw) : 'Fecha no disponible';
-                    const ticketsCount = purchase.cantidad_tickets || purchase.total_tickets || purchase.cantidad || 0;
-                    const total = purchase.total_pagado || purchase.total || 0;
-                    return (
-                      <div key={purchase.id} className="bg-gradient-to-br from-white to-indigo-100/98 backdrop-blur-lg shadow-xl border border-white/20 rounded-2xl p-4">
-                        <div className="space-y-3">
-                          <div>
-                            <h4 className="font-semibold text-gray-900 text-sm">{eventTitle}</h4>
-                            <p className="text-xs text-gray-600 mt-1">{purchaseDate}</p>
-                          </div>
-                          <div className="flex justify-between items-center">
-                            <div className="flex space-x-4 text-xs text-gray-600">
-                              <span>{ticketsCount} tickets</span>
-                              <span className="font-semibold text-gray-900">{formatPriceDisplay(total)}</span>
+                    {filteredPurchases.map((purchase) => {
+                      const eventTitle = purchase.eventos?.titulo || purchase.nombre_evento || purchase.evento_nombre || purchase.descripcion || 'Evento';
+                      const purchaseDateRaw = purchase.fecha_creacion || purchase.fecha_compra || purchase.created_at;
+                      const purchaseDate = purchaseDateRaw ? formatDate(purchaseDateRaw) : 'Fecha no disponible';
+                      const ticketsCount = purchase.cantidad_tickets || purchase.total_tickets || purchase.cantidad || 0;
+                      const total = purchase.total_pagado || purchase.total || 0;
+                      return (
+                        <div key={purchase.id} className="bg-gradient-to-br from-white to-indigo-100/98 backdrop-blur-lg shadow-xl border border-white/20 rounded-2xl p-4">
+                          <div className="space-y-3">
+                            <div>
+                              <h4 className="font-semibold text-gray-900 text-sm">{eventTitle}</h4>
+                              <p className="text-xs text-gray-600 mt-1">{purchaseDate}</p>
                             </div>
-                            <button 
-                              onClick={() => handleViewDetails(purchase)}
-                              className="text-blue-600 hover:text-blue-900 font-medium text-xs"
-                            >
-                              Ver Detalles
-                            </button>
+                            <div className="flex justify-between items-center">
+                              <div className="flex space-x-4 text-xs text-gray-600">
+                                <span>{ticketsCount} tickets</span>
+                                <span className="font-semibold text-gray-900">{formatPriceDisplay(total)}</span>
+                              </div>
+                              <button
+                                onClick={() => handleViewDetails(purchase)}
+                                className="text-blue-600 hover:text-blue-900 font-medium text-xs"
+                              >
+                                Ver Detalles
+                              </button>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    );
-                  })}
+                      );
+                    })}
                   </div>
                 )}
 
                 {/* Desktop Table View */}
                 {filteredPurchases.length > 0 && (
                   <div className="hidden sm:block bg-gradient-to-br from-white to-indigo-100/98 backdrop-blur-lg shadow-xl border border-white/20 rounded-2xl overflow-hidden">
-                  <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-gray-200">
-                      <thead className="bg-gray-50/80">
-                        <tr>
-                          <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Evento
-                          </th>
-                          <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Fecha de Compra
-                          </th>
-                          <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Tickets
-                          </th>
-                          <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Total
-                          </th>
-                          <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Acción
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody className="bg-white/50 divide-y divide-gray-200">
-                        {filteredPurchases.map((purchase) => {
-                          const eventTitle = purchase.eventos?.titulo || purchase.nombre_evento || purchase.evento_nombre || purchase.descripcion || 'Evento';
-                          const purchaseDateRaw = purchase.fecha_creacion || purchase.fecha_compra || purchase.created_at;
-                          const purchaseDate = purchaseDateRaw ? formatDate(purchaseDateRaw) : 'Fecha no disponible';
-                          const ticketsCount = purchase.cantidad_tickets || purchase.total_tickets || purchase.cantidad || 0;
-                          const total = purchase.total_pagado || purchase.total || 0;
-                          return (
-                            <tr key={purchase.id} className="hover:bg-blue-50/50 transition-colors duration-200">
-                              <td className="px-4 lg:px-6 py-4 whitespace-nowrap">
-                                <div className="text-sm font-medium text-gray-900">{eventTitle}</div>
-                              </td>
-                              <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                                {purchaseDate}
-                              </td>
-                              <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                                {ticketsCount}
-                              </td>
-                              <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
-                                {formatPriceDisplay(total)}
-                              </td>
-                              <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm">
-                                <button 
-                                  onClick={() => handleViewDetails(purchase)}
-                                  className="text-blue-600 hover:text-blue-900 font-medium"
-                                >
-                                  Ver Detalles
-                                </button>
-                              </td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
-                  </div>
+                    <div className="overflow-x-auto">
+                      <table className="min-w-full divide-y divide-gray-200">
+                        <thead className="bg-gray-50/80">
+                          <tr>
+                            <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Evento
+                            </th>
+                            <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Fecha de Compra
+                            </th>
+                            <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Tickets
+                            </th>
+                            <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Total
+                            </th>
+                            <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Acción
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody className="bg-white/50 divide-y divide-gray-200">
+                          {filteredPurchases.map((purchase) => {
+                            const eventTitle = purchase.eventos?.titulo || purchase.nombre_evento || purchase.evento_nombre || purchase.descripcion || 'Evento';
+                            const purchaseDateRaw = purchase.fecha_creacion || purchase.fecha_compra || purchase.created_at;
+                            const purchaseDate = purchaseDateRaw ? formatDate(purchaseDateRaw) : 'Fecha no disponible';
+                            const ticketsCount = purchase.cantidad_tickets || purchase.total_tickets || purchase.cantidad || 0;
+                            const total = purchase.total_pagado || purchase.total || 0;
+                            return (
+                              <tr key={purchase.id} className="hover:bg-blue-50/50 transition-colors duration-200">
+                                <td className="px-4 lg:px-6 py-4 whitespace-nowrap">
+                                  <div className="text-sm font-medium text-gray-900">{eventTitle}</div>
+                                </td>
+                                <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                                  {purchaseDate}
+                                </td>
+                                <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                                  {ticketsCount}
+                                </td>
+                                <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
+                                  {formatPriceDisplay(total)}
+                                </td>
+                                <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm">
+                                  <button
+                                    onClick={() => handleViewDetails(purchase)}
+                                    className="text-blue-600 hover:text-blue-900 font-medium"
+                                  >
+                                    Ver Detalles
+                                  </button>
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
                   </div>
                 )}
               </div>
@@ -742,8 +742,8 @@ export function ProfilePage() {
                         <div className="flex items-start space-x-4">
                           <div className="flex-shrink-0">
                             {organizer.url_avatar ? (
-                              <img 
-                                src={organizer.url_avatar} 
+                              <img
+                                src={organizer.url_avatar}
                                 alt={organizer.nombre_completo}
                                 className="w-16 h-16 rounded-full object-cover border-2 border-purple-200"
                               />
@@ -818,7 +818,7 @@ export function ProfilePage() {
           <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             <div className="sticky top-0 bg-gradient-to-r from-blue-600 to-purple-600 px-6 py-4 flex items-center justify-between">
               <h2 className="text-xl font-bold text-white">Detalles de la Compra</h2>
-              <button 
+              <button
                 onClick={() => setSelectedPurchase(null)}
                 className="p-2 hover:bg-white/20 rounded-lg transition-all duration-200"
               >
@@ -888,13 +888,12 @@ export function ProfilePage() {
                   {selectedPurchase.estado_pago && (
                     <div className="flex justify-between">
                       <span className="font-medium">Estado:</span>
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        selectedPurchase.estado_pago === 'completado' || selectedPurchase.estado_pago === 'approved' 
-                          ? 'bg-green-100 text-green-800' 
-                          : selectedPurchase.estado_pago === 'pendiente' 
-                          ? 'bg-yellow-100 text-yellow-800'
-                          : 'bg-gray-100 text-gray-800'
-                      }`}>
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${selectedPurchase.estado_pago === 'completado' || selectedPurchase.estado_pago === 'approved'
+                          ? 'bg-green-100 text-green-800'
+                          : selectedPurchase.estado_pago === 'pendiente'
+                            ? 'bg-yellow-100 text-yellow-800'
+                            : 'bg-gray-100 text-gray-800'
+                        }`}>
                         {selectedPurchase.estado_pago}
                       </span>
                     </div>

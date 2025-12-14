@@ -27,6 +27,28 @@ export function CheckoutPage() {
   console.log('💰 Total:', total);
   console.log('👤 Usuario autenticado:', user);
 
+  // Función para verificar si un método de pago es válido para el monto actual
+  const isMethodValidForAmount = (method: any, amount: number): { valid: boolean; reason?: string } => {
+    const minAmount = method.monto_minimo || 0;
+    const maxAmount = method.monto_maximo;
+
+    if (amount < minAmount) {
+      return {
+        valid: false,
+        reason: `Monto mínimo: $${minAmount.toLocaleString('es-CO')}`
+      };
+    }
+
+    if (maxAmount && amount > maxAmount) {
+      return {
+        valid: false,
+        reason: `Monto máximo: $${maxAmount.toLocaleString('es-CO')}`
+      };
+    }
+
+    return { valid: true };
+  };
+
   // Cargar métodos de pago del evento
   useEffect(() => {
     const loadPaymentMethods = async () => {
@@ -35,15 +57,19 @@ export function CheckoutPage() {
         setIsLoadingMethods(false);
         return;
       }
-      
+
       setIsLoadingMethods(true);
       try {
         const eventId = items[0].eventId;
         const methods = await PaymentMethodService.obtenerMetodosPagoEvento(eventId);
         const activeMethods = methods?.filter(m => m.activo) || [];
         setAvailablePaymentMethods(activeMethods);
-        if (activeMethods.length > 0 && !paymentMethod) {
-          setPaymentMethod(activeMethods[0].id);
+
+        // Seleccionar el primer método válido según el monto
+        const currentTotal = discount > 0 ? finalTotal : total;
+        const firstValidMethod = activeMethods.find(m => isMethodValidForAmount(m, currentTotal).valid);
+        if (firstValidMethod && !paymentMethod) {
+          setPaymentMethod(firstValidMethod.id);
         }
       } catch (error) {
         console.error('Error cargando métodos de pago:', error);
@@ -52,9 +78,27 @@ export function CheckoutPage() {
         setIsLoadingMethods(false);
       }
     };
-    
+
     loadPaymentMethods();
   }, [items]);
+
+  // Actualizar método seleccionado cuando cambia el monto
+  useEffect(() => {
+    if (availablePaymentMethods.length === 0) return;
+
+    const currentTotal = discount > 0 ? finalTotal : total;
+    const selectedMethod = availablePaymentMethods.find(m => m.id === paymentMethod);
+
+    // Si el método seleccionado ya no es válido, seleccionar el primer método válido
+    if (selectedMethod && !isMethodValidForAmount(selectedMethod, currentTotal).valid) {
+      const firstValidMethod = availablePaymentMethods.find(m => isMethodValidForAmount(m, currentTotal).valid);
+      if (firstValidMethod) {
+        setPaymentMethod(firstValidMethod.id);
+      } else {
+        setPaymentMethod(''); // No hay métodos válidos
+      }
+    }
+  }, [total, finalTotal, discount, availablePaymentMethods]);
 
   const handleQuantityChange = (eventId: string, ticketTypeId: string, newQuantity: number) => {
     updateQuantity(eventId, ticketTypeId, newQuantity);
@@ -101,9 +145,9 @@ export function CheckoutPage() {
 
       const purchasePromises = items.map(async (item, index) => {
         const numero_orden = createOrderId();
-        
+
         // Calcular precio con descuento proporcional
-        const precioUnitarioFinal = discount > 0 
+        const precioUnitarioFinal = discount > 0
           ? (item.price * item.quantity * finalTotal) / total
           : item.price * item.quantity;
 
@@ -122,9 +166,9 @@ export function CheckoutPage() {
           estado_pago: 'completado',
           id_transaccion: `TXN_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`
         };
-        
+
         console.log(`📝 Insertando compra ${index + 1}/${items.length}:`, insert);
-        
+
         try {
           const result = await PurchaseService.crearCompra(insert, paymentMethod || null);
           console.log(`✅ Compra ${index + 1} creada:`, result);
@@ -156,7 +200,7 @@ export function CheckoutPage() {
         hint: error?.hint,
         full: error
       });
-      
+
       addNotification({
         type: 'error',
         title: 'Error en el pago',
@@ -182,7 +226,7 @@ export function CheckoutPage() {
             <p className="text-gray-600 mb-8 text-lg">
               Explora nuestros eventos y añade las entradas que más te interesen.
             </p>
-            <Link 
+            <Link
               to="/events"
               className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold rounded-xl hover:from-blue-600 hover:to-purple-700 transition-all duration-200 shadow-sm hover:shadow-md"
             >
@@ -200,7 +244,7 @@ export function CheckoutPage() {
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="bg-gradient-to-br from-white to-indigo-100/98 backdrop-blur-lg shadow-xl border border-white/20 rounded-2xl p-6 mb-8">
-          <Link 
+          <Link
             to="/events"
             className="inline-flex items-center text-gray-600 hover:text-blue-600 transition-colors duration-200 mb-4"
           >
@@ -230,62 +274,62 @@ export function CheckoutPage() {
                   Entradas Seleccionadas ({items.reduce((sum, item) => sum + item.quantity, 0)})
                 </h2>
               </div>
-            
-            <div className="divide-y divide-gray-200">
-              {items.map((item, index) => (
-                <div key={`${item.eventId}-${item.ticketTypeId}`} className="p-6">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <h3 className="text-lg font-semibold text-gray-900 mb-1">
-                        {item.eventTitle}
-                      </h3>
-                      <p className="text-gray-600 text-sm mb-3">
-                        {item.ticketTypeName}
-                      </p>
-                      
-                      <div className="flex items-center space-x-4">
-                        <div className="flex items-center space-x-3">
+
+              <div className="divide-y divide-gray-200">
+                {items.map((item, index) => (
+                  <div key={`${item.eventId}-${item.ticketTypeId}`} className="p-6">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-1">
+                          {item.eventTitle}
+                        </h3>
+                        <p className="text-gray-600 text-sm mb-3">
+                          {item.ticketTypeName}
+                        </p>
+
+                        <div className="flex items-center space-x-4">
+                          <div className="flex items-center space-x-3">
+                            <button
+                              onClick={() => handleQuantityChange(item.eventId, item.ticketTypeId, item.quantity - 1)}
+                              className="w-8 h-8 rounded-full bg-gradient-to-r from-gray-500 to-gray-600 text-white flex items-center justify-center hover:from-gray-600 hover:to-gray-700 transition-all duration-200 shadow-sm"
+                            >
+                              <Minus className="w-4 h-4" />
+                            </button>
+                            <span className="w-8 text-center font-medium text-gray-900">
+                              {item.quantity}
+                            </span>
+                            <button
+                              onClick={() => handleQuantityChange(item.eventId, item.ticketTypeId, item.quantity + 1)}
+                              className="w-8 h-8 rounded-full bg-gradient-to-r from-green-500 to-emerald-600 text-white flex items-center justify-center hover:from-green-600 hover:to-emerald-700 transition-all duration-200 shadow-sm"
+                            >
+                              <Plus className="w-4 h-4" />
+                            </button>
+                          </div>
+
                           <button
-                            onClick={() => handleQuantityChange(item.eventId, item.ticketTypeId, item.quantity - 1)}
-                            className="w-8 h-8 rounded-full bg-gradient-to-r from-gray-500 to-gray-600 text-white flex items-center justify-center hover:from-gray-600 hover:to-gray-700 transition-all duration-200 shadow-sm"
+                            onClick={() => handleRemoveItem(item.eventId, item.ticketTypeId)}
+                            className="flex items-center space-x-1 text-red-600 hover:text-red-700 transition-colors duration-200 bg-red-50 px-3 py-1.5 rounded-lg hover:bg-red-100"
                           >
-                            <Minus className="w-4 h-4" />
-                          </button>
-                          <span className="w-8 text-center font-medium text-gray-900">
-                            {item.quantity}
-                          </span>
-                          <button
-                            onClick={() => handleQuantityChange(item.eventId, item.ticketTypeId, item.quantity + 1)}
-                            className="w-8 h-8 rounded-full bg-gradient-to-r from-green-500 to-emerald-600 text-white flex items-center justify-center hover:from-green-600 hover:to-emerald-700 transition-all duration-200 shadow-sm"
-                          >
-                            <Plus className="w-4 h-4" />
+                            <Trash2 className="w-4 h-4" />
+                            <span className="text-sm font-medium">Eliminar</span>
                           </button>
                         </div>
-                        
-                        <button
-                          onClick={() => handleRemoveItem(item.eventId, item.ticketTypeId)}
-                          className="flex items-center space-x-1 text-red-600 hover:text-red-700 transition-colors duration-200 bg-red-50 px-3 py-1.5 rounded-lg hover:bg-red-100"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                          <span className="text-sm font-medium">Eliminar</span>
-                        </button>
                       </div>
-                    </div>
-                    
-                    <div className="text-right">
-                      <div className="text-lg font-semibold text-gray-900">
-                        {formatPriceDisplay(item.price * item.quantity)}
-                      </div>
-                      <div className="text-sm text-gray-500">
-                        {formatPriceDisplay(item.price)} × {item.quantity}
+
+                      <div className="text-right">
+                        <div className="text-lg font-semibold text-gray-900">
+                          {formatPriceDisplay(item.price * item.quantity)}
+                        </div>
+                        <div className="text-sm text-gray-500">
+                          {formatPriceDisplay(item.price)} × {item.quantity}
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           </div>
-        </div>
 
           {/* Payment Summary */}
           <div className="lg:col-span-1">
@@ -303,25 +347,25 @@ export function CheckoutPage() {
                   <PromoCodeInput eventId={items[0].eventId} />
                 </div>
               )}
-            
-            <div className="space-y-3 mb-6">
-              <div className="flex justify-between text-gray-600">
-                <span>Subtotal</span>
-                <span>{formatPriceDisplay(total)}</span>
-              </div>
-              {discount > 0 && (
-                <div className="flex justify-between text-green-600 font-medium">
-                  <span>Descuento</span>
-                  <span>-{formatPriceDisplay(discount)}</span>
+
+              <div className="space-y-3 mb-6">
+                <div className="flex justify-between text-gray-600">
+                  <span>Subtotal</span>
+                  <span>{formatPriceDisplay(total)}</span>
                 </div>
-              )}
-              <div className="border-t border-gray-200 pt-3">
-                <div className="flex justify-between text-lg font-semibold text-gray-900">
-                  <span>Total</span>
-                  <span>{formatPriceDisplay(discount > 0 ? finalTotal : total)}</span>
+                {discount > 0 && (
+                  <div className="flex justify-between text-green-600 font-medium">
+                    <span>Descuento</span>
+                    <span>-{formatPriceDisplay(discount)}</span>
+                  </div>
+                )}
+                <div className="border-t border-gray-200 pt-3">
+                  <div className="flex justify-between text-lg font-semibold text-gray-900">
+                    <span>Total</span>
+                    <span>{formatPriceDisplay(discount > 0 ? finalTotal : total)}</span>
+                  </div>
                 </div>
               </div>
-            </div>
 
               {/* Payment Methods */}
               <div className="mb-6">
@@ -341,26 +385,33 @@ export function CheckoutPage() {
                 ) : (
                   <div className="space-y-2 md:space-y-3">
                     {availablePaymentMethods.map((method) => {
+                      const currentTotal = discount > 0 ? finalTotal : total;
+                      const validation = isMethodValidForAmount(method, currentTotal);
+                      const isDisabled = !validation.valid;
+
                       const getPaymentIcon = (tipo: string) => {
-                        switch(tipo) {
+                        switch (tipo) {
                           case 'credit_card':
                           case 'debit_card':
-                            return <CreditCard className="w-4 h-4 md:w-5 md:h-5 text-blue-600 mr-2 flex-shrink-0" />;
+                            return <CreditCard className={`w-4 h-4 md:w-5 md:h-5 ${isDisabled ? 'text-gray-400' : 'text-blue-600'} mr-2 flex-shrink-0`} />;
                           case 'digital_wallet':
-                            return <div className="w-4 h-4 md:w-5 md:h-5 bg-purple-600 rounded mr-2 flex items-center justify-center flex-shrink-0"><span className="text-xs text-white font-bold">W</span></div>;
+                            return <div className={`w-4 h-4 md:w-5 md:h-5 ${isDisabled ? 'bg-gray-400' : 'bg-purple-600'} rounded mr-2 flex items-center justify-center flex-shrink-0`}><span className="text-xs text-white font-bold">W</span></div>;
                           case 'bank_transfer':
-                            return <div className="w-4 h-4 md:w-5 md:h-5 bg-green-600 rounded mr-2 flex items-center justify-center flex-shrink-0"><span className="text-xs text-white font-bold">B</span></div>;
+                            return <div className={`w-4 h-4 md:w-5 md:h-5 ${isDisabled ? 'bg-gray-400' : 'bg-green-600'} rounded mr-2 flex items-center justify-center flex-shrink-0`}><span className="text-xs text-white font-bold">B</span></div>;
                           case 'cash':
-                            return <div className="w-4 h-4 md:w-5 md:h-5 bg-gray-600 rounded mr-2 flex items-center justify-center flex-shrink-0"><span className="text-xs text-white font-bold">$</span></div>;
+                            return <div className={`w-4 h-4 md:w-5 md:h-5 ${isDisabled ? 'bg-gray-400' : 'bg-gray-600'} rounded mr-2 flex items-center justify-center flex-shrink-0`}><span className="text-xs text-white font-bold">$</span></div>;
                           case 'crypto':
-                            return <div className="w-4 h-4 md:w-5 md:h-5 bg-orange-600 rounded mr-2 flex items-center justify-center flex-shrink-0"><span className="text-xs text-white font-bold">₿</span></div>;
+                            return <div className={`w-4 h-4 md:w-5 md:h-5 ${isDisabled ? 'bg-gray-400' : 'bg-orange-600'} rounded mr-2 flex items-center justify-center flex-shrink-0`}><span className="text-xs text-white font-bold">₿</span></div>;
                           default:
-                            return <CreditCard className="w-4 h-4 md:w-5 md:h-5 text-blue-600 mr-2 flex-shrink-0" />;
+                            return <CreditCard className={`w-4 h-4 md:w-5 md:h-5 ${isDisabled ? 'text-gray-400' : 'text-blue-600'} mr-2 flex-shrink-0`} />;
                         }
                       };
-                      
+
                       const getColorClass = (tipo: string) => {
-                        switch(tipo) {
+                        if (isDisabled) {
+                          return 'from-gray-100 to-gray-200 border-gray-300 opacity-60 cursor-not-allowed';
+                        }
+                        switch (tipo) {
                           case 'credit_card':
                           case 'debit_card':
                             return 'from-blue-50 to-blue-100 border-blue-200 hover:from-blue-100 hover:to-blue-200';
@@ -378,22 +429,35 @@ export function CheckoutPage() {
                       };
 
                       return (
-                        <label key={method.id} className={`flex items-center p-3 md:p-4 bg-gradient-to-br ${getColorClass(method.tipo)} border rounded-lg md:rounded-xl cursor-pointer transition-all duration-200`}>
-                          <input
-                            type="radio"
-                            name="payment"
-                            value={method.id}
-                            checked={paymentMethod === method.id}
-                            onChange={(e) => setPaymentMethod(e.target.value)}
-                            className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500 flex-shrink-0"
-                          />
-                          <div className="ml-3 flex items-center min-w-0 flex-1">
-                            {getPaymentIcon(method.tipo)}
-                            <div className="flex flex-col min-w-0">
-                              <span className="text-xs md:text-sm font-medium text-gray-900 truncate">{method.nombre}</span>
-                              {method.descripcion && <span className="text-[10px] md:text-xs text-gray-500 truncate">{method.descripcion}</span>}
+                        <label
+                          key={method.id}
+                          className={`flex flex-col p-3 md:p-4 bg-gradient-to-br ${getColorClass(method.tipo)} border rounded-lg md:rounded-xl ${isDisabled ? 'cursor-not-allowed' : 'cursor-pointer'} transition-all duration-200`}
+                        >
+                          <div className="flex items-center">
+                            <input
+                              type="radio"
+                              name="payment"
+                              value={method.id}
+                              checked={paymentMethod === method.id}
+                              onChange={(e) => !isDisabled && setPaymentMethod(e.target.value)}
+                              disabled={isDisabled}
+                              className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500 flex-shrink-0 disabled:opacity-50"
+                            />
+                            <div className="ml-3 flex items-center min-w-0 flex-1">
+                              {getPaymentIcon(method.tipo)}
+                              <div className="flex flex-col min-w-0">
+                                <span className={`text-xs md:text-sm font-medium ${isDisabled ? 'text-gray-500' : 'text-gray-900'} truncate`}>{method.nombre}</span>
+                                {method.descripcion && <span className={`text-[10px] md:text-xs ${isDisabled ? 'text-gray-400' : 'text-gray-500'} truncate`}>{method.descripcion}</span>}
+                              </div>
                             </div>
                           </div>
+                          {isDisabled && validation.reason && (
+                            <div className="mt-2 ml-7 flex items-center">
+                              <span className="text-[10px] md:text-xs text-red-500 font-medium bg-red-50 px-2 py-0.5 rounded">
+                                ⚠️ {validation.reason}
+                              </span>
+                            </div>
+                          )}
                         </label>
                       );
                     })}
@@ -411,9 +475,30 @@ export function CheckoutPage() {
                 </div>
               </div>
 
+              {/* Mensaje cuando no hay métodos válidos */}
+              {(() => {
+                const currentTotal = discount > 0 ? finalTotal : total;
+                const hasValidMethod = availablePaymentMethods.some(m => isMethodValidForAmount(m, currentTotal).valid);
+
+                if (!hasValidMethod && availablePaymentMethods.length > 0) {
+                  return (
+                    <div className="p-3 bg-red-50 border border-red-200 rounded-xl mb-4">
+                      <p className="text-xs text-red-700">
+                        ⚠️ El monto actual ({formatPriceDisplay(currentTotal)}) no cumple con los límites de los métodos de pago disponibles. Ajusta la cantidad de entradas.
+                      </p>
+                    </div>
+                  );
+                }
+                return null;
+              })()}
+
               <button
                 onClick={handleCheckout}
-                disabled={isProcessing || !paymentMethod || availablePaymentMethods.length === 0}
+                disabled={isProcessing || !paymentMethod || availablePaymentMethods.length === 0 || (() => {
+                  const currentTotal = discount > 0 ? finalTotal : total;
+                  const selectedMethod = availablePaymentMethods.find(m => m.id === paymentMethod);
+                  return selectedMethod ? !isMethodValidForAmount(selectedMethod, currentTotal).valid : true;
+                })()}
                 className="w-full py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-semibold rounded-xl hover:from-green-600 hover:to-emerald-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow-md"
               >
                 {isProcessing ? (

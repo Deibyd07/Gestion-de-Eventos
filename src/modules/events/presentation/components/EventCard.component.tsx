@@ -20,6 +20,7 @@ export function EventCard({ event, viewMode = 'grid' }: EventCardProps) {
   const { addNotification } = useNotificationStore();
   const { user } = useAuthStore();
   const [availableTickets, setAvailableTickets] = useState<number>(0);
+  const [occupiedTickets, setOccupiedTickets] = useState<number>(0);
   const [totalCapacity, setTotalCapacity] = useState<number>(0);
   const [loading, setLoading] = useState(true);
 
@@ -65,10 +66,12 @@ export function EventCard({ event, viewMode = 'grid' }: EventCardProps) {
 
         setTotalCapacity(maxCapacity);
         setAvailableTickets(maxCapacity - currentAttendees);
+        setOccupiedTickets(currentAttendees);
       } catch (error) {
         console.error('Error fetching availability:', error);
         setTotalCapacity(event.maxAttendees);
         setAvailableTickets(event.maxAttendees - event.currentAttendees);
+        setOccupiedTickets(event.currentAttendees);
       } finally {
         setLoading(false);
       }
@@ -177,22 +180,39 @@ export function EventCard({ event, viewMode = 'grid' }: EventCardProps) {
   };
 
   const handleAddToCart = () => {
-    // Si el evento tiene tipos de tickets, usar el primero disponible
+    // Si el evento tiene tipos de tickets
     if (event.ticketTypes && event.ticketTypes.length > 0) {
-      const availableTicket = event.ticketTypes.find(ticket => ticket.cantidad_disponible > 0);
-      if (availableTicket) {
+      // Prioridad 1: Buscar entrada que coincida con el precio mostrado en la tarjeta
+      let targetTicket = event.ticketTypes.find(
+        ticket => ticket.cantidad_disponible > 0 && ticket.precio === event.price
+      );
+
+      // Prioridad 2: Buscar entrada "General" disponible
+      if (!targetTicket) {
+        targetTicket = event.ticketTypes.find(
+          ticket => ticket.cantidad_disponible > 0 &&
+            (ticket.nombre_tipo?.toLowerCase() === 'general' || ticket.tipo?.toLowerCase() === 'general')
+        );
+      }
+
+      // Prioridad 3: Primera entrada disponible
+      if (!targetTicket) {
+        targetTicket = event.ticketTypes.find(ticket => ticket.cantidad_disponible > 0);
+      }
+
+      if (targetTicket) {
         addItem({
           eventId: event.id,
-          ticketTypeId: availableTicket.id,
-          price: availableTicket.precio,
+          ticketTypeId: targetTicket.id,
+          price: targetTicket.precio,
           eventTitle: event.title,
-          ticketTypeName: availableTicket.nombre_tipo,
+          ticketTypeName: targetTicket.nombre_tipo,
           quantity: 1
         });
         addNotification({
           type: 'success',
           title: '¡Agregado al carrito!',
-          message: `${availableTicket.nombre_tipo} de ${event.title} se agregó correctamente`,
+          message: `${targetTicket.nombre_tipo} de ${event.title} se agregó correctamente`,
           duration: 4000
         });
       } else {
@@ -257,7 +277,7 @@ export function EventCard({ event, viewMode = 'grid' }: EventCardProps) {
               </button>
             </div>
           </div>
-          
+
           <div className="flex-1 p-4">
             <div className="flex justify-between items-start mb-2">
               <div>
@@ -286,7 +306,7 @@ export function EventCard({ event, viewMode = 'grid' }: EventCardProps) {
                 </span>
               </div>
             </div>
-            
+
             <div className="flex items-center space-x-4 text-gray-600 text-sm mb-3">
               <div className="flex items-center">
                 <Clock className="w-4 h-4 mr-1 text-gray-400" />
@@ -298,25 +318,25 @@ export function EventCard({ event, viewMode = 'grid' }: EventCardProps) {
               </div>
               <div className="flex items-center">
                 <Users className="w-4 h-4 mr-1 text-gray-400" />
-                  <span>
-                    {loading ? '...' : (
-                      <>
-                        <span className={`font-semibold ${isSoldOut ? 'text-red-600' : isAlmostFull ? 'text-orange-600' : 'text-green-600'}`}>
-                          {availableSpots}
-                        </span>
-                        {' / '}{totalCapacity} disponibles
-                        {isAlmostFull && !isSoldOut && (
-                          <span className="ml-1 text-orange-600 font-semibold">¡Últimas plazas!</span>
-                        )}
-                        {isSoldOut && (
-                          <span className="ml-1 text-red-600 font-semibold">Agotado</span>
-                        )}
-                      </>
-                    )}
-                  </span>
+                <span>
+                  {loading ? '...' : (
+                    <>
+                      <span className={`font-semibold ${isSoldOut ? 'text-red-600' : isAlmostFull ? 'text-orange-600' : 'text-blue-600'}`}>
+                        {occupiedTickets}
+                      </span>
+                      {' / '}{totalCapacity} asistentes
+                      {isAlmostFull && !isSoldOut && (
+                        <span className="ml-1 text-orange-600 font-semibold">¡Últimas plazas!</span>
+                      )}
+                      {isSoldOut && (
+                        <span className="ml-1 text-red-600 font-semibold">Agotado</span>
+                      )}
+                    </>
+                  )}
+                </span>
               </div>
             </div>
-            
+
             <div className="flex justify-between items-center">
               <div className="flex items-center space-x-2">
                 <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(event.status)}`}>
@@ -326,7 +346,7 @@ export function EventCard({ event, viewMode = 'grid' }: EventCardProps) {
                   {event.category}
                 </span>
               </div>
-              
+
               <div className="flex space-x-2">
                 <button
                   onClick={handleAddToCart}
@@ -363,7 +383,7 @@ export function EventCard({ event, viewMode = 'grid' }: EventCardProps) {
             <ImageIcon className="w-16 h-16 text-gray-400" />
           </div>
         )}
-        
+
         {/* Date Badge */}
         <div className="absolute top-4 left-4 bg-white/95 backdrop-blur-sm px-3 py-2 rounded-lg">
           <div className="text-center">
@@ -424,7 +444,7 @@ export function EventCard({ event, viewMode = 'grid' }: EventCardProps) {
             <Clock className="w-4 h-4 mr-2 text-gray-400" />
             <span>{formatTime(event.time)}</span>
           </div>
-          
+
           <div className="flex items-center text-gray-600 text-sm">
             <MapPin className="w-4 h-4 mr-2 text-gray-400" />
             <span className="truncate">{event.location}</span>
@@ -435,10 +455,10 @@ export function EventCard({ event, viewMode = 'grid' }: EventCardProps) {
             <span>
               {loading ? 'Cargando...' : (
                 <>
-                  <span className={`font-semibold ${isSoldOut ? 'text-red-600' : isAlmostFull ? 'text-orange-600' : 'text-green-600'}`}>
-                    {availableSpots}
+                  <span className={`font-semibold ${isSoldOut ? 'text-red-600' : isAlmostFull ? 'text-orange-600' : 'text-blue-600'}`}>
+                    {occupiedTickets}
                   </span>
-                  {' '}/{' '}{totalCapacity} disponibles
+                  {' '}/{' '}{totalCapacity} asistentes
                   {isAlmostFull && !isSoldOut && (
                     <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
                       <AlertTriangle className="w-3 h-3 mr-1" />
@@ -494,16 +514,15 @@ export function EventCard({ event, viewMode = 'grid' }: EventCardProps) {
               </div>
             )}
           </div>
-          
+
           <div className="flex space-x-2 ml-3">
             <button
               onClick={handleAddToCart}
               disabled={isSoldOut || loading}
-              className={`px-3 py-1.5 rounded-lg transition-all duration-300 font-medium shadow-md flex items-center space-x-1 text-xs ${
-                isSoldOut || loading
-                  ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                  : 'bg-gradient-to-r from-green-500 to-green-600 text-white hover:from-green-600 hover:to-green-700 hover:shadow-lg transform hover:scale-105 border border-green-400'
-              }`}
+              className={`px-3 py-1.5 rounded-lg transition-all duration-300 font-medium shadow-md flex items-center space-x-1 text-xs ${isSoldOut || loading
+                ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                : 'bg-gradient-to-r from-green-500 to-green-600 text-white hover:from-green-600 hover:to-green-700 hover:shadow-lg transform hover:scale-105 border border-green-400'
+                }`}
             >
               <ShoppingCart className="w-3 h-3" />
               <span>{isSoldOut ? 'Agotado' : 'Agregar'}</span>

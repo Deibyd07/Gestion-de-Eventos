@@ -1,15 +1,15 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { 
-  Calendar, 
-  MapPin, 
-  Users, 
-  DollarSign, 
-  Image, 
-  Copy as CopyIcon, 
-  Edit, 
-  Trash2, 
-  Eye, 
+import {
+  Calendar,
+  MapPin,
+  Users,
+  DollarSign,
+  Image,
+  Copy as CopyIcon,
+  Edit,
+  Trash2,
+  Eye,
   Plus,
   Upload,
   Settings,
@@ -114,7 +114,7 @@ export const EventManagementAdvanced: React.FC<EventManagementAdvancedProps> = (
   const filteredEvents = events.filter(event => {
     const matchesStatus = filterStatus === 'all' || event.status === filterStatus;
     const matchesSearch = event.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         event.description.toLowerCase().includes(searchTerm.toLowerCase());
+      event.description.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesStatus && matchesSearch;
   });
 
@@ -191,123 +191,105 @@ export const EventManagementAdvanced: React.FC<EventManagementAdvancedProps> = (
         {sortedEvents.map((event) => {
           const StatusIcon = getStatusIcon(event.status);
           return (
-            <div key={event.id} className="bg-gradient-to-br from-white to-indigo-100/98 backdrop-blur-lg shadow-xl border border-white/20 rounded-2xl hover:shadow-2xl transition-all duration-200">
-              {/* Event Image */}
-              <div className="relative h-48 bg-gradient-to-br from-gray-200 to-gray-300 rounded-t-2xl">
-                {event.image ? (
-                  <img src={event.image} alt={event.title} className="w-full h-full object-cover rounded-t-2xl" />
-                ) : (
-                  <div className="w-full h-full flex flex-col items-center justify-center">
-                    <Image className="w-16 h-16 text-gray-400 mb-2" />
-                    <span className="text-sm text-gray-500 font-medium">Sin imagen</span>
-                  </div>
-                )}
-                <div className="absolute top-4 right-4">
-                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getStatusColor(event.status)}`}>
-                    <StatusIcon className="w-3 h-3 mr-1" />
-                    {getStatusText(event.status)}
-                  </span>
-                </div>
-              </div>
-
-              {/* Event Content */}
-              <div className="p-6">
-                <div className="mb-4">
-                  <h4 className="text-lg font-semibold text-gray-900 mb-2">{event.title}</h4>
-                  <p className="text-sm text-gray-600 line-clamp-2">{event.description}</p>
-                </div>
-
-                {/* Event Details */}
-                <div className="space-y-3 mb-4">
-                  <div className="flex items-center text-sm text-gray-600">
-                    <Calendar className="w-4 h-4 mr-2 text-blue-600" />
-                    <span>{formatDateLocal(event.date)} a las {event.time}</span>
-                  </div>
-                  <div className="flex items-center text-sm text-gray-600">
-                    <MapPin className="w-4 h-4 mr-2 text-red-600" />
-                    <span>{event.location}</span>
-                  </div>
-                  <div className="flex items-center text-sm text-gray-600">
-                    <Users className="w-4 h-4 mr-2 text-green-600" />
-                    <span>{event.currentAttendees}/{event.maxAttendees} asistentes</span>
-                  </div>
-                  <div className="flex items-center text-sm text-gray-600">
-                    <DollarSign className="w-4 h-4 mr-2 text-yellow-600" />
-                    <span>${event.revenue.toLocaleString()} ingresos</span>
+            <div key={event.id} className="bg-gradient-to-br from-white to-indigo-100/98 backdrop-blur-lg shadow-xl border border-white/20 rounded-2xl hover:shadow-2xl transition-all duration-200 overflow-hidden">
+              <div className="flex flex-col md:flex-row">
+                {/* Event Image - lado izquierdo en desktop */}
+                <div className="relative w-full md:w-72 lg:w-80 flex-shrink-0 h-48 md:h-auto md:min-h-[280px] bg-gradient-to-br from-gray-200 to-gray-300">
+                  {event.image ? (
+                    <img src={event.image} alt={event.title} className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full flex flex-col items-center justify-center">
+                      <Image className="w-16 h-16 text-gray-400 mb-2" />
+                      <span className="text-sm text-gray-500 font-medium">Sin imagen</span>
+                    </div>
+                  )}
+                  <div className="absolute top-4 right-4 md:left-4 md:right-auto">
+                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getStatusColor(event.status)}`}>
+                      <StatusIcon className="w-3 h-3 mr-1" />
+                      {getStatusText(event.status)}
+                    </span>
                   </div>
                 </div>
 
-                {/* Ticket Types */}
-                {event.ticketTypes && event.ticketTypes.length > 0 && (
+                {/* Event Content - lado derecho en desktop */}
+                <div className="flex-1 p-4 md:p-6 flex flex-col">
                   <div className="mb-4">
-                    <h5 className="text-sm font-medium text-gray-700 mb-2">Tipos de Entrada</h5>
-                    <div className="space-y-1">
-                      {event.ticketTypes.slice(0, 2).map((ticket) => (
-                        <div key={ticket.id} className="flex justify-between text-xs text-gray-600">
-                          <span>{ticket.name}</span>
-                          <span>${ticket.price.toLocaleString()}</span>
-                        </div>
-                      ))}
-                      {event.ticketTypes.length > 2 && (
-                        <div className="text-xs text-gray-500">
-                          +{event.ticketTypes.length - 2} más...
-                        </div>
-                      )}
+                    <h4 className="text-lg font-semibold text-gray-900 mb-2">{event.title}</h4>
+                    <p className="text-sm text-gray-600 line-clamp-2">{event.description}</p>
+                  </div>
+
+                  {/* Event Details */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-4">
+                    <div className="flex items-center text-sm text-gray-600">
+                      <Calendar className="w-4 h-4 mr-2 text-blue-600 flex-shrink-0" />
+                      <span className="truncate">{formatDateLocal(event.date)} a las {event.time}</span>
+                    </div>
+                    <div className="flex items-center text-sm text-gray-600">
+                      <MapPin className="w-4 h-4 mr-2 text-red-600 flex-shrink-0" />
+                      <span className="truncate">{event.location}</span>
+                    </div>
+                    <div className="flex items-center text-sm text-gray-600">
+                      <Users className="w-4 h-4 mr-2 text-green-600 flex-shrink-0" />
+                      <span>{event.currentAttendees}/{event.maxAttendees} asistentes</span>
+                    </div>
+                    <div className="flex items-center text-sm text-gray-600">
+                      <DollarSign className="w-4 h-4 mr-2 text-yellow-600 flex-shrink-0" />
+                      <span>${event.revenue.toLocaleString()} ingresos</span>
                     </div>
                   </div>
-                )}
 
-                {/* Action Buttons */}
-                <div className="grid grid-cols-2 gap-2">
-                  <button
-                    onClick={() => onViewEvent(event.id)}
-                    className="inline-flex items-center justify-center px-3 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white text-xs md:text-sm rounded-xl hover:from-blue-600 hover:to-purple-700 transition-all duration-200"
-                  >
-                    <Eye className="w-3 h-3 md:w-4 md:h-4 mr-1" />
-                    Ver
-                  </button>
-                  <button
-                    onClick={() => onEditEvent(event.id)}
-                    className="inline-flex items-center justify-center px-3 py-2 bg-gradient-to-r from-orange-500 to-red-600 text-white text-xs md:text-sm rounded-xl hover:from-orange-600 hover:to-red-700 transition-all duration-200"
-                  >
-                    <Edit className="w-3 h-3 md:w-4 md:h-4 mr-1" />
-                    Editar
-                  </button>
-                  <button
-                    onClick={() => {
-                      console.log('Click en botón duplicar, eventId:', event.id);
-                      onDuplicateEvent(event.id);
-                    }}
-                    className="inline-flex items-center justify-center px-3 py-2 bg-gradient-to-r from-gray-500 to-gray-600 text-white text-xs md:text-sm rounded-xl hover:from-gray-600 hover:to-gray-700 transition-all duration-200"
-                    title="Duplicar evento"
-                  >
-                    <CopyIcon className="w-3 h-3 md:w-4 md:h-4 mr-1" />
-                    <span className="hidden sm:inline">Duplicar</span>
-                  </button>
-                  <button
-                    onClick={() => onUploadImage(event.id)}
-                    className="inline-flex items-center justify-center px-3 py-2 bg-gradient-to-r from-purple-500 to-pink-600 text-white text-xs md:text-sm rounded-xl hover:from-purple-600 hover:to-pink-700 transition-all duration-200"
-                    title="Subir imagen"
-                  >
-                    <Upload className="w-3 h-3 md:w-4 md:h-4 mr-1" />
-                    <span className="hidden sm:inline">Imagen</span>
-                  </button>
-                  <button
-                    onClick={() => onCustomizeEvent(event.id)}
-                    className="inline-flex items-center justify-center px-3 py-2 bg-gradient-to-r from-emerald-500 to-green-600 text-white text-xs md:text-sm rounded-xl hover:from-emerald-600 hover:to-green-700 transition-all duration-200"
-                    title="Personalizar"
-                  >
-                    <Settings className="w-3 h-3 md:w-4 md:h-4 mr-1" />
-                    <span className="hidden sm:inline">Config</span>
-                  </button>
-                  <button
-                    onClick={() => onDeleteEvent(event.id)}
-                    className="inline-flex items-center justify-center px-3 py-2 bg-gradient-to-r from-red-500 to-red-600 text-white text-xs md:text-sm rounded-xl hover:from-red-600 hover:to-red-700 transition-all duration-200"
-                    title="Eliminar evento"
-                  >
-                    <Trash2 className="w-3 h-3 md:w-4 md:h-4 mr-1" />
-                    <span className="hidden sm:inline">Eliminar</span>
-                  </button>
+                  {/* Action Buttons */}
+                  <div className="grid grid-cols-3 md:grid-cols-6 gap-2 mt-auto">
+                    <button
+                      onClick={() => onViewEvent(event.id)}
+                      className="inline-flex items-center justify-center px-3 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white text-xs md:text-sm rounded-xl hover:from-blue-600 hover:to-purple-700 transition-all duration-200"
+                    >
+                      <Eye className="w-3 h-3 md:w-4 md:h-4 mr-1" />
+                      Ver
+                    </button>
+                    <button
+                      onClick={() => onEditEvent(event.id)}
+                      className="inline-flex items-center justify-center px-3 py-2 bg-gradient-to-r from-orange-500 to-red-600 text-white text-xs md:text-sm rounded-xl hover:from-orange-600 hover:to-red-700 transition-all duration-200"
+                    >
+                      <Edit className="w-3 h-3 md:w-4 md:h-4 mr-1" />
+                      Editar
+                    </button>
+                    <button
+                      onClick={() => {
+                        console.log('Click en botón duplicar, eventId:', event.id);
+                        onDuplicateEvent(event.id);
+                      }}
+                      className="inline-flex items-center justify-center px-3 py-2 bg-gradient-to-r from-gray-500 to-gray-600 text-white text-xs md:text-sm rounded-xl hover:from-gray-600 hover:to-gray-700 transition-all duration-200"
+                      title="Duplicar evento"
+                    >
+                      <CopyIcon className="w-3 h-3 md:w-4 md:h-4 mr-1" />
+                      <span className="hidden sm:inline">Duplicar</span>
+                    </button>
+                    <button
+                      onClick={() => onUploadImage(event.id)}
+                      className="inline-flex items-center justify-center px-3 py-2 bg-gradient-to-r from-purple-500 to-pink-600 text-white text-xs md:text-sm rounded-xl hover:from-purple-600 hover:to-pink-700 transition-all duration-200"
+                      title="Subir imagen"
+                    >
+                      <Upload className="w-3 h-3 md:w-4 md:h-4 mr-1" />
+                      <span className="hidden sm:inline">Imagen</span>
+                    </button>
+                    <button
+                      onClick={() => onCustomizeEvent(event.id)}
+                      className="inline-flex items-center justify-center px-3 py-2 bg-gradient-to-r from-emerald-500 to-green-600 text-white text-xs md:text-sm rounded-xl hover:from-emerald-600 hover:to-green-700 transition-all duration-200"
+                      title="Personalizar"
+                    >
+                      <Settings className="w-3 h-3 md:w-4 md:h-4 mr-1" />
+                      <span className="hidden sm:inline">Config</span>
+                    </button>
+                    <button
+                      onClick={() => onDeleteEvent(event.id)}
+                      className="inline-flex items-center justify-center px-3 py-2 bg-gradient-to-r from-red-500 to-red-600 text-white text-xs md:text-sm rounded-xl hover:from-red-600 hover:to-red-700 transition-all duration-200"
+                      title="Eliminar evento"
+                    >
+                      <Trash2 className="w-3 h-3 md:w-4 md:h-4 mr-1" />
+                      <span className="hidden sm:inline">Eliminar</span>
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -321,7 +303,7 @@ export const EventManagementAdvanced: React.FC<EventManagementAdvancedProps> = (
           <Calendar className="w-16 h-16 text-gray-400 mx-auto mb-4" />
           <h3 className="text-lg font-medium text-gray-900 mb-2">No hay eventos</h3>
           <p className="text-gray-600 mb-6">
-            {searchTerm || filterStatus !== 'all' 
+            {searchTerm || filterStatus !== 'all'
               ? 'No se encontraron eventos que coincidan con los filtros aplicados.'
               : 'Comienza creando tu primer evento.'
             }

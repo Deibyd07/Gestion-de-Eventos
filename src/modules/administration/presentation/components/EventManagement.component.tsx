@@ -1,17 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Calendar, 
-  Search, 
-  Filter, 
-  Plus, 
-  Edit, 
-  Trash2, 
-  Eye, 
-  CheckCircle, 
-  XCircle, 
-  Clock, 
-  Users, 
-  MapPin, 
+import {
+  Calendar,
+  Search,
+  Filter,
+  Plus,
+  Edit,
+  Trash2,
+  Eye,
+  CheckCircle,
+  XCircle,
+  Clock,
+  Users,
+  MapPin,
   DollarSign,
   Star,
   AlertTriangle,
@@ -26,6 +26,7 @@ import { DeleteEventModal } from './events/DeleteEventModal.component';
 import { CreateEventModal, EventCreateData } from './events/CreateEventModal.component';
 import { useAuthStore } from '../../../authentication/infrastructure/store/Auth.store';
 import { supabase } from '@shared/lib/api/supabase';
+import { formatFullRevenue } from '@shared/lib/utils/Currency.utils';
 
 // Tipo de evento según la base de datos
 interface Event {
@@ -55,13 +56,13 @@ export const EventManagement: React.FC = () => {
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [sortBy, setSortBy] = useState<string>('date');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  
+
   // Estados para datos reales de Supabase
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [totalAttendees, setTotalAttendees] = useState<number>(0);
-  
+
   // Estados para los modales
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [viewModalOpen, setViewModalOpen] = useState(false);
@@ -83,7 +84,7 @@ export const EventManagement: React.FC = () => {
       setError(null);
       const data = await EventService.obtenerTodosEventos();
       setEvents(data || []);
-      
+
       // Calcular total de asistentes desde compras completadas
       await loadTotalAttendees();
     } catch (err) {
@@ -106,9 +107,9 @@ export const EventManagement: React.FC = () => {
         return;
       }
 
-      const total = (data as Array<{ cantidad: number }>)?.reduce((sum, compra) => 
+      const total = (data as Array<{ cantidad: number }>)?.reduce((sum, compra) =>
         sum + (compra.cantidad || 0), 0) || 0;
-      
+
       setTotalAttendees(total);
     } catch (err) {
       console.error('Error al calcular total de asistentes:', err);
@@ -149,14 +150,14 @@ export const EventManagement: React.FC = () => {
     if (!user) {
       throw new Error('Debes estar autenticado para crear eventos');
     }
-    
+
     const newEventData = {
       ...eventData,
       id_organizador: user.id,
       nombre_organizador: user.name,
       asistentes_actuales: 0
     };
-    
+
     await EventService.crearEvento(newEventData);
     await loadEvents(); // Recargar la lista
   };
@@ -164,10 +165,10 @@ export const EventManagement: React.FC = () => {
   // Filtrar eventos
   const filteredEvents = events.filter(event => {
     const matchesSearch = event.titulo.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         event.nombre_organizador.toLowerCase().includes(searchTerm.toLowerCase());
+      event.nombre_organizador.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === 'all' || event.estado === statusFilter;
     const matchesCategory = categoryFilter === 'all' || event.categoria === categoryFilter;
-    
+
     return matchesSearch && matchesStatus && matchesCategory;
   });
 
@@ -176,22 +177,22 @@ export const EventManagement: React.FC = () => {
     switch (sortBy) {
       case 'date':
         return new Date(a.fecha_evento).getTime() - new Date(b.fecha_evento).getTime();
-      
+
       case 'title':
         return a.titulo.localeCompare(b.titulo, 'es');
-      
+
       case 'attendees':
         return (b.asistentes_actuales || 0) - (a.asistentes_actuales || 0);
-      
+
       case 'price':
-        const priceA = a.tipos_entrada && a.tipos_entrada.length > 0 
+        const priceA = a.tipos_entrada && a.tipos_entrada.length > 0
           ? Math.min(...a.tipos_entrada.map((t: any) => t.precio))
           : 0;
-        const priceB = b.tipos_entrada && b.tipos_entrada.length > 0 
+        const priceB = b.tipos_entrada && b.tipos_entrada.length > 0
           ? Math.min(...b.tipos_entrada.map((t: any) => t.precio))
           : 0;
         return priceA - priceB;
-      
+
       default:
         return 0;
     }
@@ -258,7 +259,7 @@ export const EventManagement: React.FC = () => {
       {/* Action Buttons */}
       <div className="flex flex-col sm:flex-row justify-end items-stretch sm:items-center gap-2 sm:gap-3">
         <div className="flex flex-row-reverse sm:flex-row flex-wrap gap-2 w-full sm:w-auto">
-          <button 
+          <button
             onClick={() => setCreateModalOpen(true)}
             className="flex-1 min-w-0 sm:flex-none flex items-center justify-center space-x-2 px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl hover:from-green-600 hover:to-emerald-700 transition-all duration-200 shadow-sm"
           >
@@ -392,22 +393,20 @@ export const EventManagement: React.FC = () => {
             <span className="text-xs md:text-sm text-gray-600">Vista:</span>
             <button
               onClick={() => setViewMode('grid')}
-              className={`p-2 rounded-xl transition-all duration-200 ${
-                viewMode === 'grid' 
-                  ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-sm' 
-                  : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
-              }`}
+              className={`p-2 rounded-xl transition-all duration-200 ${viewMode === 'grid'
+                ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-sm'
+                : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
+                }`}
               title="Vista de cuadrícula"
             >
               <Calendar className="w-4 h-4" />
             </button>
             <button
               onClick={() => setViewMode('list')}
-              className={`hidden sm:flex p-2 rounded-xl transition-all duration-200 ${
-                viewMode === 'list' 
-                  ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-sm' 
-                  : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
-              }`}
+              className={`hidden sm:flex p-2 rounded-xl transition-all duration-200 ${viewMode === 'list'
+                ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-sm'
+                : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
+                }`}
               title="Vista de lista"
             >
               <Filter className="w-4 h-4" />
@@ -440,81 +439,87 @@ export const EventManagement: React.FC = () => {
           </button>
         </div>
       ) : viewMode === 'grid' ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+        <div className="grid grid-cols-1 gap-4 md:gap-6">
           {sortedEvents.map((event) => (
-            <div key={event.id} className="bg-gradient-to-br from-white to-indigo-100/98 backdrop-blur-lg shadow-xl border border-white/20 rounded-xl overflow-hidden hover:shadow-2xl transition-all duration-200">
-              {/* Event Image */}
-              <div className="relative h-40 md:h-48">
-                <img
-                  src={event.url_imagen || 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=400'}
-                  alt={event.titulo}
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute top-3 md:top-4 left-3 md:left-4">
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(event.estado)}`}>
-                    {getStatusText(event.estado)}
-                  </span>
-                </div>
-              </div>
-
-              {/* Event Content */}
-              <div className="p-4 md:p-6">
-                <div className="flex items-start justify-between mb-2">
-                  <h3 className="text-base md:text-lg font-semibold text-gray-900 line-clamp-2">{event.titulo}</h3>
-                </div>
-                
-                <p className="text-xs md:text-sm text-gray-600 mb-3 md:mb-4 line-clamp-2">{event.descripcion}</p>
-                
-                <div className="space-y-1 md:space-y-2 mb-3 md:mb-4">
-                  <div className="flex items-center text-xs md:text-sm text-gray-600">
-                    <Calendar className="w-3 h-3 md:w-4 md:h-4 mr-2" />
-                    <span className="truncate">{formatDate(event.fecha_evento)}</span>
-                  </div>
-                  <div className="flex items-center text-xs md:text-sm text-gray-600">
-                    <MapPin className="w-3 h-3 md:w-4 md:h-4 mr-2" />
-                    <span className="truncate">{event.ubicacion}</span>
-                  </div>
-                  <div className="flex items-center text-xs md:text-sm text-gray-600">
-                    <Users className="w-3 h-3 md:w-4 md:h-4 mr-2" />
-                    <span className="truncate">{event.asistentes_actuales || 0} / {event.maximo_asistentes} asistentes</span>
-                  </div>
-                  <div className="flex items-center text-xs md:text-sm text-gray-600">
-                    <DollarSign className="w-3 h-3 md:w-4 md:h-4 mr-2" />
-                    <span className="truncate">
-                      {event.tipos_entrada && event.tipos_entrada.length > 0 
-                        ? formatCurrency(Math.min(...event.tipos_entrada.map((t: any) => t.precio)))
-                        : 'Sin precio'}
+            <div key={event.id} className="bg-gradient-to-br from-white to-indigo-100/98 backdrop-blur-lg shadow-xl border border-white/20 rounded-2xl hover:shadow-2xl transition-all duration-200 overflow-hidden">
+              <div className="flex flex-col md:flex-row">
+                {/* Event Image - left side on desktop */}
+                <div className="relative w-full md:w-72 lg:w-80 flex-shrink-0 h-48 md:h-auto md:min-h-[280px] bg-gradient-to-br from-gray-200 to-gray-300">
+                  <img
+                    src={event.url_imagen || 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=400'}
+                    alt={event.titulo}
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute top-4 right-4 md:left-4 md:right-auto">
+                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getStatusColor(event.estado)}`}>
+                      {getStatusText(event.estado)}
                     </span>
                   </div>
                 </div>
 
-                {/* Actions */}
-                <div className="flex items-center justify-between">
-                  <div className="flex space-x-1 md:space-x-2">
-                    <button 
-                      onClick={() => handleViewEvent(event)}
-                      className="p-2 text-gray-400 hover:text-blue-600 transition-colors" 
-                      title="Ver"
-                    >
-                      <Eye className="w-4 h-4" />
-                    </button>
-                    <button 
-                      onClick={() => handleEditEvent(event)}
-                      className="p-2 text-gray-400 hover:text-green-600 transition-colors" 
-                      title="Editar"
-                    >
-                      <Edit className="w-4 h-4" />
-                    </button>
-                    <button 
-                      onClick={() => handleDeleteEvent(event)}
-                      className="p-2 text-gray-400 hover:text-red-600 transition-colors" 
-                      title="Eliminar"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+                {/* Event Content - right side on desktop */}
+                <div className="flex-1 p-4 md:p-6 flex flex-col">
+                  <div className="mb-4">
+                    <h4 className="text-lg font-semibold text-gray-900 mb-2">{event.titulo}</h4>
+                    <p className="text-sm text-gray-600 line-clamp-2">{event.descripcion}</p>
                   </div>
-                  <div className="text-xs md:text-sm text-gray-500 truncate">
-                    Por {event.nombre_organizador}
+
+                  {/* Event Details */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-4">
+                    <div className="flex items-center text-sm text-gray-600">
+                      <Calendar className="w-4 h-4 mr-2 text-blue-600 flex-shrink-0" />
+                      <span className="truncate">{formatDate(event.fecha_evento)}</span>
+                    </div>
+                    <div className="flex items-center text-sm text-gray-600">
+                      <MapPin className="w-4 h-4 mr-2 text-red-600 flex-shrink-0" />
+                      <span className="truncate">{event.ubicacion}</span>
+                    </div>
+                    <div className="flex items-center text-sm text-gray-600">
+                      <Users className="w-4 h-4 mr-2 text-green-600 flex-shrink-0" />
+                      <span>{event.asistentes_actuales || 0}/{event.maximo_asistentes} asistentes</span>
+                    </div>
+                    <div className="flex items-center text-sm text-gray-600">
+                      <DollarSign className="w-4 h-4 mr-2 text-yellow-600 flex-shrink-0" />
+                      <span>
+                        {(() => {
+                          const generalTicket = event.tipos_entrada?.find((t: any) => t.nombre_tipo.toLowerCase().includes('general')) ||
+                            event.tipos_entrada?.find((t: any) => t.nombre_tipo.toLowerCase().includes('entrada')) ||
+                            event.tipos_entrada?.[0];
+
+                          return generalTicket ? formatFullRevenue(generalTicket.precio) : 'Gratis';
+                        })()}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Organizer Info */}
+                  <div className="text-xs text-gray-500 mb-4">
+                    Organizado por: <span className="font-medium text-gray-700">{event.nombre_organizador}</span>
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="grid grid-cols-3 gap-2 mt-auto">
+                    <button
+                      onClick={() => handleViewEvent(event)}
+                      className="inline-flex items-center justify-center px-3 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white text-xs md:text-sm rounded-xl hover:from-blue-600 hover:to-purple-700 transition-all duration-200"
+                    >
+                      <Eye className="w-3 h-3 md:w-4 md:h-4 mr-1" />
+                      Ver
+                    </button>
+                    <button
+                      onClick={() => handleEditEvent(event)}
+                      className="inline-flex items-center justify-center px-3 py-2 bg-gradient-to-r from-orange-500 to-red-600 text-white text-xs md:text-sm rounded-xl hover:from-orange-600 hover:to-red-700 transition-all duration-200"
+                    >
+                      <Edit className="w-3 h-3 md:w-4 md:h-4 mr-1" />
+                      Editar
+                    </button>
+                    <button
+                      onClick={() => handleDeleteEvent(event)}
+                      className="inline-flex items-center justify-center px-3 py-2 bg-gradient-to-r from-red-500 to-red-600 text-white text-xs md:text-sm rounded-xl hover:from-red-600 hover:to-red-700 transition-all duration-200"
+                    >
+                      <Trash2 className="w-3 h-3 md:w-4 md:h-4 mr-1" />
+                      Eliminar
+                    </button>
                   </div>
                 </div>
               </div>
@@ -563,7 +568,7 @@ export const EventManagement: React.FC = () => {
                       {event.asistentes_actuales || 0} / {event.maximo_asistentes}
                     </td>
                     <td className="px-3 md:px-6 py-4 text-sm text-gray-900 hidden lg:table-cell">
-                      {event.tipos_entrada && event.tipos_entrada.length > 0 
+                      {event.tipos_entrada && event.tipos_entrada.length > 0
                         ? formatCurrency(Math.min(...event.tipos_entrada.map((t: any) => t.precio)))
                         : 'Sin precio'}
                     </td>
@@ -574,23 +579,23 @@ export const EventManagement: React.FC = () => {
                     </td>
                     <td className="px-3 md:px-6 py-4">
                       <div className="flex space-x-1 md:space-x-2">
-                        <button 
+                        <button
                           onClick={() => handleViewEvent(event)}
-                          className="p-2 text-gray-400 hover:text-blue-600 transition-colors" 
+                          className="p-2 text-gray-400 hover:text-blue-600 transition-colors"
                           title="Ver"
                         >
                           <Eye className="w-4 h-4" />
                         </button>
-                        <button 
+                        <button
                           onClick={() => handleEditEvent(event)}
-                          className="p-2 text-gray-400 hover:text-green-600 transition-colors" 
+                          className="p-2 text-gray-400 hover:text-green-600 transition-colors"
                           title="Editar"
                         >
                           <Edit className="w-4 h-4" />
                         </button>
-                        <button 
+                        <button
                           onClick={() => handleDeleteEvent(event)}
-                          className="p-2 text-gray-400 hover:text-red-600 transition-colors" 
+                          className="p-2 text-gray-400 hover:text-red-600 transition-colors"
                           title="Eliminar"
                         >
                           <Trash2 className="w-4 h-4" />

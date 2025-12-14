@@ -25,10 +25,15 @@ export const ViewTicketModal: React.FC<ViewTicketModalProps> = ({ isOpen, onClos
   // Normalizar datos para soportar estructura de BD y del Store
   const price = ticket.precio ?? ticket.price ?? 0;
   const available = ticket.cantidad_disponible ?? ticket.available ?? 0;
-  // Si no tenemos vendidos explícitos, intentamos calcularlo o usar la propiedad sold
-  const sold = ticket.cantidad_vendida ?? ticket.sold ?? 0;
-  // Si no tenemos máximo explícito, lo inferimos de disponibles + vendidos
-  const maximos = ticket.cantidad_maxima ?? (available + sold);
+  // Si no tenemos máximo explícito, intentamos obtenerlo de la BD o del Store
+  const maximos = ticket.cantidad_maxima ?? ticket.maxQuantity ?? 100;
+
+  // Calcular vendidos: primero intentar cantidad_vendida, luego sold, y finalmente calcular como diferencia
+  const sold = ticket.cantidad_vendida !== undefined
+    ? ticket.cantidad_vendida
+    : (ticket.sold !== undefined
+      ? ticket.sold
+      : Math.max(maximos - available, 0));
 
   const disponibles = available;
   const vendidos = sold;
@@ -37,7 +42,6 @@ export const ViewTicketModal: React.FC<ViewTicketModalProps> = ({ isOpen, onClos
 
   // Usar ingresos reales si existen (calculados en backend/dashboard considerando descuentos), sino estimar con el precio normalizado
   const ingresosReales = ticket.revenue !== undefined ? ticket.revenue : (vendidos * price);
-  const potencialTotal = maximos * price;
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} size="lg" showCloseButton={false}>

@@ -25,12 +25,12 @@ export function Layout({ children }: LayoutProps) {
       </main>
       <Footer />
       <Toast />
-      
+
       {/* Chat AI - Disponible globalmente para usuarios autenticados */}
       {showChat && (
         <>
-          <ChatButton onToggle={setIsChatOpen} />
-          <ChatWindow isOpen={isChatOpen} />
+          <ChatButton isOpen={isChatOpen} onToggle={() => setIsChatOpen(!isChatOpen)} />
+          <ChatWindow isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} />
         </>
       )}
     </div>

@@ -174,36 +174,47 @@ export function EventDetailPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50/80 to-blue-50/80 backdrop-blur-sm p-6">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50/80 to-blue-50/80 backdrop-blur-sm p-3 sm:p-4 md:p-6">
       <div className="max-w-7xl mx-auto">
-        {/* Breadcrumb */}
-        <nav className="flex items-center space-x-2 text-sm text-gray-600 mb-6">
+        {/* Breadcrumb - oculto en móvil, visible en tablet+ */}
+        <nav className="hidden sm:flex items-center space-x-2 text-sm text-gray-600 mb-4 md:mb-6">
           <Link to="/events" className="hover:text-blue-600 transition-colors duration-200">
             Eventos
           </Link>
           <span>→</span>
-          <span className="text-gray-900">{event.title}</span>
+          <span className="text-gray-900 truncate max-w-[200px] md:max-w-none">{event.title}</span>
         </nav>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Botón volver en móvil */}
+        <div className="sm:hidden mb-4">
+          <Link
+            to="/events"
+            className="inline-flex items-center text-blue-600 hover:text-blue-800 transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4 mr-1" />
+            <span className="text-sm">Volver a eventos</span>
+          </Link>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6 lg:gap-8">
           {/* Main Content */}
-          <div className="lg:col-span-2 space-y-8">
+          <div className="lg:col-span-2 space-y-4 md:space-y-6 lg:space-y-8">
             {/* Event Image */}
-            <div className="relative h-80 md:h-96 rounded-2xl overflow-hidden">
+            <div className="relative h-48 sm:h-64 md:h-80 lg:h-96 rounded-xl md:rounded-2xl overflow-hidden">
               <img
                 src={event.image}
                 alt={event.title}
                 className="w-full h-full object-cover"
               />
-              <div className="absolute top-6 left-6 bg-white/95 backdrop-blur-sm px-4 py-2 rounded-lg">
+              <div className="absolute top-3 sm:top-6 left-3 sm:left-6 bg-white/95 backdrop-blur-sm px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg">
                 <div className="text-center">
-                  <div className="text-xl font-bold text-gray-900">
+                  <div className="text-lg sm:text-xl font-bold text-gray-900">
                     {(() => {
                       const date = parseDateString(event.date);
                       return date.getDate();
                     })()}
                   </div>
-                  <div className="text-sm text-gray-600 capitalize">
+                  <div className="text-xs sm:text-sm text-gray-600 capitalize">
                     {(() => {
                       const date = parseDateString(event.date);
                       return date.toLocaleDateString('es-ES', { month: 'short' });
@@ -211,7 +222,7 @@ export function EventDetailPage() {
                   </div>
                 </div>
               </div>
-              <div className="absolute top-6 right-6 flex space-x-2">
+              <div className="absolute top-3 sm:top-6 right-3 sm:right-6 flex space-x-2">
                 <button
                   onClick={() => {
                     const shareUrl = `${window.location.origin}/events/${event.id}`;
@@ -231,58 +242,58 @@ export function EventDetailPage() {
                       });
                     }
                   }}
-                  className="p-3 bg-white/95 backdrop-blur-sm rounded-full text-gray-700 hover:bg-white hover:text-blue-600 transition-all duration-200"
+                  className="p-2 sm:p-3 bg-white/95 backdrop-blur-sm rounded-full text-gray-700 hover:bg-white hover:text-blue-600 transition-all duration-200"
                   title="Compartir evento"
                 >
-                  <Share2 className="w-5 h-5" />
+                  <Share2 className="w-4 h-4 sm:w-5 sm:h-5" />
                 </button>
               </div>
             </div>
 
             {/* Event Details */}
-            <div className="space-y-6">
+            <div className="space-y-4 md:space-y-6">
               <div>
-                <div className="flex items-center space-x-3 mb-4">
-                  <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
+                <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
+                  <span className="px-2 sm:px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-xs sm:text-sm font-medium">
                     {event.category}
                   </span>
-                  <span className="text-gray-500 text-sm">
-                    Organizado por {event.organizerName}
+                  <span className="text-gray-500 text-xs sm:text-sm">
+                    Por {event.organizerName}
                   </span>
                 </div>
 
-                <h1 className="text-4xl font-bold text-gray-900 mb-4">
+                <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-4">
                   {event.title}
                 </h1>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                  <div className="flex items-center space-x-3 text-gray-700">
-                    <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                      <Calendar className="w-5 h-5 text-blue-600" />
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4 md:gap-6 mb-4 md:mb-6">
+                  <div className="flex items-center space-x-3 text-gray-700 bg-blue-50/50 p-3 rounded-lg">
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
                     </div>
-                    <div>
-                      <div className="font-medium">{formatDate(event.date)}</div>
-                      <div className="text-sm text-gray-500">Fecha del evento</div>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center space-x-3 text-gray-700">
-                    <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                      <Clock className="w-5 h-5 text-green-600" />
-                    </div>
-                    <div>
-                      <div className="font-medium">{event.time}</div>
-                      <div className="text-sm text-gray-500">Hora de inicio</div>
+                    <div className="min-w-0">
+                      <div className="font-medium text-sm sm:text-base truncate">{formatDate(event.date)}</div>
+                      <div className="text-xs sm:text-sm text-gray-500">Fecha</div>
                     </div>
                   </div>
 
-                  <div className="flex items-center space-x-3 text-gray-700">
-                    <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-                      <MapPin className="w-5 h-5 text-purple-600" />
+                  <div className="flex items-center space-x-3 text-gray-700 bg-green-50/50 p-3 rounded-lg">
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
                     </div>
-                    <div>
-                      <div className="font-medium">{event.location}</div>
-                      <div className="text-sm text-gray-500">Ubicación</div>
+                    <div className="min-w-0">
+                      <div className="font-medium text-sm sm:text-base">{event.time}</div>
+                      <div className="text-xs sm:text-sm text-gray-500">Hora</div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center space-x-3 text-gray-700 bg-purple-50/50 p-3 rounded-lg sm:col-span-2 md:col-span-1">
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <MapPin className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="font-medium text-sm sm:text-base truncate">{event.location}</div>
+                      <div className="text-xs sm:text-sm text-gray-500">Ubicación</div>
                     </div>
                   </div>
                 </div>
@@ -290,10 +301,10 @@ export function EventDetailPage() {
 
               {/* Description */}
               <div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-4">Descripción</h2>
-                <div className="prose max-w-none text-gray-700 leading-relaxed">
+                <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-3 sm:mb-4">Descripción</h2>
+                <div className="prose max-w-none text-gray-700 leading-relaxed text-sm sm:text-base">
                   <p>{event.description}</p>
-                  <p className="mt-4">
+                  <p className="mt-3 sm:mt-4">
                     Este evento promete ser una experiencia única donde podrás conectar con personas
                     afines, aprender de expertos en la materia y disfrutar de un ambiente excepcional.
                     No te pierdas esta oportunidad de formar parte de algo especial.
@@ -304,12 +315,12 @@ export function EventDetailPage() {
               {/* Tags */}
               {event.tags && event.tags.length > 0 && (
                 <div>
-                  <h2 className="text-2xl font-bold text-gray-900 mb-4">Etiquetas</h2>
+                  <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-3 sm:mb-4">Etiquetas</h2>
                   <div className="flex flex-wrap gap-2">
                     {event.tags.map((tag, index) => (
                       <span
                         key={index}
-                        className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm"
+                        className="px-2 sm:px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-xs sm:text-sm"
                       >
                         #{tag}
                       </span>
@@ -322,10 +333,10 @@ export function EventDetailPage() {
 
           {/* Sidebar - Ticket Purchase */}
           <div className="lg:col-span-1">
-            <div className="bg-white border border-gray-200 rounded-2xl p-6 sticky top-24">
-              <div className="mb-6">
-                <h3 className="text-2xl font-bold text-gray-900 mb-2">Entradas</h3>
-                <div className="flex items-center text-gray-600 text-sm">
+            <div className="bg-white border border-gray-200 rounded-xl md:rounded-2xl p-4 sm:p-5 md:p-6 lg:sticky lg:top-24">
+              <div className="mb-4 sm:mb-6">
+                <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">Entradas</h3>
+                <div className="flex items-center text-gray-600 text-xs sm:text-sm">
                   <Users className="w-4 h-4 mr-2" />
                   <span>
                     {loadingAvailability
@@ -335,21 +346,21 @@ export function EventDetailPage() {
                 </div>
               </div>
 
-              <div className="space-y-4 mb-6">
+              <div className="space-y-3 sm:space-y-4 mb-4 sm:mb-6">
                 {ticketTypesData.map((ticketType: any) => (
-                  <div key={ticketType.id} className="border border-gray-200 rounded-lg p-4">
-                    <div className="flex justify-between items-start mb-3">
-                      <div>
-                        <h4 className="font-semibold text-gray-900">{ticketType.nombre_tipo}</h4>
-                        <p className="text-sm text-gray-600 mt-1">{ticketType.descripcion}</p>
+                  <div key={ticketType.id} className="border border-gray-200 rounded-lg p-3 sm:p-4">
+                    <div className="flex justify-between items-start mb-2 sm:mb-3">
+                      <div className="flex-1 min-w-0 mr-2">
+                        <h4 className="font-semibold text-gray-900 text-sm sm:text-base">{ticketType.nombre_tipo}</h4>
+                        <p className="text-xs sm:text-sm text-gray-600 mt-1 line-clamp-2">{ticketType.descripcion}</p>
                         {ticketType.cantidad_disponible <= 5 && ticketType.cantidad_disponible > 0 && (
-                          <p className="text-sm text-orange-600 mt-1">
-                            ¡Solo quedan {ticketType.cantidad_disponible} disponibles!
+                          <p className="text-xs sm:text-sm text-orange-600 mt-1">
+                            ¡Solo quedan {ticketType.cantidad_disponible}!
                           </p>
                         )}
                       </div>
-                      <div className="text-right">
-                        <span className="text-lg font-bold text-gray-900">
+                      <div className="text-right flex-shrink-0">
+                        <span className="text-base sm:text-lg font-bold text-gray-900">
                           {formatPriceDisplay(ticketType.precio)}
                         </span>
                       </div>
@@ -357,18 +368,18 @@ export function EventDetailPage() {
 
                     {ticketType.cantidad_disponible > 0 ? (
                       <div className="flex items-center justify-between">
-                        <span className="text-sm text-gray-600">
+                        <span className="text-xs sm:text-sm text-gray-600">
                           {ticketType.cantidad_disponible} disponibles
                         </span>
-                        <div className="flex items-center space-x-3">
+                        <div className="flex items-center space-x-2 sm:space-x-3">
                           <button
                             onClick={() => updateTicketQuantity(ticketType.id, -1)}
                             disabled={!selectedTickets[ticketType.id]}
-                            className="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-50 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-50 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                           >
-                            <Minus className="w-4 h-4" />
+                            <Minus className="w-3 h-3 sm:w-4 sm:h-4" />
                           </button>
-                          <span className="w-8 text-center font-medium">
+                          <span className="w-6 sm:w-8 text-center font-medium text-sm sm:text-base">
                             {selectedTickets[ticketType.id] || 0}
                           </span>
                           <button
@@ -377,15 +388,15 @@ export function EventDetailPage() {
                               (selectedTickets[ticketType.id] || 0) >= ticketType.cantidad_disponible ||
                               (selectedTickets[ticketType.id] || 0) >= ticketType.cantidad_maxima
                             }
-                            className="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-50 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-50 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                           >
-                            <Plus className="w-4 h-4" />
+                            <Plus className="w-3 h-3 sm:w-4 sm:h-4" />
                           </button>
                         </div>
                       </div>
                     ) : (
                       <div className="text-center py-2">
-                        <span className="text-red-600 text-sm font-medium">Agotado</span>
+                        <span className="text-red-600 text-xs sm:text-sm font-medium">Agotado</span>
                       </div>
                     )}
                   </div>
@@ -393,8 +404,8 @@ export function EventDetailPage() {
               </div>
 
               {getTotalTickets() > 0 && (
-                <div className="border-t border-gray-200 pt-4 mb-6">
-                  <div className="flex justify-between items-center text-lg font-semibold">
+                <div className="border-t border-gray-200 pt-3 sm:pt-4 mb-4 sm:mb-6">
+                  <div className="flex justify-between items-center text-base sm:text-lg font-semibold">
                     <span>Total ({getTotalTickets()} entradas)</span>
                     <span>{formatPriceDisplay(getTotalPrice())}</span>
                   </div>
@@ -404,15 +415,15 @@ export function EventDetailPage() {
               <button
                 onClick={handleAddToCart}
                 disabled={getTotalTickets() === 0}
-                className="w-full py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-blue-600"
+                className="w-full py-2.5 sm:py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-blue-600 text-sm sm:text-base"
               >
                 {getTotalTickets() > 0 ? 'Añadir al carrito' : 'Selecciona entradas'}
               </button>
 
-              <div className="mt-4 text-center">
+              <div className="mt-3 sm:mt-4 text-center">
                 <Link
                   to="/checkout"
-                  className="text-blue-600 hover:text-blue-500 text-sm font-medium"
+                  className="text-blue-600 hover:text-blue-500 text-xs sm:text-sm font-medium"
                 >
                   Ver carrito
                 </Link>

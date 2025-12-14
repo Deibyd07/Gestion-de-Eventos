@@ -1,22 +1,14 @@
 import { MessageCircle, X } from 'lucide-react';
-import { useState } from 'react';
 
 interface ChatButtonProps {
-  onToggle?: (isOpen: boolean) => void;
+  isOpen: boolean;
+  onToggle: () => void;
 }
 
-export function ChatButton({ onToggle }: ChatButtonProps) {
-  const [isOpen, setIsOpen] = useState(false);
-
-  const handleToggle = () => {
-    const newState = !isOpen;
-    setIsOpen(newState);
-    onToggle?.(newState);
-  };
-
+export function ChatButton({ isOpen, onToggle }: ChatButtonProps) {
   return (
     <button
-      onClick={handleToggle}
+      onClick={onToggle}
       className={`
         fixed bottom-6 right-6 z-50
         w-14 h-14 rounded-full
@@ -35,7 +27,7 @@ export function ChatButton({ onToggle }: ChatButtonProps) {
       ) : (
         <MessageCircle className="w-6 h-6 transition-transform duration-300 group-hover:scale-110" />
       )}
-      
+
       {/* Pulse animation cuando está cerrado */}
       {!isOpen && (
         <span className="absolute inline-flex h-full w-full rounded-full bg-purple-400 opacity-75 animate-ping"></span>

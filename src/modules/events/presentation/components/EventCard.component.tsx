@@ -502,7 +502,7 @@ export function EventCard({ event, viewMode = 'grid' }: EventCardProps) {
                 {formatPriceDisplay(event.price)}
               </span>
               {event.price > 0 && (
-                <span className="text-gray-500 text-xs font-medium">por persona</span>
+                <span className="hidden sm:inline text-gray-500 text-xs font-medium">por persona</span>
               )}
             </div>
             {event.price === 0 && (

@@ -34,7 +34,7 @@ export function TicketsPage() {
 
   const loadUserQRTickets = async () => {
     if (!user) return;
-    
+
     try {
       setLoading(true);
       const { data: authInfo } = await (await import('@shared/lib/api/supabase')).supabase.auth.getUser();
@@ -81,19 +81,19 @@ export function TicketsPage() {
       setLoadingPurchases(false);
     }
   };
-  
+
   // Get user's purchases
   const allPurchases = user ? getUserPurchases(user.id) : [];
-  
+
   // Filter QR tickets based on search and status
   const filteredQRTickets = qrTickets.filter(ticket => {
-    const matchesSearch = 
+    const matchesSearch =
       ticket.datos_qr?.event_title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       ticket.datos_qr?.ticket_type?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       ticket.codigo_qr.toLowerCase().includes(searchQuery.toLowerCase());
-    
+
     const matchesStatus = statusFilter === 'all' || ticket.estado === statusFilter;
-    
+
     return matchesSearch && matchesStatus;
   });
 
@@ -140,7 +140,7 @@ export function TicketsPage() {
 
       const evento = eventoResult.data;
       const tipoEntrada = tipoResult.data;
-      
+
       console.log('🎫 Datos obtenidos:', {
         evento: evento?.titulo,
         tipoEntrada: tipoEntrada?.nombre_tipo,
@@ -182,7 +182,7 @@ export function TicketsPage() {
       const results = await Promise.all(createPromises);
       console.log(`✅ ${needed} QRs generados para compra ${purchase.id}`);
       console.log('📊 Resultados:', results);
-      
+
       // Recargar QRs después de generarlos
       await loadUserQRTickets();
     } catch (error: any) {
@@ -198,14 +198,14 @@ export function TicketsPage() {
       setRegenerating(prev => ({ ...prev, [purchase.id]: false }));
     }
   };
-  
+
   // Filter purchases based on search and status
   const filteredPurchases = allPurchases.filter(purchase => {
     const matchesSearch = purchase.eventTitle.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         purchase.ticketTypeName.toLowerCase().includes(searchQuery.toLowerCase());
-    
+      purchase.ticketTypeName.toLowerCase().includes(searchQuery.toLowerCase());
+
     const matchesStatus = statusFilter === 'all' || purchase.status === statusFilter;
-    
+
     return matchesSearch && matchesStatus;
   });
 
@@ -223,267 +223,267 @@ export function TicketsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50/80 to-blue-50/80 backdrop-blur-sm p-6">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50/80 to-blue-50/80 backdrop-blur-sm p-3 sm:p-4 md:p-6">
       <div className="w-full">
         {/* Header */}
-        <div className="bg-gradient-to-br from-white to-indigo-100/98 backdrop-blur-lg shadow-xl border border-white/20 rounded-2xl p-6 mb-8">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg flex items-center justify-center">
-                <Ticket className="w-6 h-6 text-white" />
+        <div className="bg-gradient-to-br from-white to-indigo-100/98 backdrop-blur-lg shadow-xl border border-white/20 rounded-xl sm:rounded-2xl p-4 sm:p-6 mb-4 sm:mb-6 md:mb-8">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="flex items-center space-x-3 sm:space-x-4">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                <Ticket className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
               </div>
               <div>
-                <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 mb-1">
                   Mis Entradas
                 </h1>
-                <p className="text-gray-600">
-                  Gestiona y descarga tus entradas para los eventos
+                <p className="text-sm sm:text-base text-gray-600 hidden sm:block">
+                  Gestiona y descarga tus entradas
                 </p>
               </div>
             </div>
-            <div className="flex items-center space-x-4">
-              <div className="text-right">
-                <div className="text-2xl font-bold text-gray-900">
+            {/* Stats - Grid responsive */}
+            <div className="grid grid-cols-4 sm:flex sm:items-center gap-2 sm:gap-4">
+              <div className="text-center sm:text-right bg-gray-50 sm:bg-transparent rounded-lg p-2 sm:p-0">
+                <div className="text-lg sm:text-2xl font-bold text-gray-900">
                   {Object.keys(qrTicketsByEvent).length}
                 </div>
-                <div className="text-sm text-gray-500">Eventos</div>
+                <div className="text-xs sm:text-sm text-gray-500">Eventos</div>
               </div>
-              <div className="text-right">
-                <div className="text-2xl font-bold text-gray-900">
+              <div className="text-center sm:text-right bg-gray-50 sm:bg-transparent rounded-lg p-2 sm:p-0">
+                <div className="text-lg sm:text-2xl font-bold text-gray-900">
                   {qrTickets.length}
                 </div>
-                <div className="text-sm text-gray-500">Entradas</div>
+                <div className="text-xs sm:text-sm text-gray-500">Entradas</div>
               </div>
-              <div className="text-right">
-                <div className="text-2xl font-bold text-green-600">
+              <div className="text-center sm:text-right bg-green-50 sm:bg-transparent rounded-lg p-2 sm:p-0">
+                <div className="text-lg sm:text-2xl font-bold text-green-600">
                   {qrTickets.filter(t => t.estado === 'activo').length}
                 </div>
-                <div className="text-sm text-gray-500">Activas</div>
+                <div className="text-xs sm:text-sm text-gray-500">Activas</div>
               </div>
-              <div className="text-right">
-                <div className="text-2xl font-bold text-gray-900">
+              <div className="text-center sm:text-right bg-gray-50 sm:bg-transparent rounded-lg p-2 sm:p-0">
+                <div className="text-lg sm:text-2xl font-bold text-gray-900">
                   {purchases.length}
                 </div>
-                <div className="text-sm text-gray-500">Compras</div>
+                <div className="text-xs sm:text-sm text-gray-500">Compras</div>
               </div>
             </div>
           </div>
         </div>
 
-      {/* Success Message */}
-      {location.state?.message && (
-        <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
-          <div className="flex items-center">
-            <div className="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center mr-3">
-              <span className="text-white text-xs">✓</span>
-            </div>
-            <p className="text-green-800">{location.state.message}</p>
-          </div>
-        </div>
-      )}
-
-      {/* Search and Filters */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
-        <div className="flex flex-col lg:flex-row gap-4">
-          {/* Search */}
-          <div className="flex-1">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Buscar por evento o tipo de entrada..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              />
+        {/* Success Message */}
+        {location.state?.message && (
+          <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
+            <div className="flex items-center">
+              <div className="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center mr-3">
+                <span className="text-white text-xs">✓</span>
+              </div>
+              <p className="text-green-800">{location.state.message}</p>
             </div>
           </div>
+        )}
 
-          {/* Status Filter */}
-          <div className="lg:w-48">
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value as any)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            >
-              <option value="all">Todos los estados</option>
-              <option value="activo">Activas</option>
-              <option value="usado">Utilizadas</option>
-              <option value="cancelado">Canceladas</option>
-              <option value="expirado">Expiradas</option>
-            </select>
-          </div>
+        {/* Search and Filters */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 mb-4 sm:mb-6 md:mb-8">
+          <div className="flex flex-col lg:flex-row gap-3 sm:gap-4">
+            {/* Search */}
+            <div className="flex-1">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Buscar evento..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-9 sm:pl-10 pr-4 py-2.5 sm:py-3 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+            </div>
 
-          {/* View Mode Toggle */}
-          <div className="flex gap-2">
-            <button
-              onClick={() => setViewMode('grid')}
-              className={`px-4 py-3 rounded-lg transition-colors ${
-                viewMode === 'grid'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
-            >
-              <QrCode className="w-4 h-4" />
-            </button>
-            <button
-              onClick={() => setViewMode('list')}
-              className={`px-4 py-3 rounded-lg transition-colors ${
-                viewMode === 'list'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
-            >
-              <Filter className="w-4 h-4" />
-            </button>
+            {/* Status Filter */}
+            <div className="flex gap-2">
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value as any)}
+                className="flex-1 lg:flex-none lg:w-40 px-3 sm:px-4 py-2.5 sm:py-3 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              >
+                <option value="all">Todos</option>
+                <option value="activo">Activas</option>
+                <option value="usado">Usadas</option>
+                <option value="cancelado">Canceladas</option>
+                <option value="expirado">Expiradas</option>
+              </select>
+
+              {/* View Mode Toggle - Hidden on mobile */}
+              <div className="hidden sm:flex gap-1">
+                <button
+                  onClick={() => setViewMode('grid')}
+                  className={`px-3 py-2.5 sm:py-3 rounded-lg transition-colors ${viewMode === 'grid'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
+                >
+                  <QrCode className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => setViewMode('list')}
+                  className={`px-3 py-2.5 sm:py-3 rounded-lg transition-colors ${viewMode === 'list'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
+                >
+                  <Filter className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Tickets */}
-      {loading ? (
-        <div className="text-center py-20">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Cargando tus entradas...</p>
-        </div>
-      ) : Object.keys(qrTicketsByEvent).length > 0 ? (
-        <div className="space-y-8">
-          {Object.entries(qrTicketsByEvent).map(([eventTitle, tickets]) => {
-            const firstTicket = tickets[0];
-            const eventId = firstTicket.id_evento;
-            const eventDetails = getEventById(eventId);
-            
-            return (
-              <div key={eventTitle} className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                {/* Event Header */}
-                <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-6">
-                  <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-                    <div className="flex-1">
-                      <h2 className="text-2xl font-bold mb-3">{eventTitle}</h2>
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-blue-100">
-                        <div className="flex items-center space-x-2">
-                          <Calendar className="w-4 h-4" />
-                          <span>{firstTicket.datos_qr?.event_date ? new Date(firstTicket.datos_qr.event_date).toLocaleDateString('es-ES') : 'Fecha no disponible'}</span>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <MapPin className="w-4 h-4" />
-                          <span>{firstTicket.datos_qr?.event_location || 'Ubicación no disponible'}</span>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <QrCode className="w-4 h-4" />
-                          <span>{tickets.length} entrada{tickets.length > 1 ? 's' : ''}</span>
+        {/* Tickets */}
+        {loading ? (
+          <div className="text-center py-20">
+            <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <p className="text-gray-600">Cargando tus entradas...</p>
+          </div>
+        ) : Object.keys(qrTicketsByEvent).length > 0 ? (
+          <div className="space-y-8">
+            {Object.entries(qrTicketsByEvent).map(([eventTitle, tickets]) => {
+              const firstTicket = tickets[0];
+              const eventId = firstTicket.id_evento;
+              const eventDetails = getEventById(eventId);
+
+              return (
+                <div key={eventTitle} className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                  {/* Event Header */}
+                  <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-4 sm:p-6">
+                    <div className="flex flex-col gap-3 sm:gap-4">
+                      <div className="flex-1">
+                        <h2 className="text-lg sm:text-xl md:text-2xl font-bold mb-2">{eventTitle}</h2>
+                        <div className="flex flex-wrap gap-3 text-blue-100 text-xs sm:text-sm">
+                          <div className="flex items-center space-x-1">
+                            <Calendar className="w-3 h-3 sm:w-4 sm:h-4" />
+                            <span>{firstTicket.datos_qr?.event_date ? new Date(firstTicket.datos_qr.event_date).toLocaleDateString('es-ES') : 'Fecha N/D'}</span>
+                          </div>
+                          <div className="flex items-center space-x-1">
+                            <MapPin className="w-3 h-3 sm:w-4 sm:h-4" />
+                            <span className="truncate max-w-[100px] sm:max-w-none">{firstTicket.datos_qr?.event_location || 'Ubicación N/D'}</span>
+                          </div>
+                          <div className="flex items-center space-x-1">
+                            <QrCode className="w-3 h-3 sm:w-4 sm:h-4" />
+                            <span>{tickets.length} entrada{tickets.length > 1 ? 's' : ''}</span>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-3xl font-bold">
-                        {formatPriceDisplay(tickets.reduce((sum, t) => sum + (t.datos_qr?.price || 0), 0))}
-                      </div>
-                      <div className="text-blue-100 text-sm">Total pagado</div>
-                      <div className="mt-2">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="text-xl sm:text-2xl md:text-3xl font-bold">
+                            {formatPriceDisplay(tickets.reduce((sum, t) => sum + (t.datos_qr?.price || 0), 0))}
+                          </div>
+                          <div className="text-blue-100 text-xs sm:text-sm">Total</div>
+                        </div>
                         <Link
                           to={`/events/${eventId}`}
-                          className="inline-flex items-center px-4 py-2 bg-white/20 text-white rounded-lg hover:bg-white/30 transition-colors text-sm"
+                          className="inline-flex items-center px-3 sm:px-4 py-2 bg-white/20 text-white rounded-lg hover:bg-white/30 transition-colors text-xs sm:text-sm"
                         >
-                          <Eye className="w-4 h-4 mr-2" />
-                          Ver Evento
+                          <Eye className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+                          <span className="hidden sm:inline">Ver Evento</span>
+                          <span className="sm:hidden">Ver</span>
                         </Link>
                       </div>
                     </div>
                   </div>
-                </div>
 
-                {/* Tickets Display */}
-                <div className="p-6">
-                  {viewMode === 'grid' ? (
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                      {tickets.map((ticket) => (
-                        <QRTicketDisplay key={ticket.id} ticket={ticket} />
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="space-y-4">
-                      {tickets.map((ticket) => (
-                        <QRTicketDisplay key={ticket.id} ticket={ticket} compact />
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      ) : (
-        <div className="text-center py-20">
-          <div className="w-32 h-32 bg-gradient-to-br from-blue-100 to-blue-200 rounded-full flex items-center justify-center mx-auto mb-8">
-            <Ticket className="w-16 h-16 text-blue-600" />
-          </div>
-          <h3 className="text-2xl font-bold text-gray-900 mb-4">
-            {searchQuery || statusFilter !== 'all' 
-              ? 'No se encontraron entradas' 
-              : '¡Aún no tienes entradas!'
-            }
-          </h3>
-          <p className="text-gray-600 mb-8 max-w-md mx-auto text-lg">
-            {searchQuery || statusFilter !== 'all'
-              ? 'Intenta ajustar tus filtros de búsqueda para encontrar tus entradas.'
-              : 'Explora nuestros increíbles eventos y compra tus entradas favoritas para vivir experiencias únicas.'
-            }
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link
-              to="/events"
-              className="inline-flex items-center px-8 py-4 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
-            >
-              <Calendar className="w-5 h-5 mr-2" />
-              Explorar Eventos
-            </Link>
-            {searchQuery || statusFilter !== 'all' && (
-              <button
-                onClick={() => {
-                  setSearchQuery('');
-                  setStatusFilter('all');
-                }}
-                className="inline-flex items-center px-8 py-4 bg-gray-100 text-gray-700 font-semibold rounded-xl hover:bg-gray-200 transition-all duration-300"
-              >
-                <Filter className="w-5 h-5 mr-2" />
-                Limpiar Filtros
-              </button>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* Compras sin QR (respaldo) */}
-      {!loadingPurchases && purchasesWithoutQR.length > 0 && (
-        <div className="mt-10">
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-1">Compras sin QR</h2>
-            <p className="text-gray-600">Algunas compras no tienen sus códigos QR generados. Puedes generarlos aquí.</p>
-          </div>
-          <div className="space-y-4">
-            {purchasesWithoutQR.map((p) => {
-              const generated = countQrsForPurchase(p.id);
-              return (
-                <div key={p.id} className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 flex items-center justify-between">
-                  <div>
-                    <div className="font-semibold text-gray-900">{p.eventos?.titulo || 'Evento'}</div>
-                    <div className="text-sm text-gray-600">{p.tipos_entrada?.nombre_tipo || 'Entrada'}</div>
-                    <div className="text-sm text-gray-500">{generated}/{p.cantidad} QR generados</div>
+                  {/* Tickets Display */}
+                  <div className="p-4 sm:p-6">
+                    {viewMode === 'grid' ? (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+                        {tickets.map((ticket) => (
+                          <QRTicketDisplay key={ticket.id} ticket={ticket} />
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="space-y-3 sm:space-y-4">
+                        {tickets.map((ticket) => (
+                          <QRTicketDisplay key={ticket.id} ticket={ticket} compact />
+                        ))}
+                      </div>
+                    )}
                   </div>
-                  <button
-                    onClick={() => regenerateQRsForPurchase(p)}
-                    disabled={!!regenerating[p.id]}
-                    className="px-4 py-2 rounded-lg text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50"
-                  >
-                    {regenerating[p.id] ? 'Generando...' : 'Regenerar QRs'}
-                  </button>
                 </div>
               );
             })}
           </div>
-        </div>
-      )}
+        ) : (
+          <div className="text-center py-12 sm:py-16 md:py-20">
+            <div className="w-20 h-20 sm:w-24 md:w-32 sm:h-24 md:h-32 bg-gradient-to-br from-blue-100 to-blue-200 rounded-full flex items-center justify-center mx-auto mb-6 sm:mb-8">
+              <Ticket className="w-10 h-10 sm:w-12 md:w-16 sm:h-12 md:h-16 text-blue-600" />
+            </div>
+            <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-3 sm:mb-4">
+              {searchQuery || statusFilter !== 'all'
+                ? 'No se encontraron entradas'
+                : '¡Aún no tienes entradas!'
+              }
+            </h3>
+            <p className="text-gray-600 mb-6 sm:mb-8 max-w-md mx-auto text-sm sm:text-base lg:text-lg px-4">
+              {searchQuery || statusFilter !== 'all'
+                ? 'Intenta ajustar tus filtros.'
+                : 'Explora eventos y compra tus entradas.'
+              }
+            </p>
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center px-4">
+              <Link
+                to="/events"
+                className="inline-flex items-center justify-center px-6 sm:px-8 py-3 sm:py-4 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 text-sm sm:text-base"
+              >
+                <Calendar className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+                Explorar Eventos
+              </Link>
+              {searchQuery || statusFilter !== 'all' && (
+                <button
+                  onClick={() => {
+                    setSearchQuery('');
+                    setStatusFilter('all');
+                  }}
+                  className="inline-flex items-center justify-center px-6 sm:px-8 py-3 sm:py-4 bg-gray-100 text-gray-700 font-semibold rounded-xl hover:bg-gray-200 transition-all duration-300 text-sm sm:text-base"
+                >
+                  <Filter className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+                  Limpiar Filtros
+                </button>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Compras sin QR (respaldo) */}
+        {!loadingPurchases && purchasesWithoutQR.length > 0 && (
+          <div className="mt-10">
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+              <h2 className="text-xl font-semibold text-gray-900 mb-1">Compras sin QR</h2>
+              <p className="text-gray-600">Algunas compras no tienen sus códigos QR generados. Puedes generarlos aquí.</p>
+            </div>
+            <div className="space-y-4">
+              {purchasesWithoutQR.map((p) => {
+                const generated = countQrsForPurchase(p.id);
+                return (
+                  <div key={p.id} className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 flex items-center justify-between">
+                    <div>
+                      <div className="font-semibold text-gray-900">{p.eventos?.titulo || 'Evento'}</div>
+                      <div className="text-sm text-gray-600">{p.tipos_entrada?.nombre_tipo || 'Entrada'}</div>
+                      <div className="text-sm text-gray-500">{generated}/{p.cantidad} QR generados</div>
+                    </div>
+                    <button
+                      onClick={() => regenerateQRsForPurchase(p)}
+                      disabled={!!regenerating[p.id]}
+                      className="px-4 py-2 rounded-lg text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50"
+                    >
+                      {regenerating[p.id] ? 'Generando...' : 'Regenerar QRs'}
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -217,35 +217,35 @@ export function HomePage() {
           </div>
 
           <div className="absolute inset-0 bg-black/30 pointer-events-none" style={{ zIndex: 1 }}></div>
-          <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-24 pointer-events-none" style={{ zIndex: 2 }}>
-            <div className="text-center space-y-8 pointer-events-none">
-              <h1 className="text-5xl md:text-7xl font-bold text-white leading-tight">
+          <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 sm:pt-24 md:pt-32 pb-16 sm:pb-20 md:pb-24 pointer-events-none" style={{ zIndex: 2 }}>
+            <div className="text-center space-y-4 sm:space-y-6 md:space-y-8 pointer-events-none">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-bold text-white leading-tight">
                 Eventos en
                 <span className="block bg-gradient-to-r from-indigo-400 via-purple-400 to-blue-500 bg-clip-text text-transparent">
                   Colombia
                 </span>
               </h1>
 
-              <p className="text-xl md:text-2xl text-blue-100 max-w-3xl mx-auto leading-relaxed">
+              <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-blue-100 max-w-3xl mx-auto leading-relaxed px-2">
                 La plataforma nacional para eventos en todo Colombia.
                 Conecta con comunidades de todo el país y descubre eventos únicos.
               </p>
 
-              <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-8 pointer-events-auto">
+              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center pt-4 sm:pt-6 md:pt-8 pointer-events-auto">
                 <button
                   onClick={handleExploreEvents}
-                  className="group inline-flex items-center px-8 py-4 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold rounded-xl hover:from-blue-600 hover:to-purple-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+                  className="group inline-flex items-center px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold rounded-xl hover:from-blue-600 hover:to-purple-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1 text-sm sm:text-base w-full sm:w-auto justify-center"
                 >
                   Explorar Eventos
-                  <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform duration-200" />
+                  <ArrowRight className="ml-2 w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform duration-200" />
                 </button>
 
                 <button
                   onClick={handleCreateAccount}
-                  className="group inline-flex items-center px-8 py-4 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-semibold rounded-xl hover:from-green-600 hover:to-emerald-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+                  className="group inline-flex items-center px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-semibold rounded-xl hover:from-green-600 hover:to-emerald-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1 text-sm sm:text-base w-full sm:w-auto justify-center"
                 >
                   Crear Cuenta Gratis
-                  <Play className="ml-2 w-5 h-5 group-hover:scale-110 transition-transform duration-200" />
+                  <Play className="ml-2 w-4 h-4 sm:w-5 sm:h-5 group-hover:scale-110 transition-transform duration-200" />
                 </button>
               </div>
             </div>
@@ -253,12 +253,12 @@ export function HomePage() {
         </section>
 
         {/* Stats Section */}
-        <section className="py-20 bg-gradient-to-br from-gray-50/80 to-blue-50/80">
+        <section className="py-10 sm:py-16 md:py-20 bg-gradient-to-br from-gray-50/80 to-blue-50/80">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-              <div className="text-center bg-gradient-to-br from-white to-indigo-100/98 backdrop-blur-lg shadow-xl border border-white/20 rounded-2xl p-6 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
-                <div className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">1000+</div>
-                <div className="text-gray-700 font-semibold">Eventos Nacionales</div>
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
+              <div className="text-center bg-gradient-to-br from-white to-indigo-100/98 backdrop-blur-lg shadow-xl border border-white/20 rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-6 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
+                <div className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-1 sm:mb-2">1000+</div>
+                <div className="text-gray-700 font-semibold text-xs sm:text-sm md:text-base">Eventos Nacionales</div>
               </div>
               <div className="text-center bg-gradient-to-br from-white to-indigo-100/98 backdrop-blur-lg shadow-xl border border-white/20 rounded-2xl p-6 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
                 <div className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent mb-2">50K+</div>
@@ -318,7 +318,7 @@ export function HomePage() {
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-8 mb-8 sm:mb-12">
               {loading ? (
                 // Estados de carga
                 Array.from({ length: 3 }).map((_, index) => (

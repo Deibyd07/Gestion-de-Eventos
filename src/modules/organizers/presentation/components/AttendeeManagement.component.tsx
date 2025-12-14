@@ -1,16 +1,16 @@
 import { useEffect, useMemo, useState, useCallback } from 'react';
-import { 
-  Users, 
-  Search, 
-  Filter, 
-  Download, 
-  Mail, 
-  Phone, 
-  QrCode, 
-  CheckCircle, 
-  Clock, 
-  UserCheck, 
-  UserX, 
+import {
+  Users,
+  Search,
+  Filter,
+  Download,
+  Mail,
+  Phone,
+  QrCode,
+  CheckCircle,
+  Clock,
+  UserCheck,
+  UserX,
   AlertTriangle,
   Eye,
   Edit,
@@ -91,24 +91,24 @@ export function AttendeeManagement({ eventId, eventTitle, onRefreshRequest }: At
   const [expandedEvent, setExpandedEvent] = useState<string | null>(eventId || null);
   const [attendees, setAttendees] = useState<Attendee[]>([]);
   const [loading, setLoading] = useState(false);
-  
+
   // Estados para modales
   const [viewModalOpen, setViewModalOpen] = useState(false);
   const [emailModalOpen, setEmailModalOpen] = useState(false);
   const [qrModalOpen, setQrModalOpen] = useState(false);
   const [selectedAttendee, setSelectedAttendee] = useState<Attendee | null>(null);
-  
-  const [toast, setToast] = useState<{ show: boolean; variant: 'success'|'error'|'info'; message: string }>(
+
+  const [toast, setToast] = useState<{ show: boolean; variant: 'success' | 'error' | 'info'; message: string }>(
     { show: false, variant: 'success', message: '' }
   );
   // Ref para debouncing de recargas en tiempo real
   const realtimeReloadTimer = useRef<NodeJS.Timeout | null>(null);
   // Set de purchases escaneadas (para fallback cuando RLS impide leer filas QR/asistencia)
   const scannedPurchaseIdsRef = useRef<Set<string>>(new Set());
-  
+
   // Filtrar eventos del organizador actual
   const events = storeEvents.filter(event => event.organizerId === user?.id);
-  
+
   // Al montar, recuperar escaneos previos persistidos localmente
   useEffect(() => {
     try {
@@ -117,7 +117,7 @@ export function AttendeeManagement({ eventId, eventTitle, onRefreshRequest }: At
         const arr = JSON.parse(raw);
         if (Array.isArray(arr)) scannedPurchaseIdsRef.current = new Set(arr);
       }
-    } catch {}
+    } catch { }
   }, []);
 
   // Auto-expandir el evento si viene seleccionado
@@ -126,7 +126,7 @@ export function AttendeeManagement({ eventId, eventTitle, onRefreshRequest }: At
       setExpandedEvent(eventId);
     }
   }, [eventId]);
-  
+
   // Función para cargar asistentes desde Supabase
   const loadAttendees = useCallback(async () => {
     if (!user?.id) return;
@@ -165,7 +165,7 @@ export function AttendeeManagement({ eventId, eventTitle, onRefreshRequest }: At
         });
       }
       setAttendees(mapped);
-    } catch (e:any) {
+    } catch (e: any) {
       setToast({ show: true, variant: 'error', message: e.message || 'Error al cargar asistentes' });
     } finally {
       setLoading(false);
@@ -222,7 +222,7 @@ export function AttendeeManagement({ eventId, eventTitle, onRefreshRequest }: At
               return a;
             });
             if (changed) {
-              try { localStorage.setItem('eh_scanned_purchases', JSON.stringify(Array.from(scannedPurchaseIdsRef.current))); } catch {}
+              try { localStorage.setItem('eh_scanned_purchases', JSON.stringify(Array.from(scannedPurchaseIdsRef.current))); } catch { }
             }
             return changed ? updated : prev;
           });
@@ -259,7 +259,7 @@ export function AttendeeManagement({ eventId, eventTitle, onRefreshRequest }: At
               return a;
             });
             if (exists) {
-              try { localStorage.setItem('eh_scanned_purchases', JSON.stringify(Array.from(scannedPurchaseIdsRef.current))); } catch {}
+              try { localStorage.setItem('eh_scanned_purchases', JSON.stringify(Array.from(scannedPurchaseIdsRef.current))); } catch { }
               return updated;
             }
             // Si no existe y tenemos datos mínimos, crear entrada básica
@@ -281,7 +281,7 @@ export function AttendeeManagement({ eventId, eventTitle, onRefreshRequest }: At
               purchaseId: nuevo.id_compra
             };
             if (basic.purchaseId) scannedPurchaseIdsRef.current.add(basic.purchaseId);
-            try { localStorage.setItem('eh_scanned_purchases', JSON.stringify(Array.from(scannedPurchaseIdsRef.current))); } catch {}
+            try { localStorage.setItem('eh_scanned_purchases', JSON.stringify(Array.from(scannedPurchaseIdsRef.current))); } catch { }
             return [...updated, basic];
           });
           if (realtimeReloadTimer.current) clearTimeout(realtimeReloadTimer.current);
@@ -306,7 +306,7 @@ export function AttendeeManagement({ eventId, eventTitle, onRefreshRequest }: At
 
   const filteredAttendees = attendees.filter(attendee => {
     const matchesSearch = attendee.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         attendee.email.toLowerCase().includes(searchTerm.toLowerCase());
+      attendee.email.toLowerCase().includes(searchTerm.toLowerCase());
     // Si hay eventId seleccionado, solo mostrar asistentes de ese evento
     const matchesEvent = !eventId || attendee.eventId === eventId;
     const matchesStatus = filterStatus === 'all' || attendee.checkInStatus === filterStatus;
@@ -360,17 +360,17 @@ export function AttendeeManagement({ eventId, eventTitle, onRefreshRequest }: At
         setSelectedAttendee(attendee);
         setViewModalOpen(true);
         break;
-      
+
       case 'email':
         setSelectedAttendee(attendee);
         setEmailModalOpen(true);
         break;
-      
+
       case 'qr':
         setSelectedAttendee(attendee);
         setQrModalOpen(true);
         break;
-      
+
       case 'checkin':
         if (user?.id) {
           try {
@@ -378,7 +378,7 @@ export function AttendeeManagement({ eventId, eventTitle, onRefreshRequest }: At
             // Recargar asistentes desde la base de datos para obtener datos actualizados
             await loadAttendees();
             setToast({ show: true, variant: 'success', message: 'Asistencia registrada correctamente' });
-          } catch (e:any) {
+          } catch (e: any) {
             setToast({ show: true, variant: 'error', message: e.message || 'No se pudo registrar asistencia' });
           }
         }
@@ -569,159 +569,93 @@ export function AttendeeManagement({ eventId, eventTitle, onRefreshRequest }: At
             {loading ? (
               <div className="p-8 text-center text-gray-600">Cargando asistentes...</div>
             ) : filteredAttendees.length > 0 ? (
-              <div className="overflow-x-auto">
-                <div className="inline-block min-w-full align-middle">
-                  <div>
-                    <table className="min-w-full divide-y divide-gray-200">
-                      <thead className="bg-gray-50">
-                        <tr>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            <input type="checkbox" className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500" />
-                          </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Asistente</th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipo de Entrada</th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha Compra</th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
-                        </tr>
-                      </thead>
-                        <tbody className="bg-white divide-y divide-gray-200">
-                          {filteredAttendees.map((attendee) => (
-                          <tr key={attendee.purchaseId || `${attendee.id}-${attendee.eventId}`} className="hover:bg-gray-50">
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <input
-                                type="checkbox"
-                                checked={selectedAttendees.includes(attendee.id)}
-                                onChange={(e) => {
-                                  if (e.target.checked) {
-                                    setSelectedAttendees([...selectedAttendees, attendee.id]);
-                                  } else {
-                                    setSelectedAttendees(selectedAttendees.filter(id => id !== attendee.id));
-                                  }
-                                }}
-                                className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
-                              />
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="flex items-center">
-                                <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center">
-                                  <Users className="w-5 h-5 text-gray-600" />
-                                </div>
-                                <div className="ml-4">
-                                  <div className="text-sm font-medium text-gray-900">{attendee.name}</div>
-                                  <div className="text-sm text-gray-500">{attendee.email}</div>
-                                </div>
-                              </div>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="text-sm text-gray-900">{attendee.ticketType}</div>
-                              <div className="text-sm text-gray-500">{formatPrice(attendee.ticketPrice)}</div>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <span className={`px-2 py-1 text-xs font-medium rounded-full border flex items-center w-fit ${getStatusColor(attendee.checkInStatus)}`}>
-                                {getStatusIcon(attendee.checkInStatus)}
-                                <span className="ml-1">{getStatusText(attendee.checkInStatus)}</span>
-                              </span>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                              {new Date(attendee.purchaseDate).toLocaleDateString('es-ES')}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                              <div className="flex items-center space-x-2">
-                                <button 
-                                  onClick={() => handleAttendeeAction(attendee, 'view')}
-                                  className="text-blue-600 hover:text-blue-900"
-                                  title="Ver detalles"
-                                >
-                                  <Eye className="w-4 h-4" />
-                                </button>
-                                <button 
-                                  onClick={() => handleAttendeeAction(attendee, 'email')}
-                                  className="text-blue-600 hover:text-blue-900"
-                                  title="Enviar email"
-                                >
-                                  <Mail className="w-4 h-4" />
-                                </button>
-                                <button 
-                                  onClick={() => handleAttendeeAction(attendee, 'qr')}
-                                  className="text-purple-600 hover:text-purple-900"
-                                  title="Ver QR"
-                                >
-                                  <QrCode className="w-4 h-4" />
-                                </button>
-                              </div>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <div className="p-8 text-center">
-                <Users className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-600">No hay asistentes para este evento</p>
-                <p className="text-sm text-gray-500 mt-2">Los asistentes aparecerán aquí cuando realicen una compra</p>
-              </div>
-            )}
-          </div>
-        ) : (
-          // Vista accordion cuando no hay evento seleccionado
-          events.map((event) => {
-          const eventAttendees = filteredAttendees.filter(attendee => attendee.eventId === event.id);
-          const isExpanded = expandedEvent === event.id;
-          
-          return (
-            <div key={event.id} className="bg-gradient-to-br from-white to-indigo-100/98 backdrop-blur-lg shadow-xl border border-gray-300 rounded-2xl overflow-hidden hover:shadow-2xl transition-all duration-200">
-              <div 
-                className="p-6 cursor-pointer hover:bg-white/20 transition-all duration-200"
-                onClick={() => toggleEventExpansion(event.id)}
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-4">
-                    <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                      <Calendar className="w-6 h-6 text-blue-600" />
-                    </div>
-                    <div>
-                      <h4 className="font-semibold text-gray-900">{event.title}</h4>
-                      <div className="flex items-center space-x-4 text-sm text-gray-600">
-                        <span className="flex items-center">
-                          <Calendar className="w-4 h-4 mr-1" />
-                          {parseDateString(event.date).toLocaleDateString('es-ES')}
+              <>
+                {/* Vista móvil: Cards */}
+                <div className="block lg:hidden p-4 space-y-3">
+                  {filteredAttendees.map((attendee) => (
+                    <div
+                      key={attendee.purchaseId || `${attendee.id}-${attendee.eventId}`}
+                      className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm hover:shadow-md transition-shadow"
+                    >
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex items-center space-x-3">
+                          <div className="w-10 h-10 bg-gradient-to-br from-blue-50 to-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                            <Users className="w-5 h-5 text-blue-600" />
+                          </div>
+                          <div className="min-w-0">
+                            <p className="font-semibold text-gray-900 truncate">{attendee.name}</p>
+                            <p className="text-sm text-gray-500 truncate">{attendee.email}</p>
+                          </div>
+                        </div>
+                        <input
+                          type="checkbox"
+                          checked={selectedAttendees.includes(attendee.id)}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setSelectedAttendees([...selectedAttendees, attendee.id]);
+                            } else {
+                              setSelectedAttendees(selectedAttendees.filter(id => id !== attendee.id));
+                            }
+                          }}
+                          className="w-5 h-5 text-blue-600 rounded focus:ring-blue-500 flex-shrink-0"
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-2 mb-3 text-sm">
+                        <div className="bg-gray-50 rounded-lg p-2">
+                          <p className="text-gray-500 text-xs">Tipo de Entrada</p>
+                          <p className="font-medium text-gray-900 truncate">{attendee.ticketType}</p>
+                          <p className="text-xs text-gray-500">{formatPrice(attendee.ticketPrice)}</p>
+                        </div>
+                        <div className="bg-gray-50 rounded-lg p-2">
+                          <p className="text-gray-500 text-xs">Fecha Compra</p>
+                          <p className="font-medium text-gray-900">
+                            {new Date(attendee.purchaseDate).toLocaleDateString('es-ES', {
+                              day: '2-digit',
+                              month: 'short'
+                            })}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-between">
+                        <span className={`px-3 py-1.5 text-xs font-medium rounded-full border flex items-center gap-1 ${getStatusColor(attendee.checkInStatus)}`}>
+                          {getStatusIcon(attendee.checkInStatus)}
+                          {getStatusText(attendee.checkInStatus)}
                         </span>
-                        <span className="flex items-center">
-                          <MapPin className="w-4 h-4 mr-1" />
-                          {event.location}
-                        </span>
-                        <span className="flex items-center">
-                          <Users className="w-4 h-4 mr-1" />
-                          {event.currentAttendees} asistentes
-                        </span>
+
+                        <div className="flex items-center space-x-1">
+                          <button
+                            onClick={() => handleAttendeeAction(attendee, 'view')}
+                            className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                            title="Ver detalles"
+                          >
+                            <Eye className="w-5 h-5" />
+                          </button>
+                          <button
+                            onClick={() => handleAttendeeAction(attendee, 'email')}
+                            className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                            title="Enviar email"
+                          >
+                            <Mail className="w-5 h-5" />
+                          </button>
+                          <button
+                            onClick={() => handleAttendeeAction(attendee, 'qr')}
+                            className="p-2 text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
+                            title="Ver QR"
+                          >
+                            <QrCode className="w-5 h-5" />
+                          </button>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                  <div className="flex items-center space-x-4">
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium border ${
-                      (event.status === 'ongoing' || event.status === 'upcoming')
-                        ? 'bg-green-100 text-green-800 border-green-200'
-                        : 'bg-blue-100 text-blue-800 border-blue-200'
-                    }`}>
-                      {(event.status === 'ongoing' || event.status === 'upcoming') ? 'Activo' : 'Completado'}
-                    </span>
-                    {isExpanded ? <ChevronDown className="w-5 h-5 text-gray-400" /> : <ChevronRight className="w-5 h-5 text-gray-400" />}
-                  </div>
+                  ))}
                 </div>
-              </div>
 
-              {isExpanded && (
-                <div className="border-t border-gray-200">
-                  {loading ? (
-                    <div className="p-8 text-center text-gray-600">Cargando asistentes...</div>
-                  ) : eventAttendees.length > 0 ? (
-              <div className="overflow-x-auto">
-                <div className="inline-block min-w-full align-middle">
-              <div>
+                {/* Vista desktop: Tabla */}
+                <div className="hidden lg:block overflow-x-auto">
+                  <div className="inline-block min-w-full align-middle">
+                    <div>
                       <table className="min-w-full divide-y divide-gray-200">
                         <thead className="bg-gray-50">
                           <tr>
@@ -736,7 +670,7 @@ export function AttendeeManagement({ eventId, eventTitle, onRefreshRequest }: At
                           </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-200">
-                          {eventAttendees.map((attendee) => (
+                          {filteredAttendees.map((attendee) => (
                             <tr key={attendee.purchaseId || `${attendee.id}-${attendee.eventId}`} className="hover:bg-gray-50">
                               <td className="px-6 py-4 whitespace-nowrap">
                                 <input
@@ -778,21 +712,21 @@ export function AttendeeManagement({ eventId, eventTitle, onRefreshRequest }: At
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                 <div className="flex items-center space-x-2">
-                                  <button 
+                                  <button
                                     onClick={() => handleAttendeeAction(attendee, 'view')}
                                     className="text-blue-600 hover:text-blue-900"
                                     title="Ver detalles"
                                   >
                                     <Eye className="w-4 h-4" />
                                   </button>
-                                  <button 
+                                  <button
                                     onClick={() => handleAttendeeAction(attendee, 'email')}
                                     className="text-blue-600 hover:text-blue-900"
                                     title="Enviar email"
                                   >
                                     <Mail className="w-4 h-4" />
                                   </button>
-                                  <button 
+                                  <button
                                     onClick={() => handleAttendeeAction(attendee, 'qr')}
                                     className="text-purple-600 hover:text-purple-900"
                                     title="Ver QR"
@@ -805,20 +739,256 @@ export function AttendeeManagement({ eventId, eventTitle, onRefreshRequest }: At
                           ))}
                         </tbody>
                       </table>
+                    </div>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <div className="p-8 text-center">
+                <Users className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                <p className="text-gray-600">No hay asistentes para este evento</p>
+                <p className="text-sm text-gray-500 mt-2">Los asistentes aparecerán aquí cuando realicen una compra</p>
+              </div>
+            )}
+          </div>
+        ) : (
+          // Vista accordion cuando no hay evento seleccionado
+          events.map((event) => {
+            const eventAttendees = filteredAttendees.filter(attendee => attendee.eventId === event.id);
+            const isExpanded = expandedEvent === event.id;
+
+            return (
+              <div key={event.id} className="bg-gradient-to-br from-white to-indigo-100/98 backdrop-blur-lg shadow-xl border border-gray-300 rounded-2xl overflow-hidden hover:shadow-2xl transition-all duration-200">
+                <div
+                  className="p-4 md:p-6 cursor-pointer hover:bg-white/20 transition-all duration-200"
+                  onClick={() => toggleEventExpansion(event.id)}
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center space-x-3 md:space-x-4 min-w-0 flex-1">
+                      <div className="w-10 h-10 md:w-12 md:h-12 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <Calendar className="w-5 h-5 md:w-6 md:h-6 text-blue-600" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <h4 className="font-semibold text-gray-900 truncate">{event.title}</h4>
+                        <div className="flex flex-wrap items-center gap-2 md:gap-4 text-xs md:text-sm text-gray-600 mt-1">
+                          <span className="flex items-center">
+                            <Calendar className="w-3 h-3 md:w-4 md:h-4 mr-1" />
+                            {parseDateString(event.date).toLocaleDateString('es-ES', { day: '2-digit', month: 'short' })}
+                          </span>
+                          <span className="hidden sm:flex items-center">
+                            <MapPin className="w-3 h-3 md:w-4 md:h-4 mr-1" />
+                            <span className="truncate max-w-[120px]">{event.location}</span>
+                          </span>
+                          <span className="flex items-center">
+                            <Users className="w-3 h-3 md:w-4 md:h-4 mr-1" />
+                            {event.currentAttendees}
+                          </span>
                         </div>
                       </div>
                     </div>
-                  ) : (
-                    <div className="p-8 text-center">
-                      <Users className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                      <p className="text-gray-600">No hay asistentes para este evento</p>
+                    <div className="flex items-center space-x-2 md:space-x-4 flex-shrink-0">
+                      <span className={`px-2 py-1 rounded-full text-[10px] md:text-xs font-medium border ${(event.status === 'ongoing' || event.status === 'upcoming')
+                        ? 'bg-green-100 text-green-800 border-green-200'
+                        : 'bg-blue-100 text-blue-800 border-blue-200'
+                        }`}>
+                        <span className="hidden sm:inline">{(event.status === 'ongoing' || event.status === 'upcoming') ? 'Activo' : 'Completado'}</span>
+                        <span className="sm:hidden">{(event.status === 'ongoing' || event.status === 'upcoming') ? '●' : '✓'}</span>
+                      </span>
+                      {isExpanded ? <ChevronDown className="w-5 h-5 text-gray-400" /> : <ChevronRight className="w-5 h-5 text-gray-400" />}
                     </div>
-                  )}
+                  </div>
                 </div>
-              )}
-            </div>
-          );
-        })
+
+                {isExpanded && (
+                  <div className="border-t border-gray-200">
+                    {loading ? (
+                      <div className="p-8 text-center text-gray-600">Cargando asistentes...</div>
+                    ) : eventAttendees.length > 0 ? (
+                      <>
+                        {/* Vista móvil: Cards */}
+                        <div className="block lg:hidden p-4 space-y-3">
+                          {eventAttendees.map((attendee) => (
+                            <div
+                              key={attendee.purchaseId || `${attendee.id}-${attendee.eventId}`}
+                              className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm hover:shadow-md transition-shadow"
+                            >
+                              <div className="flex items-start justify-between mb-3">
+                                <div className="flex items-center space-x-3">
+                                  <div className="w-10 h-10 bg-gradient-to-br from-blue-50 to-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                    <Users className="w-5 h-5 text-blue-600" />
+                                  </div>
+                                  <div className="min-w-0">
+                                    <p className="font-semibold text-gray-900 truncate">{attendee.name}</p>
+                                    <p className="text-sm text-gray-500 truncate">{attendee.email}</p>
+                                  </div>
+                                </div>
+                                <input
+                                  type="checkbox"
+                                  checked={selectedAttendees.includes(attendee.id)}
+                                  onChange={(e) => {
+                                    if (e.target.checked) {
+                                      setSelectedAttendees([...selectedAttendees, attendee.id]);
+                                    } else {
+                                      setSelectedAttendees(selectedAttendees.filter(id => id !== attendee.id));
+                                    }
+                                  }}
+                                  className="w-5 h-5 text-blue-600 rounded focus:ring-blue-500 flex-shrink-0"
+                                />
+                              </div>
+
+                              <div className="grid grid-cols-2 gap-2 mb-3 text-sm">
+                                <div className="bg-gray-50 rounded-lg p-2">
+                                  <p className="text-gray-500 text-xs">Tipo de Entrada</p>
+                                  <p className="font-medium text-gray-900 truncate">{attendee.ticketType}</p>
+                                  <p className="text-xs text-gray-500">{formatPrice(attendee.ticketPrice)}</p>
+                                </div>
+                                <div className="bg-gray-50 rounded-lg p-2">
+                                  <p className="text-gray-500 text-xs">Fecha Compra</p>
+                                  <p className="font-medium text-gray-900">
+                                    {new Date(attendee.purchaseDate).toLocaleDateString('es-ES', {
+                                      day: '2-digit',
+                                      month: 'short'
+                                    })}
+                                  </p>
+                                </div>
+                              </div>
+
+                              <div className="flex items-center justify-between">
+                                <span className={`px-3 py-1.5 text-xs font-medium rounded-full border flex items-center gap-1 ${getStatusColor(attendee.checkInStatus)}`}>
+                                  {getStatusIcon(attendee.checkInStatus)}
+                                  {getStatusText(attendee.checkInStatus)}
+                                </span>
+
+                                <div className="flex items-center space-x-1">
+                                  <button
+                                    onClick={() => handleAttendeeAction(attendee, 'view')}
+                                    className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                                    title="Ver detalles"
+                                  >
+                                    <Eye className="w-5 h-5" />
+                                  </button>
+                                  <button
+                                    onClick={() => handleAttendeeAction(attendee, 'email')}
+                                    className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                                    title="Enviar email"
+                                  >
+                                    <Mail className="w-5 h-5" />
+                                  </button>
+                                  <button
+                                    onClick={() => handleAttendeeAction(attendee, 'qr')}
+                                    className="p-2 text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
+                                    title="Ver QR"
+                                  >
+                                    <QrCode className="w-5 h-5" />
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+
+                        {/* Vista desktop: Tabla */}
+                        <div className="hidden lg:block overflow-x-auto">
+                          <div className="inline-block min-w-full align-middle">
+                            <div>
+                              <table className="min-w-full divide-y divide-gray-200">
+                                <thead className="bg-gray-50">
+                                  <tr>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                      <input type="checkbox" className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500" />
+                                    </th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Asistente</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipo de Entrada</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha Compra</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+                                  </tr>
+                                </thead>
+                                <tbody className="bg-white divide-y divide-gray-200">
+                                  {eventAttendees.map((attendee) => (
+                                    <tr key={attendee.purchaseId || `${attendee.id}-${attendee.eventId}`} className="hover:bg-gray-50">
+                                      <td className="px-6 py-4 whitespace-nowrap">
+                                        <input
+                                          type="checkbox"
+                                          checked={selectedAttendees.includes(attendee.id)}
+                                          onChange={(e) => {
+                                            if (e.target.checked) {
+                                              setSelectedAttendees([...selectedAttendees, attendee.id]);
+                                            } else {
+                                              setSelectedAttendees(selectedAttendees.filter(id => id !== attendee.id));
+                                            }
+                                          }}
+                                          className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+                                        />
+                                      </td>
+                                      <td className="px-6 py-4 whitespace-nowrap">
+                                        <div className="flex items-center">
+                                          <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center">
+                                            <Users className="w-5 h-5 text-gray-600" />
+                                          </div>
+                                          <div className="ml-4">
+                                            <div className="text-sm font-medium text-gray-900">{attendee.name}</div>
+                                            <div className="text-sm text-gray-500">{attendee.email}</div>
+                                          </div>
+                                        </div>
+                                      </td>
+                                      <td className="px-6 py-4 whitespace-nowrap">
+                                        <div className="text-sm text-gray-900">{attendee.ticketType}</div>
+                                        <div className="text-sm text-gray-500">{formatPrice(attendee.ticketPrice)}</div>
+                                      </td>
+                                      <td className="px-6 py-4 whitespace-nowrap">
+                                        <span className={`px-2 py-1 text-xs font-medium rounded-full border flex items-center w-fit ${getStatusColor(attendee.checkInStatus)}`}>
+                                          {getStatusIcon(attendee.checkInStatus)}
+                                          <span className="ml-1">{getStatusText(attendee.checkInStatus)}</span>
+                                        </span>
+                                      </td>
+                                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        {new Date(attendee.purchaseDate).toLocaleDateString('es-ES')}
+                                      </td>
+                                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                        <div className="flex items-center space-x-2">
+                                          <button
+                                            onClick={() => handleAttendeeAction(attendee, 'view')}
+                                            className="text-blue-600 hover:text-blue-900"
+                                            title="Ver detalles"
+                                          >
+                                            <Eye className="w-4 h-4" />
+                                          </button>
+                                          <button
+                                            onClick={() => handleAttendeeAction(attendee, 'email')}
+                                            className="text-blue-600 hover:text-blue-900"
+                                            title="Enviar email"
+                                          >
+                                            <Mail className="w-4 h-4" />
+                                          </button>
+                                          <button
+                                            onClick={() => handleAttendeeAction(attendee, 'qr')}
+                                            className="text-purple-600 hover:text-purple-900"
+                                            title="Ver QR"
+                                          >
+                                            <QrCode className="w-4 h-4" />
+                                          </button>
+                                        </div>
+                                      </td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
+                          </div>
+                        </div>
+                      </>
+                    ) : (
+                      <div className="p-8 text-center">
+                        <Users className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                        <p className="text-gray-600">No hay asistentes para este evento</p>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          })
         )}
       </div>
 
@@ -852,20 +1022,20 @@ export function AttendeeManagement({ eventId, eventTitle, onRefreshRequest }: At
             });
 
             if (result.success) {
-              setToast({ 
-                show: true, 
-                variant: 'success', 
-                message: `Email enviado exitosamente a ${emailData.to}` 
+              setToast({
+                show: true,
+                variant: 'success',
+                message: `Email enviado exitosamente a ${emailData.to}`
               });
             } else {
               throw new Error(result.error || 'Error al enviar el email');
             }
           } catch (error) {
             console.error('Error sending email:', error);
-            setToast({ 
-              show: true, 
-              variant: 'error', 
-              message: error instanceof Error ? error.message : 'Error al enviar el email' 
+            setToast({
+              show: true,
+              variant: 'error',
+              message: error instanceof Error ? error.message : 'Error al enviar el email'
             });
             throw error;
           }

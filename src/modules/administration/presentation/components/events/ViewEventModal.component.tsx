@@ -1,19 +1,19 @@
 import React from 'react';
-import { 
-  X, 
-  Calendar, 
-  Clock, 
-  MapPin, 
-  Users, 
-  DollarSign, 
-  Tag, 
-  BarChart, 
+import {
+  X,
+  Calendar,
+  Clock,
+  MapPin,
+  Users,
+  DollarSign,
+  Tag,
+  BarChart,
   Eye,
   ShoppingCart,
   Activity
 } from 'lucide-react';
 import { Modal } from '@shared/ui';
-import { formatRevenue } from '@shared/lib/utils/Currency.utils';
+import { formatFullRevenue } from '@shared/lib/utils/Currency.utils';
 
 interface EventDetails {
   id: string;
@@ -72,7 +72,7 @@ export const ViewEventModal: React.FC<ViewEventModalProps> = ({ event, isOpen, o
   const comprasCompletadas = event.compras?.filter(c => c.estado === 'completada') || [];
   const totalVentas = comprasCompletadas.reduce((sum, c) => sum + c.total_pagado, 0);
   const asistenciasRegistradas = event.asistencia_eventos?.length || 0;
-  const porcentajeOcupacion = event.maximo_asistentes > 0 
+  const porcentajeOcupacion = event.maximo_asistentes > 0
     ? ((event.asistentes_actuales / event.maximo_asistentes) * 100).toFixed(1)
     : '0';
 
@@ -135,219 +135,200 @@ export const ViewEventModal: React.FC<ViewEventModalProps> = ({ event, isOpen, o
         </button>
       </div>
 
-      {/* Content - Sin overflow propio, usa el del Modal padre */}
-      <div className="space-y-4 mt-4">
-        {/* Imagen del Evento */}
-        {event.url_imagen && (
-          <div className="relative h-40 sm:h-48 rounded-xl overflow-hidden shadow-lg border border-gray-200">
-            <img
-              src={event.url_imagen}
-              alt={event.titulo}
-              className="w-full h-full object-cover"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
-          </div>
-        )}
-
-        {/* Grid de Estadísticas Principales */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
-          <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-lg p-3 border border-green-200">
-            <div className="flex items-center justify-between mb-1">
-              <DollarSign className="w-5 h-5 sm:w-6 sm:h-6 text-green-600" />
-            </div>
-            <p className="text-xs font-medium text-green-700">Ventas</p>
-            <p className="text-sm sm:text-lg font-bold text-green-900 truncate">{formatRevenue(totalVentas)}</p>
-          </div>
-
-          <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-3 border border-blue-200">
-            <div className="flex items-center justify-between mb-1">
-              <ShoppingCart className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" />
-            </div>
-            <p className="text-xs font-medium text-blue-700">Compras</p>
-            <p className="text-sm sm:text-lg font-bold text-blue-900">{comprasCompletadas.length}</p>
-          </div>
-
-          <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg p-3 border border-purple-200">
-            <div className="flex items-center justify-between mb-1">
-              <Users className="w-5 h-5 sm:w-6 sm:h-6 text-purple-600" />
-            </div>
-            <p className="text-xs font-medium text-purple-700">Asistentes</p>
-            <p className="text-sm sm:text-lg font-bold text-purple-900">{event.asistentes_actuales}/{event.maximo_asistentes}</p>
-          </div>
-
-        </div>
-
-        {/* Información del Evento */}
-        <div className="bg-white rounded-lg p-4 border border-gray-200 shadow-sm">
-          <h3 className="text-sm font-bold text-gray-900 mb-3 flex items-center">
-            <Calendar className="w-4 h-4 text-blue-500 mr-2" />
-            Información del Evento
-          </h3>
-          
-          <div className="space-y-3">
-            <div>
-              <label className="text-xs font-semibold text-gray-500 uppercase">Descripción</label>
-              <p className="text-sm text-gray-700 mt-1 leading-relaxed line-clamp-3">{event.descripcion}</p>
+      {/* Content */}
+      <div className="mt-4">
+        <div className="flex flex-col md:flex-row gap-6">
+          {/* Columna Izquierda: Imagen, Info del Evento y Metadata */}
+          <div className="w-full md:w-5/12 space-y-4">
+            {/* Imagen del Evento */}
+            <div className="relative w-full aspect-[4/3] md:aspect-auto md:h-56 rounded-xl overflow-hidden shadow-lg border border-gray-200 bg-gray-100">
+              {event.url_imagen ? (
+                <img
+                  src={event.url_imagen}
+                  alt={event.titulo}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-gray-400">
+                  <Calendar className="w-12 h-12" />
+                </div>
+              )}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-3 border-t border-gray-100">
-              <div>
-                <label className="text-xs font-semibold text-gray-500 uppercase flex items-center">
-                  <Calendar className="w-3 h-3 mr-1" />
-                  Fecha
-                </label>
-                <p className="text-sm font-medium text-gray-900 mt-1">{formatDate(event.fecha_evento)}</p>
-              </div>
+            {/* Información del Evento */}
+            <div className="bg-white rounded-lg p-4 border border-gray-200 shadow-sm">
+              <h3 className="text-sm font-bold text-gray-900 mb-3 flex items-center">
+                <Calendar className="w-4 h-4 text-blue-500 mr-2" />
+                Información del Evento
+              </h3>
 
-              <div>
-                <label className="text-xs font-semibold text-gray-500 uppercase flex items-center">
-                  <Clock className="w-3 h-3 mr-1" />
-                  Hora
-                </label>
-                <p className="text-sm font-medium text-gray-900 mt-1">{event.hora_evento}</p>
-              </div>
+              <div className="space-y-3">
+                <div>
+                  <label className="text-xs font-semibold text-gray-500 uppercase">Descripción</label>
+                  <p className="text-sm text-gray-700 mt-1 leading-relaxed">{event.descripcion}</p>
+                </div>
 
-              <div className="sm:col-span-2">
-                <label className="text-xs font-semibold text-gray-500 uppercase flex items-center">
-                  <MapPin className="w-3 h-3 mr-1" />
-                  Ubicación
-                </label>
-                <p className="text-sm font-medium text-gray-900 mt-1">{event.ubicacion}</p>
+                <div className="grid grid-cols-1 gap-3 pt-3 border-t border-gray-100">
+                  <div>
+                    <label className="text-xs font-semibold text-gray-500 uppercase flex items-center">
+                      <Calendar className="w-3 h-3 mr-1" />
+                      Fecha y Hora
+                    </label>
+                    <p className="text-sm font-medium text-gray-900 mt-1">
+                      {formatDate(event.fecha_evento)} • {event.hora_evento}
+                    </p>
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-semibold text-gray-500 uppercase flex items-center">
+                      <MapPin className="w-3 h-3 mr-1" />
+                      Ubicación
+                    </label>
+                    <p className="text-sm font-medium text-gray-900 mt-1">{event.ubicacion}</p>
+                  </div>
+                </div>
+
+                {/* Etiquetas */}
+                {event.etiquetas && event.etiquetas.length > 0 && (
+                  <div className="pt-3 border-t border-gray-100">
+                    <label className="text-xs font-semibold text-gray-500 uppercase flex items-center mb-2">
+                      <Tag className="w-3 h-3 mr-1" />
+                      Etiquetas
+                    </label>
+                    <div className="flex flex-wrap gap-1.5">
+                      {event.etiquetas.map((tag, index) => (
+                        <span
+                          key={index}
+                          className="px-2 py-1 bg-gradient-to-r from-blue-50 to-purple-50 text-blue-700 rounded-md text-xs font-medium border border-blue-200"
+                        >
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 
-            {/* Etiquetas */}
-            {event.etiquetas && event.etiquetas.length > 0 && (
-              <div className="pt-3 border-t border-gray-100">
-                <label className="text-xs font-semibold text-gray-500 uppercase flex items-center mb-2">
-                  <Tag className="w-3 h-3 mr-1" />
-                  Etiquetas
-                </label>
-                <div className="flex flex-wrap gap-1.5">
-                  {event.etiquetas.map((tag, index) => (
-                    <span
-                      key={index}
-                      className="px-2 py-1 bg-gradient-to-r from-blue-50 to-purple-50 text-blue-700 rounded-md text-xs font-medium border border-blue-200"
-                    >
-                      {tag}
-                    </span>
-                  ))}
+            {/* Metadata Compacta */}
+            <div className="bg-gray-50 rounded-lg p-3 border border-gray-200 text-xs text-gray-500 space-y-1">
+              <div className="flex justify-between">
+                <span>Organizador:</span>
+                <span className="font-medium text-gray-900 truncate ml-2">{event.nombre_organizador}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Creado:</span>
+                <span className="font-medium text-gray-900">{formatDateTime(event.fecha_creacion)}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>ID:</span>
+                <span className="font-mono text-gray-700 select-all">{event.id}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Columna Derecha: Métricas y Entradas */}
+          <div className="w-full md:w-7/12 space-y-4">
+            {/* Grid de Estadísticas Principales */}
+            <div className="grid grid-cols-3 gap-3">
+              <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-lg p-3 border border-green-200 text-center">
+                <p className="text-xs font-medium text-green-700 mb-1">Ventas</p>
+                <p className="text-sm sm:text-lg font-bold text-green-900 truncate">{formatFullRevenue(totalVentas)}</p>
+              </div>
+              <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-3 border border-blue-200 text-center">
+                <p className="text-xs font-medium text-blue-700 mb-1">Compras</p>
+                <p className="text-sm sm:text-lg font-bold text-blue-900">{comprasCompletadas.length}</p>
+              </div>
+              <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg p-3 border border-purple-200 text-center">
+                <p className="text-xs font-medium text-purple-700 mb-1">Asistentes</p>
+                <p className="text-sm sm:text-lg font-bold text-purple-900">{event.asistentes_actuales}/{event.maximo_asistentes}</p>
+              </div>
+            </div>
+
+            {/* Analíticas Compactas - Solo si existen */}
+            {analytics && (
+              <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-lg p-4 border border-blue-200">
+                <h3 className="text-sm font-bold text-gray-900 mb-3 flex items-center">
+                  <BarChart className="w-4 h-4 text-purple-500 mr-2" />
+                  Métricas de Rendimiento
+                </h3>
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="text-center p-2 bg-white/50 rounded-lg">
+                    <p className="text-xs text-gray-600 mb-1">Conversión</p>
+                    <p className="text-lg font-bold text-blue-900">{(analytics.tasa_conversion || 0).toFixed(1)}%</p>
+                  </div>
+                  <div className="text-center p-2 bg-white/50 rounded-lg">
+                    <p className="text-xs text-gray-600 mb-1">Asistencia</p>
+                    <p className="text-lg font-bold text-green-900">{(analytics.tasa_asistencia || 0).toFixed(1)}%</p>
+                  </div>
+                  <div className="text-center p-2 bg-white/50 rounded-lg">
+                    <p className="text-xs text-gray-600 mb-1">Registros</p>
+                    <p className="text-lg font-bold text-purple-900">{asistenciasRegistradas}</p>
+                  </div>
                 </div>
               </div>
             )}
-          </div>
-        </div>
 
-        {/* Analíticas Compactas */}
-        {analytics && (
-          <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-lg p-4 border border-blue-200">
-            <h3 className="text-sm font-bold text-gray-900 mb-3 flex items-center">
-              <BarChart className="w-4 h-4 text-purple-500 mr-2" />
-              Analíticas
-            </h3>
+            {/* Tipos de Entrada */}
+            <div className="bg-white rounded-lg p-4 border border-gray-200 shadow-sm flex-1">
+              <h3 className="text-sm font-bold text-gray-900 mb-3 flex items-center">
+                <DollarSign className="w-4 h-4 text-green-500 mr-2" />
+                Tipos de Entrada
+              </h3>
+              {event.tipos_entrada && event.tipos_entrada.length > 0 ? (
+                <div className="space-y-3">
+                  {event.tipos_entrada.map((ticket) => {
+                    const maximos = ticket.cantidad_maxima ?? 0;
+                    const disponibles = ticket.cantidad_disponible ?? maximos;
+                    const vendidos = ticket.cantidad_vendida ?? Math.max(maximos - disponibles, 0);
+                    const restantes = Math.max(disponibles, 0);
+                    const porcentajeVendido = maximos > 0
+                      ? ((vendidos / maximos) * 100).toFixed(1)
+                      : '0';
 
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-              <div className="text-center">
-                <p className="text-xs text-gray-600">Conversión</p>
-                <p className="text-xl font-bold text-blue-900">{(analytics.tasa_conversion || 0).toFixed(1)}%</p>
-              </div>
+                    return (
+                      <div
+                        key={ticket.id}
+                        className="bg-gray-50 rounded-lg p-3 border border-gray-200 hover:border-gray-300 transition-colors"
+                      >
+                        <div className="flex items-start justify-between mb-2">
+                          <div className="flex-1 min-w-0">
+                            <h4 className="font-bold text-gray-900 text-sm truncate">{ticket.nombre_tipo}</h4>
+                            {ticket.descripcion && (
+                              <p className="text-xs text-gray-500 mt-0.5 truncate">{ticket.descripcion}</p>
+                            )}
+                          </div>
+                          <p className="text-sm font-bold text-green-600 ml-3">{formatFullRevenue(ticket.precio)}</p>
+                        </div>
 
-              <div className="text-center">
-                <p className="text-xs text-gray-600">Asistencia</p>
-                <p className="text-xl font-bold text-green-900">{(analytics.tasa_asistencia || 0).toFixed(1)}%</p>
-              </div>
+                        <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden mb-2">
+                          <div
+                            className={`h-full rounded-full transition-all duration-500 ${Number(porcentajeVendido) > 90 ? 'bg-red-500' :
+                              Number(porcentajeVendido) > 70 ? 'bg-orange-500' :
+                                'bg-green-500'
+                              }`}
+                            style={{ width: `${porcentajeVendido}%` }}
+                          />
+                        </div>
 
-              <div className="text-center sm:col-span-1 col-span-2">
-                <p className="text-xs text-gray-600">Registros</p>
-                <p className="text-xl font-bold text-purple-900">{asistenciasRegistradas}</p>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Tipos de Entrada Compactos */}
-        <div className="bg-white rounded-lg p-4 border border-gray-200 shadow-sm">
-          <h3 className="text-sm font-bold text-gray-900 mb-3 flex items-center">
-            <DollarSign className="w-4 h-4 text-green-500 mr-2" />
-            Tipos de Entrada
-          </h3>
-          {event.tipos_entrada && event.tipos_entrada.length > 0 ? (
-            <div className="space-y-2">
-              {event.tipos_entrada.map((ticket) => {
-                const maximos = ticket.cantidad_maxima ?? 0;
-                const disponibles = ticket.cantidad_disponible ?? maximos;
-                const vendidos = ticket.cantidad_vendida ?? Math.max(maximos - disponibles, 0);
-                const restantes = Math.max(disponibles, 0);
-                const porcentajeVendido = maximos > 0 
-                  ? ((vendidos / maximos) * 100).toFixed(1)
-                  : '0';
-                
-                return (
-                  <div
-                    key={ticket.id}
-                    className="bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg p-3 border border-gray-200"
-                  >
-                    <div className="flex items-start justify-between mb-3">
-                      <div className="flex-1 min-w-0">
-                        <h4 className="font-bold text-gray-900 text-sm truncate">{ticket.nombre_tipo}</h4>
-                        {ticket.descripcion && (
-                          <p className="text-xs text-gray-600 mt-0.5 line-clamp-1">{ticket.descripcion}</p>
-                        )}
+                        <div className="flex justify-between items-center text-xs">
+                          <span className="font-medium text-gray-700">{vendidos} / {maximos} vendidas</span>
+                          <span className={`${Number(restantes) === 0 ? 'text-red-600 font-bold' : 'text-blue-600'}`}>
+                            {Number(restantes) === 0 ? 'Agotado' : `${restantes} disponibles`}
+                          </span>
+                        </div>
                       </div>
-                      <p className="text-lg font-bold text-green-600 ml-3 flex-shrink-0">{formatRevenue(ticket.precio)}</p>
-                    </div>
-
-                    <div className="flex items-center gap-2 text-[11px] font-semibold text-gray-700 mb-2">
-                      <span className="px-2 py-1 bg-green-100 text-green-700 rounded-lg">Vendidas: {vendidos}</span>
-                      <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded-lg">Restantes: {restantes}</span>
-                      <span className="px-2 py-1 bg-gray-200 text-gray-700 rounded-lg">Totales: {maximos}</span>
-                      <span className="px-2 py-1 bg-purple-100 text-purple-700 rounded-lg">{porcentajeVendido}%</span>
-                    </div>
-
-                    <div className="space-y-1">
-                      <div className="flex items-center justify-between text-xs">
-                        <span className="text-gray-600">{vendidos} / {maximos}</span>
-                        <span className="text-gray-500">{porcentajeVendido}% vendido</span>
-                      </div>
-                      
-                      <div className="w-full bg-gray-200 rounded-full h-1.5 overflow-hidden">
-                        <div 
-                          className="bg-gradient-to-r from-green-500 to-green-600 h-full rounded-full transition-all duration-500"
-                          style={{ width: `${porcentajeVendido}%` }}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          ) : (
-            <div className="text-center py-6 bg-gray-50 rounded-lg border border-dashed border-gray-300">
-              <DollarSign className="w-8 h-8 text-gray-300 mx-auto mb-2" />
-              <p className="text-xs text-gray-500">Sin entradas configuradas</p>
-            </div>
-          )}
-        </div>
-
-        {/* Metadata Compacta */}
-        <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg p-4 border border-gray-200">
-          <h3 className="text-xs font-bold text-gray-700 uppercase mb-3">Información del Sistema</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-            <div>
-              <label className="text-gray-500 font-medium">Organizador</label>
-              <p className="font-semibold text-gray-900 mt-0.5 truncate">{event.nombre_organizador}</p>
-            </div>
-            <div>
-              <label className="text-gray-500 font-medium">Creado</label>
-              <p className="font-semibold text-gray-900 mt-0.5">{formatDateTime(event.fecha_creacion)}</p>
-            </div>
-            <div>
-              <label className="text-gray-500 font-medium">Actualizado</label>
-              <p className="font-semibold text-gray-900 mt-0.5">{formatDateTime(event.fecha_actualizacion)}</p>
-            </div>
-            <div>
-              <label className="text-gray-500 font-medium">ID</label>
-              <p className="font-mono text-gray-700 mt-0.5 truncate" title={event.id}>{event.id}</p>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="text-center py-8 bg-gray-50 rounded-lg border border-dashed border-gray-300">
+                  <DollarSign className="w-10 h-10 text-gray-300 mx-auto mb-2" />
+                  <p className="text-sm text-gray-500 font-medium">No hay entradas configuradas</p>
+                  <p className="text-xs text-gray-400 mt-1">Configura las entradas en la pestaña "Tipos de Entrada"</p>
+                </div>
+              )}
             </div>
           </div>
         </div>

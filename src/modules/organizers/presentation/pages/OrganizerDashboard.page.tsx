@@ -156,12 +156,24 @@ export function OrganizerDashboard() {
   const [selectedTicket, setSelectedTicket] = useState<any | null>(null);
 
   // Handlers para CRUD de tipo de entrada
-  const handleViewTicket = (ticketId: string) => {
+  const handleViewTicket = async (ticketId: string) => {
     const ticket = selectedEvent?.ticketTypes?.find((t: any) => t.id === ticketId);
     if (ticket) {
       // Normalizar clave para buscar el revenue correspondiente
       const key = normalizeTicketKey(ticket.name || ticket.nombre_tipo);
-      const revenue = ticketRevenueByType[key];
+
+      // Siempre calcular el revenue al abrir el modal para garantizar datos actualizados
+      let revenue = ticketRevenueByType[key];
+      if (revenue === undefined && selectedEvent?.id) {
+        try {
+          const revenueMap = await calculateTicketRevenue(selectedEvent.id);
+          setTicketRevenueByType(revenueMap);
+          revenue = revenueMap[key];
+        } catch (e) {
+          console.error('Error calculando revenue para el ticket:', e);
+        }
+      }
+
       // Inyectar el revenue calculado al objeto ticket para que el modal lo pueda leer
       setSelectedTicket({ ...ticket, revenue });
     } else {

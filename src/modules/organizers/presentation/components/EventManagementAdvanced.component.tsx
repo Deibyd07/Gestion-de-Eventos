@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { formatFullRevenue } from '@shared/lib/utils/Currency.utils';
 import { useNavigate } from 'react-router-dom';
 import {
   Calendar,
@@ -190,6 +191,13 @@ export const EventManagementAdvanced: React.FC<EventManagementAdvancedProps> = (
       <div className="grid grid-cols-1 gap-3 sm:gap-4 md:gap-6 w-full">
         {sortedEvents.map((event) => {
           const StatusIcon = getStatusIcon(event.status);
+
+          // Determine price to display: General or first ticket type, or 0
+          const generalTicket = event.ticketTypes?.find(t => t.name.toLowerCase().includes('general')) ||
+            event.ticketTypes?.find(t => t.name.toLowerCase().includes('entrada')) ||
+            event.ticketTypes?.[0];
+          const displayPrice = generalTicket ? formatFullRevenue(generalTicket.price) : 'Gratis';
+
           return (
             <div key={event.id} className="bg-gradient-to-br from-white to-indigo-100/98 backdrop-blur-lg shadow-xl border border-white/20 rounded-2xl hover:shadow-2xl transition-all duration-200 overflow-hidden">
               <div className="flex flex-col md:flex-row">
@@ -234,7 +242,7 @@ export const EventManagementAdvanced: React.FC<EventManagementAdvancedProps> = (
                     </div>
                     <div className="flex items-center text-sm text-gray-600">
                       <DollarSign className="w-4 h-4 mr-2 text-yellow-600 flex-shrink-0" />
-                      <span>${event.revenue.toLocaleString()} ingresos</span>
+                      <span>{displayPrice}</span>
                     </div>
                   </div>
 

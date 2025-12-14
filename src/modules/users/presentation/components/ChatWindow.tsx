@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Send, Loader2, Bot, User } from 'lucide-react';
+import { Send, Loader2, Bot, User, X } from 'lucide-react';
 import { CHAT_CONFIG } from '../config/chat.config';
 import { ChatService } from '../services/Chat.service';
 import { useAuthStore } from '../../../authentication/infrastructure/store/Auth.store';
@@ -13,9 +13,10 @@ interface Message {
 
 interface ChatWindowProps {
   isOpen: boolean;
+  onClose?: () => void;
 }
 
-export function ChatWindow({ isOpen }: ChatWindowProps) {
+export function ChatWindow({ isOpen, onClose }: ChatWindowProps) {
   const { user } = useAuthStore();
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -46,7 +47,7 @@ export function ChatWindow({ isOpen }: ChatWindowProps) {
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!inputMessage.trim() || isLoading) return;
 
     const userMessage: Message = {
@@ -71,18 +72,18 @@ export function ChatWindow({ isOpen }: ChatWindowProps) {
         sender: 'bot',
         timestamp: new Date(),
       };
-      
+
       setMessages((prev) => [...prev, botMessage]);
     } catch (error) {
       console.error('Error al comunicarse con el agente IA:', error);
-      
+
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
         text: CHAT_CONFIG.ERROR_MESSAGE,
         sender: 'bot',
         timestamp: new Date(),
       };
-      
+
       setMessages((prev) => [...prev, errorMessage]);
     } finally {
       setIsLoading(false);
@@ -94,25 +95,35 @@ export function ChatWindow({ isOpen }: ChatWindowProps) {
   return (
     <div
       className={`
-        fixed bottom-6 left-6 z-50
-        w-96 max-w-[calc(100vw-3rem)]
-        h-[500px] max-h-[calc(100vh-180px)]
+        fixed z-50
+        bottom-4 left-4 sm:bottom-6 sm:left-6
+        w-[calc(100vw-2rem)] sm:w-96
+        h-[400px] sm:h-[500px] max-h-[calc(100vh-120px)]
         bg-white rounded-2xl shadow-2xl
         flex flex-col overflow-hidden
         transition-all duration-300 ease-in-out
         ${isOpen ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'}
-        sm:w-96
       `}
     >
       {/* Header */}
-      <div className="bg-gradient-to-r from-purple-600 to-blue-600 text-white p-4 flex items-center gap-3">
-        <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
-          <Bot className="w-6 h-6" />
+      <div className="bg-gradient-to-r from-purple-600 to-blue-600 text-white p-3 sm:p-4 flex items-center justify-between">
+        <div className="flex items-center gap-2 sm:gap-3">
+          <div className="w-8 h-8 sm:w-10 sm:h-10 bg-white/20 rounded-full flex items-center justify-center">
+            <Bot className="w-4 h-4 sm:w-6 sm:h-6" />
+          </div>
+          <div>
+            <h3 className="font-semibold text-sm sm:text-base">Asistente Virtual</h3>
+            <p className="text-xs text-white/80">En línea</p>
+          </div>
         </div>
-        <div>
-          <h3 className="font-semibold">Asistente Virtual</h3>
-          <p className="text-xs text-white/80">En línea</p>
-        </div>
+        {/* Botón de cerrar */}
+        <button
+          onClick={onClose}
+          className="p-2 hover:bg-white/20 rounded-full transition-colors"
+          aria-label="Cerrar chat"
+        >
+          <X className="w-5 h-5" />
+        </button>
       </div>
 
       {/* Messages Area */}
@@ -120,16 +131,15 @@ export function ChatWindow({ isOpen }: ChatWindowProps) {
         {messages.map((message) => (
           <div
             key={message.id}
-            className={`flex gap-3 ${
-              message.sender === 'user' ? 'flex-row-reverse' : 'flex-row'
-            }`}
+            className={`flex gap-3 ${message.sender === 'user' ? 'flex-row-reverse' : 'flex-row'
+              }`}
           >
             {/* Avatar */}
             <div
               className={`
                 w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0
-                ${message.sender === 'user' 
-                  ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white' 
+                ${message.sender === 'user'
+                  ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white'
                   : 'bg-gray-200 text-gray-700'
                 }
               `}
@@ -197,7 +207,7 @@ export function ChatWindow({ isOpen }: ChatWindowProps) {
             placeholder="Escribe tu mensaje..."
             disabled={isLoading}
             className="
-              flex-1 px-4 py-2.5 rounded-full
+              flex-1 px-3 sm:px-4 py-2 sm:py-2.5 rounded-full text-sm
               border border-gray-300 focus:border-purple-500 focus:ring-2 focus:ring-purple-200
               outline-none transition-all
               disabled:bg-gray-100 disabled:cursor-not-allowed

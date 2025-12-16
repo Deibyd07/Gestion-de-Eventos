@@ -11,7 +11,7 @@ env:
 jobs:
   # Job 1: Tests
   test:
-    name: 🧪 Tests & Build
+    name: 🧪 Tests
     runs-on: ubuntu-latest
     
     steps:
@@ -29,9 +29,6 @@ jobs:
         
       - name: 🧪 Run tests
         run: npm test
-        
-      - name: 🏗️ Build
-        run: npm run build
 
   # Job 2: Preview Deploy
   preview:

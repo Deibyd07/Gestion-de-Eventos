@@ -5,7 +5,7 @@ import { useState } from 'react';
 interface ConfigureEventModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (newStatus: 'borrador' | 'publicado' | 'pausado' | 'cancelado' | 'finalizado') => Promise<void>;
+  onSave: (newStatus: 'borrador' | 'publicado' | 'pausado' | 'cancelado' | 'finalizado', motivo?: string) => Promise<void>;
   event: {
     id: string;
     titulo: string;
@@ -23,6 +23,7 @@ export function ConfigureEventModal({
   isLoading = false
 }: ConfigureEventModalProps) {
   const [selectedStatus, setSelectedStatus] = useState<string>('');
+  const [motivoCancelacion, setMotivoCancelacion] = useState<string>('');
   const [isSaving, setIsSaving] = useState(false);
 
   if (!event) return null;
@@ -87,8 +88,14 @@ export function ConfigureEventModal({
 
     setIsSaving(true);
     try {
-      await onSave(selectedStatus as any);
+      // Si es cancelación, pasar el motivo
+      if (selectedStatus === 'cancelado') {
+        await onSave(selectedStatus as any, motivoCancelacion || undefined);
+      } else {
+        await onSave(selectedStatus as any);
+      }
       onClose();
+      setMotivoCancelacion(''); // Limpiar motivo
     } catch (error) {
       console.error('Error al cambiar estado:', error);
     } finally {
@@ -99,6 +106,7 @@ export function ConfigureEventModal({
   const handleClose = () => {
     if (!isSaving && !isLoading) {
       setSelectedStatus('');
+      setMotivoCancelacion('');
       onClose();
     }
   };
@@ -193,11 +201,31 @@ export function ConfigureEventModal({
 
       {/* Advertencias según el estado seleccionado */}
       {selectedStatus === 'cancelado' && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
-          <p className="text-sm text-red-900 font-semibold mb-2">⚠️ Advertencia</p>
-          <p className="text-sm text-red-700">
-            Al cancelar el evento, deberás procesar manualmente los reembolsos para los asistentes que ya compraron entradas.
-          </p>
+        <div className="space-y-4 mb-6">
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+            <p className="text-sm text-red-900 font-semibold mb-2">⚠️ Advertencia</p>
+            <p className="text-sm text-red-700">
+              Al cancelar el evento, todos los asistentes serán notificados automáticamente sobre la cancelación.
+            </p>
+          </div>
+          <div className="space-y-2">
+            <label htmlFor="motivoCancelacion" className="block text-sm font-medium text-gray-700">
+              Motivo de cancelación (opcional)
+            </label>
+            <textarea
+              id="motivoCancelacion"
+              value={motivoCancelacion}
+              onChange={(e) => setMotivoCancelacion(e.target.value)}
+              placeholder="Ej: Razones de fuerza mayor, cambio de fecha, problemas con el venue..."
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
+              rows={3}
+              maxLength={500}
+            />
+            <p className="text-xs text-gray-500">
+              Este mensaje se incluirá en la notificación enviada a los asistentes.
+              {motivoCancelacion.length > 0 && ` (${motivoCancelacion.length}/500 caracteres)`}
+            </p>
+          </div>
         </div>
       )}
 

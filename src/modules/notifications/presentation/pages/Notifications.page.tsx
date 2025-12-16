@@ -1,275 +1,254 @@
-import { useState } from 'react';
-import { Bell, Mail, Settings, Send, Users, Calendar } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Bell, Mail, Settings, Send, Users, Calendar, Trash2, Check, CheckCheck, XCircle, MapPin } from 'lucide-react';
 import { useNotificationStore } from '../../../notifications/infrastructure/store/Notification.store';
 import { useAuthStore } from '../../../authentication/infrastructure/store/Auth.store';
-import { EmailTemplateManager } from '../../../events/presentation/components/EmailTemplateManager.component';
-import { NotificationCenter } from '../../../events/presentation/components/NotificationCenter.component';
+import { useNavigate } from 'react-router-dom';
 
 export function NotificationsPage() {
   const { user } = useAuthStore();
-  const { getUserNotifications, sendEmail, emailTemplates } = useNotificationStore();
-  const [activeTab, setActiveTab] = useState('notifications');
-  const [selectedTemplate, setSelectedTemplate] = useState('');
-  const [recipientEmail, setRecientEmail] = useState('');
-  const [isSending, setIsSending] = useState(false);
+  const navigate = useNavigate();
+  const { 
+    userNotifications, 
+    unreadCount, 
+    loading, 
+    loadUserNotifications, 
+    markAsRead, 
+    markAllAsRead, 
+    deleteNotification 
+  } = useNotificationStore();
 
-  const notifications = user ? getUserNotifications(user.id) : [];
+  useEffect(() => {
+    if (user?.id) {
+      loadUserNotifications(user.id);
+    }
+  }, [user?.id, loadUserNotifications]);
 
-  const handleSendEmail = async () => {
-    if (!selectedTemplate || !recipientEmail) return;
-
-    setIsSending(true);
+  const handleMarkAsRead = async (notificationId: string) => {
     try {
-      const success = await sendEmail(selectedTemplate, recipientEmail, {
-        name: user?.name || 'Usuario',
-        eventTitle: 'Evento de Prueba',
-        eventDate: new Date().toLocaleDateString('es-ES'),
-        eventTime: '19:00',
-        eventLocation: 'Madrid, España',
-        ticketType: 'General',
-        total: '50'
-      });
-
-      if (success) {
-        alert('Email enviado correctamente');
-        setRecientEmail('');
-        setSelectedTemplate('');
-      } else {
-        alert('Error al enviar el email');
-      }
+      await markAsRead(notificationId);
     } catch (error) {
-      alert('Error al enviar el email');
-    } finally {
-      setIsSending(false);
+      console.error('Error al marcar como leída:', error);
+    }
+  };
+
+  const handleMarkAllAsRead = async () => {
+    if (!user?.id) return;
+    try {
+      await markAllAsRead(user.id);
+    } catch (error) {
+      console.error('Error al marcar todas como leídas:', error);
+    }
+  };
+
+  const handleDelete = async (notificationId: string) => {
+    try {
+      await deleteNotification(notificationId);
+    } catch (error) {
+      console.error('Error al eliminar notificación:', error);
+    }
+  };
+
+  const handleNotificationClick = (notification: any) => {
+    // Marcar como leída
+    if (!notification.leida) {
+      handleMarkAsRead(notification.id);
+    }
+    
+    // Navegar si tiene URL de acción
+    if (notification.url_accion) {
+      navigate(notification.url_accion);
+    }
+  };
+
+  const getNotificationIcon = (tipo: string) => {
+    switch (tipo) {
+      case 'evento': return <Calendar className="w-5 h-5" />;
+      case 'compra': return <Mail className="w-5 h-5" />;
+      case 'sistema': return <Settings className="w-5 h-5" />;
+      default: return <Bell className="w-5 h-5" />;
+    }
+  };
+
+  const getNotificationColor = (tipo: string) => {
+    switch (tipo) {
+      case 'evento': return 'bg-blue-100 text-blue-600';
+      case 'compra': return 'bg-green-100 text-green-600';
+      case 'sistema': return 'bg-gray-100 text-gray-600';
+      case 'promocion': return 'bg-purple-100 text-purple-600';
+      default: return 'bg-gray-100 text-gray-600';
     }
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">
-          Centro de Notificaciones
-        </h1>
-        <p className="text-gray-600">
-          Gestiona tus notificaciones y plantillas de email
-        </p>
-      </div>
-
-      {/* Tabs */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-        <div className="border-b border-gray-200">
-          <nav className="flex space-x-8 px-6">
-            <button
-              onClick={() => setActiveTab('notifications')}
-              className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-200 ${
-                activeTab === 'notifications'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              }`}
-            >
-              <Bell className="w-4 h-4 mr-2 inline" />
-              Notificaciones
-            </button>
-            <button
-              onClick={() => setActiveTab('templates')}
-              className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-200 ${
-                activeTab === 'templates'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              }`}
-            >
-              <Mail className="w-4 h-4 mr-2 inline" />
-              Plantillas de Email
-            </button>
-            <button
-              onClick={() => setActiveTab('send')}
-              className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-200 ${
-                activeTab === 'send'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              }`}
-            >
-              <Send className="w-4 h-4 mr-2 inline" />
-              Enviar Email
-            </button>
-          </nav>
-        </div>
-
-        {/* Tab Content */}
-        <div className="p-6">
-          {activeTab === 'notifications' && (
-            <div className="space-y-6">
-              <div className="flex justify-between items-center">
-                <h2 className="text-xl font-semibold text-gray-900">Tus Notificaciones</h2>
-                <NotificationCenter />
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Header con diseño mejorado */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
+                <Bell className="w-7 h-7 text-white" />
               </div>
-
-              {notifications.length > 0 ? (
-                <div className="space-y-4">
-                  {notifications.map((notification) => (
-                    <div
-                      key={notification.id}
-                      className={`p-4 rounded-lg border ${
-                        notification.read 
-                          ? 'bg-white border-gray-200' 
-                          : 'bg-blue-50 border-blue-200'
-                      }`}
-                    >
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <h3 className="font-medium text-gray-900">
-                            {notification.title}
-                          </h3>
-                          <p className="text-gray-600 mt-1">
-                            {notification.message}
-                          </p>
-                          <p className="text-sm text-gray-500 mt-2">
-                            {new Date(notification.createdAt).toLocaleDateString('es-ES', {
-                              year: 'numeric',
-                              month: 'long',
-                              day: 'numeric',
-                              hour: '2-digit',
-                              minute: '2-digit'
-                            })}
-                          </p>
-                        </div>
-                        {!notification.read && (
-                          <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-12">
-                  <Bell className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">
-                    No tienes notificaciones
-                  </h3>
-                  <p className="text-gray-600">
-                    Te notificaremos cuando tengas actualizaciones importantes.
-                  </p>
-                </div>
-              )}
-            </div>
-          )}
-
-          {activeTab === 'templates' && (
-            <EmailTemplateManager />
-          )}
-
-          {activeTab === 'send' && (
-            <div className="space-y-6">
               <div>
-                <h2 className="text-xl font-semibold text-gray-900 mb-4">Enviar Email de Prueba</h2>
-                <p className="text-gray-600 mb-6">
-                  Envía un email de prueba usando una de tus plantillas para verificar que todo funciona correctamente.
+                <h1 className="text-3xl font-bold text-gray-900">
+                  Notificaciones
+                </h1>
+                <p className="text-gray-600 mt-1">
+                  {unreadCount > 0 
+                    ? `Tienes ${unreadCount} notificación${unreadCount > 1 ? 'es' : ''} sin leer`
+                    : 'No tienes notificaciones sin leer'
+                  }
                 </p>
               </div>
-
-              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Plantilla de Email
-                    </label>
-                    <select
-                      value={selectedTemplate}
-                      onChange={(e) => setSelectedTemplate(e.target.value)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    >
-                      <option value="">Selecciona una plantilla</option>
-                      {emailTemplates.map(template => (
-                        <option key={template.id} value={template.id}>
-                          {template.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Email de Destino
-                    </label>
-                    <input
-                      type="email"
-                      value={recipientEmail}
-                      onChange={(e) => setRecientEmail(e.target.value)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      placeholder="usuario@ejemplo.com"
-                    />
-                  </div>
-                </div>
-
-                <div className="mt-6">
-                  <button
-                    onClick={handleSendEmail}
-                    disabled={!selectedTemplate || !recipientEmail || isSending}
-                    className="inline-flex items-center px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {isSending ? (
-                      <>
-                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                        Enviando...
-                      </>
-                    ) : (
-                      <>
-                        <Send className="w-4 h-4 mr-2" />
-                        Enviar Email de Prueba
-                      </>
-                    )}
-                  </button>
-                </div>
-              </div>
-
-              {/* Quick Actions */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl p-6 text-white">
-                  <div className="flex items-center mb-4">
-                    <Users className="w-8 h-8 mr-3" />
-                    <h3 className="text-lg font-semibold">Notificar Asistentes</h3>
-                  </div>
-                  <p className="text-blue-100 mb-4">
-                    Envía notificaciones masivas a todos los asistentes de un evento.
-                  </p>
-                  <button className="bg-white/20 backdrop-blur-sm text-white px-4 py-2 rounded-lg hover:bg-white/30 transition-colors duration-200">
-                    Configurar
-                  </button>
-                </div>
-
-                <div className="bg-gradient-to-r from-green-500 to-green-600 rounded-xl p-6 text-white">
-                  <div className="flex items-center mb-4">
-                    <Calendar className="w-8 h-8 mr-3" />
-                    <h3 className="text-lg font-semibold">Recordatorios Automáticos</h3>
-                  </div>
-                  <p className="text-green-100 mb-4">
-                    Programa recordatorios automáticos para tus eventos.
-                  </p>
-                  <button className="bg-white/20 backdrop-blur-sm text-white px-4 py-2 rounded-lg hover:bg-white/30 transition-colors duration-200">
-                    Configurar
-                  </button>
-                </div>
-
-                <div className="bg-gradient-to-r from-purple-500 to-purple-600 rounded-xl p-6 text-white">
-                  <div className="flex items-center mb-4">
-                    <Settings className="w-8 h-8 mr-3" />
-                    <h3 className="text-lg font-semibold">Configuración</h3>
-                  </div>
-                  <p className="text-purple-100 mb-4">
-                    Personaliza las preferencias de notificaciones.
-                  </p>
-                  <button className="bg-white/20 backdrop-blur-sm text-white px-4 py-2 rounded-lg hover:bg-white/30 transition-colors duration-200">
-                    Configurar
-                  </button>
-                </div>
-              </div>
             </div>
-          )}
+            {unreadCount > 0 && (
+              <button
+                onClick={handleMarkAllAsRead}
+                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center gap-2 transition-colors shadow-sm"
+              >
+                <CheckCheck className="w-4 h-4" />
+                Marcar todas como leídas
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Lista de notificaciones */}
+        <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+          <div className="divide-y divide-gray-100">
+            {loading ? (
+              <div className="text-center py-12">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+                <p className="text-gray-600 mt-4">Cargando notificaciones...</p>
+              </div>
+            ) : userNotifications.length > 0 ? (
+              userNotifications.map((notification) => {
+                // Obtener título y subtítulo actualizados
+                const displayTitle = notification.evento?.titulo || notification.titulo;
+                const isEventCancelled = notification.evento?.estado === 'cancelado';
+                
+                return (
+                  <div
+                    key={notification.id}
+                    onClick={() => handleNotificationClick(notification)}
+                    className={`p-5 transition-all cursor-pointer hover:bg-gray-50 ${
+                      !notification.leida ? 'bg-blue-50/50' : ''
+                    }`}
+                  >
+                    <div className="flex items-start gap-4">
+                      {/* Icono */}
+                      <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${getNotificationColor(notification.tipo)}`}>
+                        {getNotificationIcon(notification.tipo)}
+                      </div>
+
+                      {/* Contenido */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between gap-2 mb-1">
+                          <h3 className={`font-semibold text-gray-900 ${!notification.leida ? 'font-bold' : ''}`}>
+                            {displayTitle}
+                            {isEventCancelled && (
+                              <span className="ml-2 px-2 py-0.5 bg-red-100 text-red-700 text-xs rounded-full font-medium">
+                                Cancelado
+                              </span>
+                            )}
+                          </h3>
+                          {!notification.leida && (
+                            <div className="w-2 h-2 bg-blue-600 rounded-full flex-shrink-0 mt-1.5"></div>
+                          )}
+                        </div>
+
+                        <p className="text-gray-600 text-sm mb-2 line-clamp-2">
+                          {notification.mensaje}
+                        </p>
+
+                        {notification.evento && (
+                          <div className="flex items-center gap-2 text-xs text-gray-500 mb-2">
+                            <Calendar className="w-3.5 h-3.5" />
+                            <span>
+                              {new Date(notification.evento.fecha_evento).toLocaleDateString('es-CO', {
+                                day: 'numeric',
+                                month: 'long',
+                                year: 'numeric'
+                              })}
+                            </span>
+                            {notification.evento.ubicacion && (
+                              <>
+                                <span>•</span>
+                                <MapPin className="w-3.5 h-3.5" />
+                                <span>{notification.evento.ubicacion}</span>
+                              </>
+                            )}
+                          </div>
+                        )}
+
+                        <div className="flex items-center justify-between gap-3">
+                          <span className="text-xs text-gray-500">
+                            {(() => {
+                              const date = new Date(notification.fecha_creacion);
+                              // Ajustar 5 horas (sumar para compensar la diferencia UTC/Colombia)
+                              date.setHours(date.getHours() + 5);
+                              const hour = String(date.getHours()).padStart(2, '0');
+                              const minute = String(date.getMinutes()).padStart(2, '0');
+                              return `${hour}:${minute}`;
+                            })()}
+                          </span>
+
+                          <div className="flex items-center gap-2">
+                            {notification.url_accion && (
+                              <span className="text-xs text-blue-600 font-medium">
+                                {notification.texto_accion || 'Ver más'}
+                              </span>
+                            )}
+                            
+                            {!notification.leida && (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleMarkAsRead(notification.id);
+                                }}
+                                className="p-1.5 hover:bg-blue-100 rounded-lg transition-colors"
+                                title="Marcar como leída"
+                              >
+                                <Check className="w-4 h-4 text-blue-600" />
+                              </button>
+                            )}
+                            
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDelete(notification.id);
+                              }}
+                              className="p-1.5 hover:bg-red-100 rounded-lg transition-colors"
+                              title="Eliminar"
+                            >
+                              <Trash2 className="w-4 h-4 text-red-600" />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })
+            ) : (
+              <div className="text-center py-16">
+                <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Bell className="w-10 h-10 text-gray-400" />
+                </div>
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                  No tienes notificaciones
+                </h3>
+                <p className="text-gray-600">
+                  {activeTab === 'unread' 
+                    ? 'Ya has leído todas tus notificaciones'
+                    : 'Aún no tienes notificaciones'
+                  }
+                </p>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>
   );
 }
-
-

@@ -57,3 +57,5 @@ Thumbs.db
 .settings/
 .vscode/
 .idea/
+.vercel
+.env*.local

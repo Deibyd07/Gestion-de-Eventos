@@ -454,7 +454,7 @@ npm run typecheck    # Verificación de tipos TypeScript
 - Crear códigos promocionales
 
 ### 🛡️ **Administrador**
-- Todo lo del organizador +
+
 - Gestionar todos los usuarios
 - Gestionar todos los eventos
 - Ver analíticas globales

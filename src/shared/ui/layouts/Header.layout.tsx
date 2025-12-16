@@ -1,16 +1,32 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Calendar, User, ShoppingCart, Menu, X, Search, LogOut, Settings, Shield } from 'lucide-react';
+import { Calendar, User, ShoppingCart, Menu, X, Search, LogOut, Settings, Shield, Bell } from 'lucide-react';
 import { useAuthStore } from '../../../modules/authentication/infrastructure/store/Auth.store';
 import { useCartStore } from '../../../modules/payments/infrastructure/store/Cart.store';
+import { useNotificationStore } from '../../../modules/notifications/infrastructure/store/Notification.store';
 
 export function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const { user, isAuthenticated, logout } = useAuthStore();
   const { items } = useCartStore();
+  const { unreadCount, loadUserNotifications } = useNotificationStore();
   const navigate = useNavigate();
   const location = useLocation();
+
+  // Cargar notificaciones cuando el usuario está autenticado
+  useEffect(() => {
+    if (isAuthenticated && user?.id) {
+      loadUserNotifications(user.id);
+      
+      // Actualizar cada 30 segundos
+      const interval = setInterval(() => {
+        loadUserNotifications(user.id);
+      }, 30000);
+      
+      return () => clearInterval(interval);
+    }
+  }, [isAuthenticated, user?.id, loadUserNotifications]);
 
   const handleLogout = () => {
     logout();
@@ -97,6 +113,19 @@ export function Header() {
           <div className="flex items-center space-x-4">
             {isAuthenticated ? (
               <>
+                {/* Notifications Bell */}
+                <Link 
+                  to="/notifications" 
+                  className="relative p-2 text-white/80 hover:text-white hover:bg-white/10 rounded-xl backdrop-blur-sm transition-all duration-200 border border-transparent hover:border-white/20"
+                >
+                  <Bell className="w-6 h-6" />
+                  {unreadCount > 0 && (
+                    <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs font-medium rounded-full flex items-center justify-center shadow-lg animate-pulse">
+                      {unreadCount > 9 ? '9+' : unreadCount}
+                    </span>
+                  )}
+                </Link>
+
                 {/* Shopping Cart */}
                 <Link 
                   to="/checkout" 

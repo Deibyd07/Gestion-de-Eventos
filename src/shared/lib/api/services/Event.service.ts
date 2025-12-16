@@ -2,6 +2,9 @@ import { supabase } from '../supabase';
 import type { Database } from '../supabase';
 
 type Tables = Database['public']['Tables'];
+type Evento = Tables['eventos']['Row'];
+type EventoInsert = Tables['eventos']['Insert'];
+type EventoUpdate = Tables['eventos']['Update'];
 
 export class EventService {
   static async obtenerEventos(filtros?: {
@@ -68,7 +71,7 @@ export class EventService {
     
     // Calcular asistencia real basada en códigos QR escaneados
     if (data && data.length > 0) {
-      const eventIds = data.map(e => e.id);
+      const eventIds = data.map((e: any) => e.id);
       const { data: qrEscaneados, error: qrError } = await supabase
         .from('codigos_qr_entradas')
         .select('id_evento')
@@ -77,13 +80,13 @@ export class EventService {
       
       if (!qrError && qrEscaneados) {
         const asistenciasPorEvento = new Map<string, number>();
-        qrEscaneados.forEach(qr => {
+        (qrEscaneados as any[]).forEach((qr: any) => {
           const count = asistenciasPorEvento.get(qr.id_evento) || 0;
           asistenciasPorEvento.set(qr.id_evento, count + 1);
         });
         
         // Actualizar cada evento con la asistencia real
-        data.forEach(evento => {
+        (data as any[]).forEach((evento: any) => {
           evento.asistentes_reales = asistenciasPorEvento.get(evento.id) || 0;
         });
       }
@@ -109,7 +112,7 @@ export class EventService {
       if (eventosError) throw eventosError;
       if (!eventos || eventos.length === 0) return [];
 
-      const eventIds = eventos.map(e => e.id);
+      const eventIds = (eventos as any[]).map((e: any) => e.id);
 
       // 2. Obtener conteo de compras por evento (últimos 30 días)
       const treintaDiasAtras = new Date();
@@ -138,13 +141,13 @@ export class EventService {
       const actividadPorEvento = new Map<string, number>();
 
       // Contar compras
-      (compras || []).forEach(c => {
+      ((compras as any[]) || []).forEach((c: any) => {
         const count = actividadPorEvento.get(c.id_evento) || 0;
         actividadPorEvento.set(c.id_evento, count + 1);
       });
 
       // Contar asistencias
-      (asistencias || []).forEach(a => {
+      ((asistencias as any[]) || []).forEach((a: any) => {
         const count = actividadPorEvento.get(a.id_evento) || 0;
         actividadPorEvento.set(a.id_evento, count + 1);
       });
@@ -158,15 +161,15 @@ export class EventService {
 
       const asistenciaRealPorEvento = new Map<string, number>();
       if (!todosQrError && todosQrEscaneados) {
-        todosQrEscaneados.forEach(qr => {
+        (todosQrEscaneados as any[]).forEach((qr: any) => {
           const count = asistenciaRealPorEvento.get(qr.id_evento) || 0;
           asistenciaRealPorEvento.set(qr.id_evento, count + 1);
         });
       }
 
       // 6. Ordenar eventos por actividad y tomar los top 3
-      const eventosConActividad = eventos
-        .map(evento => ({
+      const eventosConActividad = (eventos as any[])
+        .map((evento: any) => ({
           ...evento,
           actividad: actividadPorEvento.get(evento.id) || 0,
           asistentes_reales: asistenciaRealPorEvento.get(evento.id) || 0
@@ -191,7 +194,7 @@ export class EventService {
     if (error) throw error;
     
     // Extraer categorías únicas
-    const categoriasUnicas = [...new Set(data?.map(item => item.categoria) || [])];
+    const categoriasUnicas = [...new Set((data as any[])?.map((item: any) => item.categoria) || [])];
     return categoriasUnicas;
   }
 
@@ -205,7 +208,7 @@ export class EventService {
     if (error) throw error;
     
     // Extraer ubicaciones únicas
-    const ubicacionesUnicas = [...new Set(data?.map(item => item.ubicacion) || [])];
+    const ubicacionesUnicas = [...new Set((data as any[])?.map((item: any) => item.ubicacion) || [])];
     return ubicacionesUnicas;
   }
 
@@ -253,10 +256,10 @@ export class EventService {
     return data;
   }
 
-  static async crearEvento(datosEvento: Tables['eventos']['Insert']) {
+  static async crearEvento(datosEvento: EventoInsert) {
     const { data, error } = await supabase
       .from('eventos')
-      .insert(datosEvento)
+      .insert(datosEvento as any)
       .select()
       .single();
 
@@ -269,18 +272,22 @@ export class EventService {
         .select('id_usuario_seguidor')
         .eq('id_organizador', datosEvento.id_organizador);
 
-      if (seguidores && seguidores.length > 0) {
-        const tituloNotificacion = `Nuevo evento de ${datosEvento.nombre_organizador}`;
-        const mensajeNotificacion = `Se ha publicado el evento: ${datosEvento.titulo}`;
-        const inserts = seguidores.map(seg => ({
+      if (seguidores && seguidores.length > 0 && data) {
+        const inserts = (seguidores as any[]).map((seg: any) => ({
           id_usuario: seg.id_usuario_seguidor,
-          tipo: 'informativa',
-          titulo: tituloNotificacion,
-          mensaje: mensajeNotificacion,
-          url_accion: `/eventos/${data.id}`,
-          texto_accion: 'Ver evento'
+          id_evento: (data as any).id, // Referencia al evento para datos actualizados
+          tipo: 'evento',
+          titulo: `Nuevo evento`,
+          mensaje: `Tu organizador favorito ha publicado un nuevo evento.`,
+          url_accion: `/events/${(data as any).id}`,
+          texto_accion: 'Ver evento',
+          metadata: {
+            nombre_organizador: datosEvento.nombre_organizador,
+            tipo_notificacion: 'nuevo_evento',
+            fecha_publicacion: new Date().toISOString()
+          }
         }));
-        await supabase.from('notificaciones').insert(inserts);
+        await supabase.from('notificaciones').insert(inserts as any);
       }
     } catch (e) {
       console.error('Error creando notificaciones para seguidores:', e);
@@ -289,9 +296,10 @@ export class EventService {
     return data;
   }
 
-  static async actualizarEvento(id: string, actualizaciones: Tables['eventos']['Update']) {
+  static async actualizarEvento(id: string, actualizaciones: EventoUpdate) {
     const { data, error } = await supabase
       .from('eventos')
+      // @ts-ignore - Supabase types issue
       .update(actualizaciones)
       .eq('id', id)
       .select()
@@ -311,7 +319,7 @@ export class EventService {
     if (comprasError) throw comprasError;
 
     // Verificar si hay compras completadas
-    const comprasCompletadas = compras?.filter(c => c.estado === 'completada') || [];
+    const comprasCompletadas = (compras as any[])?.filter((c: any) => c.estado === 'completada') || [];
     
     if (comprasCompletadas.length > 0) {
       throw new Error(`No se puede eliminar el evento porque tiene ${comprasCompletadas.length} compra(s) completada(s). Considera cancelar el evento en su lugar.`);
@@ -349,8 +357,18 @@ export class EventService {
 
   // Cancelar evento (soft delete - cambiar estado a 'cancelado')
   static async cancelarEvento(id: string, motivo?: string) {
+    // Primero obtenemos la información del evento
+    const { data: evento, error: eventoError } = await supabase
+      .from('eventos')
+      .select('titulo')
+      .eq('id', id)
+      .single();
+
+    if (eventoError) throw eventoError;
+
     const { data, error } = await supabase
       .from('eventos')
+      // @ts-ignore - Supabase types issue
       .update({ 
         estado: 'cancelado',
         fecha_actualizacion: new Date().toISOString()
@@ -361,18 +379,42 @@ export class EventService {
 
     if (error) throw error;
 
-    // Aquí podrías agregar lógica para:
-    // - Notificar a los asistentes
-    // - Procesar reembolsos automáticos
-    // - Registrar el motivo de cancelación
+    // Notificar a todos los asistentes
+    try {
+      const { NotificationService } = await import('./Notification.service');
+      const numUsuariosNotificados = await NotificationService.notificarEventoCancelado(
+        id, 
+        (evento as any)?.titulo, 
+        motivo
+      );
+      console.log(`✅ ${numUsuariosNotificados} usuarios notificados sobre la cancelación`);
+    } catch (notifError) {
+      console.error('⚠️ Error al enviar notificaciones, pero el evento fue cancelado:', notifError);
+      // No lanzamos el error para que la cancelación del evento se complete
+    }
 
     return data;
   }
 
   // Publicar/despublicar evento
-  static async cambiarEstadoEvento(id: string, nuevoEstado: 'borrador' | 'publicado' | 'pausado' | 'cancelado' | 'finalizado') {
+  static async cambiarEstadoEvento(id: string, nuevoEstado: 'borrador' | 'publicado' | 'pausado' | 'cancelado' | 'finalizado', motivo?: string) {
+    // Si se cancela, primero obtenemos el título del evento
+    let tituloEvento: string | undefined;
+    if (nuevoEstado === 'cancelado') {
+      const { data: evento, error: eventoError } = await supabase
+        .from('eventos')
+        .select('titulo')
+        .eq('id', id)
+        .single();
+
+      if (!eventoError && evento) {
+        tituloEvento = (evento as any).titulo;
+      }
+    }
+
     const { data, error} = await supabase
       .from('eventos')
+      // @ts-ignore - Supabase types issue
       .update({ 
         estado: nuevoEstado,
         fecha_actualizacion: new Date().toISOString()
@@ -382,12 +424,30 @@ export class EventService {
       .single();
 
     if (error) throw error;
+
+    // Si se cancela el evento, notificar a los asistentes
+    if (nuevoEstado === 'cancelado' && tituloEvento) {
+      try {
+        const { NotificationService } = await import('./Notification.service');
+        const numUsuariosNotificados = await NotificationService.notificarEventoCancelado(
+          id, 
+          tituloEvento, 
+          motivo
+        );
+        console.log(`✅ ${numUsuariosNotificados} usuarios notificados sobre la cancelación`);
+      } catch (notifError) {
+        console.error('⚠️ Error al enviar notificaciones, pero el evento fue cancelado:', notifError);
+        // No lanzamos el error para que la cancelación del evento se complete
+      }
+    }
+
     return data;
   }
 
   static async actualizarImagenEvento(id: string, urlImagen: string) {
     const { data, error } = await supabase
       .from('eventos')
+      // @ts-ignore - Supabase types issue
       .update({ url_imagen: urlImagen })
       .eq('id', id)
       .select()
@@ -466,19 +526,19 @@ export class EventService {
       }
 
       // 2. Preparar datos del nuevo evento
-      const nuevoEvento: Tables['eventos']['Insert'] = {
-        titulo: ajustes?.titulo || `${eventoOriginal.titulo} (Copia)`,
-        descripcion: eventoOriginal.descripcion,
-        url_imagen: eventoOriginal.url_imagen,
-        fecha_evento: ajustes?.fecha_evento || eventoOriginal.fecha_evento,
-        hora_evento: ajustes?.hora_evento || eventoOriginal.hora_evento,
-        ubicacion: eventoOriginal.ubicacion,
-        categoria: eventoOriginal.categoria,
-        maximo_asistentes: eventoOriginal.maximo_asistentes,
+      const nuevoEvento: EventoInsert = {
+        titulo: ajustes?.titulo || `${(eventoOriginal as any).titulo} (Copia)`,
+        descripcion: (eventoOriginal as any).descripcion,
+        url_imagen: (eventoOriginal as any).url_imagen,
+        fecha_evento: ajustes?.fecha_evento || (eventoOriginal as any).fecha_evento,
+        hora_evento: ajustes?.hora_evento || (eventoOriginal as any).hora_evento,
+        ubicacion: (eventoOriginal as any).ubicacion,
+        categoria: (eventoOriginal as any).categoria,
+        maximo_asistentes: (eventoOriginal as any).maximo_asistentes,
         asistentes_actuales: 0, // Reiniciar asistentes
-        id_organizador: eventoOriginal.id_organizador,
-        nombre_organizador: eventoOriginal.nombre_organizador,
-        etiquetas: eventoOriginal.etiquetas,
+        id_organizador: (eventoOriginal as any).id_organizador,
+        nombre_organizador: (eventoOriginal as any).nombre_organizador,
+        etiquetas: (eventoOriginal as any).etiquetas,
       };
 
       console.log('✨ Datos del nuevo evento preparados:', nuevoEvento);
@@ -487,23 +547,27 @@ export class EventService {
       const eventoDuplicado = await this.crearEvento(nuevoEvento);
       console.log('✅ Evento duplicado creado en BD:', eventoDuplicado);
 
+      if (!eventoDuplicado) {
+        throw new Error('Error al crear el evento duplicado');
+      }
+
       // 4. Duplicar los tipos de entrada si existen
-      if (eventoOriginal.tipos_entrada && eventoOriginal.tipos_entrada.length > 0) {
-        console.log(`🎫 Duplicando ${eventoOriginal.tipos_entrada.length} tipos de entrada...`);
+      if ((eventoOriginal as any).tipos_entrada && (eventoOriginal as any).tipos_entrada.length > 0) {
+        console.log(`🎫 Duplicando ${(eventoOriginal as any).tipos_entrada.length} tipos de entrada...`);
         
-        const tiposEntradaPromises = eventoOriginal.tipos_entrada.map((tipo: any) => {
+        const tiposEntradaPromises = (eventoOriginal as any).tipos_entrada.map((tipo: any) => {
           return supabase
             .from('tipos_entrada')
             .insert({
-              id_evento: eventoDuplicado.id,
+              id_evento: (eventoDuplicado as any).id,
               nombre_tipo: tipo.nombre_tipo,
               tipo: tipo.tipo,
               precio: tipo.precio,
               descripcion: tipo.descripcion,
               cantidad_maxima: tipo.cantidad_maxima,
               cantidad_disponible: tipo.cantidad_maxima, // Reiniciar disponibilidad
-              nombre_evento: eventoDuplicado.titulo
-            })
+              nombre_evento: (eventoDuplicado as any).titulo
+            } as any)
             .select()
             .single();
         });
@@ -515,7 +579,7 @@ export class EventService {
       }
 
       // 5. Obtener el evento completo con sus tipos de entrada
-      const eventoCompleto = await this.obtenerEventoPorId(eventoDuplicado.id);
+      const eventoCompleto = await this.obtenerEventoPorId((eventoDuplicado as any).id);
       console.log('🎉 Evento completo duplicado:', eventoCompleto);
       
       return eventoCompleto;

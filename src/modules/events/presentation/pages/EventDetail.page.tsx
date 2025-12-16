@@ -334,6 +334,16 @@ export function EventDetailPage() {
           {/* Sidebar - Ticket Purchase */}
           <div className="lg:col-span-1">
             <div className="bg-white border border-gray-200 rounded-xl md:rounded-2xl p-4 sm:p-5 md:p-6 lg:sticky lg:top-24">
+              {/* Mostrar advertencia si el evento está cancelado */}
+              {event.status === 'cancelado' && (
+                <div className="mb-4 sm:mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+                  <h3 className="text-lg font-bold text-red-800 mb-2">Evento Cancelado</h3>
+                  <p className="text-sm text-red-700">
+                    Este evento ha sido cancelado. No es posible comprar entradas en este momento.
+                  </p>
+                </div>
+              )}
+
               <div className="mb-4 sm:mb-6">
                 <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">Entradas</h3>
                 <div className="flex items-center text-gray-600 text-xs sm:text-sm">
@@ -346,7 +356,9 @@ export function EventDetailPage() {
                 </div>
               </div>
 
-              <div className="space-y-3 sm:space-y-4 mb-4 sm:mb-6">
+              {event.status !== 'cancelado' && (
+                <>
+                  <div className="space-y-3 sm:space-y-4 mb-4 sm:mb-6">
                 {ticketTypesData.map((ticketType: any) => (
                   <div key={ticketType.id} className="border border-gray-200 rounded-lg p-3 sm:p-4">
                     <div className="flex justify-between items-start mb-2 sm:mb-3">
@@ -428,6 +440,8 @@ export function EventDetailPage() {
                   Ver carrito
                 </Link>
               </div>
+                </>
+              )}
             </div>
           </div>
         </div>

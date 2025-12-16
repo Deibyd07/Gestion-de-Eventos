@@ -585,7 +585,7 @@ Este proyecto está bajo la Licencia MIT. Ver `LICENSE` para más información.
 
 <div align="center">
 
-**Hecho con ❤️ y ☕ por Deibyd Castillo, Andres Holguin y Edwin Morado**
+**Hecho con ❤️ y ☕ por Deibyd Castillo, Andres Holguin**
 
 ⭐ Si te gusta este proyecto, considera darle una estrella
 

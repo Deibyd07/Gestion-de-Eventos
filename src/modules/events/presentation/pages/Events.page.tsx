@@ -1,33 +1,41 @@
 import { useState, useEffect } from 'react';
-import { Search, Filter, MapPin, Calendar, Users, Clock, Star, TrendingUp, Eye, Share2 } from 'lucide-react';
+import { Search, Filter, MapPin, Calendar, Users, Clock, Star, TrendingUp, Eye, Share2, Heart } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useEventStore } from '../../../events/infrastructure/store/Event.store';
 import { useCartStore } from '../../../payments/infrastructure/store/Cart.store';
+import { useAuthStore } from '../../../authentication/infrastructure/store/Auth.store';
 import { EventCard } from '../components/EventCard.component';
 import { EventFilters } from '../components/EventFilters.component';
 
 export function EventsPage() {
   const [showFilters, setShowFilters] = useState(false);
-  const [sortBy, setSortBy] = useState('date');
+  const [sortBy, setSortBy] = useState('recommended');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const {
     filteredEvents,
+    recommendedEvents,
     searchQuery,
     setSearchQuery,
     selectedCategory,
     categories,
     loading,
     loadEvents,
+    loadRecommendedEvents,
     filterEvents,
     setPriceRange,
     setDateRange,
     clearFilters
   } = useEventStore();
+  const { user } = useAuthStore();
   const { items } = useCartStore();
 
   useEffect(() => {
     loadEvents();
-  }, [loadEvents]);
+    // Cargar eventos recomendados si el usuario está autenticado
+    if (user?.id) {
+      loadRecommendedEvents(user.id);
+    }
+  }, [loadEvents, loadRecommendedEvents, user?.id]);
 
   // Aplicar filtros cuando cambien
   useEffect(() => {
@@ -68,8 +76,19 @@ export function EventsPage() {
     clearFilters();
   };
 
-  const sortedEvents = [...filteredEvents].sort((a, b) => {
+  // Determinar qué eventos mostrar según el sortBy
+  let eventsToShow = filteredEvents;
+  
+  // Si el usuario está autenticado y selecciona "recommended", usar eventos recomendados
+  if (sortBy === 'recommended' && user?.id && recommendedEvents.length > 0) {
+    eventsToShow = recommendedEvents;
+  }
+
+  const sortedEvents = [...eventsToShow].sort((a, b) => {
     switch (sortBy) {
+      case 'recommended':
+        // Los eventos recomendados ya vienen ordenados por score
+        return 0;
       case 'date':
         return new Date(a.date).getTime() - new Date(b.date).getTime();
       case 'price-low':
@@ -234,6 +253,9 @@ export function EventsPage() {
                 onChange={(e) => handleSortChange(e.target.value)}
                 className="text-sm border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               >
+                {user?.id && (
+                  <option value="recommended">✨ Recomendados para ti</option>
+                )}
                 <option value="date">Fecha (próximos)</option>
                 <option value="price-low">Precio (menor a mayor)</option>
                 <option value="price-high">Precio (mayor a menor)</option>
@@ -243,6 +265,26 @@ export function EventsPage() {
             </div>
           </div>
         </div>
+
+        {/* Recommendation Banner */}
+        {sortBy === 'recommended' && user?.id && recommendedEvents.length > 0 && (
+          <div className="bg-gradient-to-r from-blue-50 to-purple-50 border-2 border-blue-200 rounded-xl p-4 mb-6">
+            <div className="flex items-start space-x-3">
+              <div className="flex-shrink-0">
+                <Heart className="w-6 h-6 text-blue-600" />
+              </div>
+              <div>
+                <h3 className="text-base font-semibold text-gray-900 mb-1">
+                  Eventos recomendados para ti
+                </h3>
+                <p className="text-sm text-gray-600">
+                  Estos eventos están personalizados según los organizadores que sigues y tu ubicación. 
+                  {recommendedEvents.length > 0 && ` Mostrando ${recommendedEvents.length} recomendaciones.`}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Events Grid */}
         {loading ? (

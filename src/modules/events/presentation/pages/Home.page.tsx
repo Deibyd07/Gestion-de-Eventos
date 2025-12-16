@@ -80,8 +80,8 @@ function EventAttendanceDisplay({ event }: { event: Event }) {
 }
 
 export function HomePage() {
-  const { featuredEvents, loadFeaturedEvents, loading, error } = useEventStore();
-  const { isAuthenticated } = useAuthStore();
+  const { featuredEvents, recommendedEvents, loadFeaturedEvents, loadRecommendedEvents, loading, error } = useEventStore();
+  const { isAuthenticated, user } = useAuthStore();
   const navigate = useNavigate();
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showRegisterModal, setShowRegisterModal] = useState(false);
@@ -93,7 +93,11 @@ export function HomePage() {
 
   useEffect(() => {
     loadFeaturedEvents();
-  }, [loadFeaturedEvents]);
+    // Cargar eventos recomendados si el usuario está autenticado
+    if (user?.id) {
+      loadRecommendedEvents(user.id);
+    }
+  }, [loadFeaturedEvents, loadRecommendedEvents, user?.id]);
 
   const handleRequireLogin = (title: string, message: string, action: string) => {
     if (isAuthenticated) {
@@ -311,10 +315,12 @@ export function HomePage() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-16">
               <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
-                Eventos Destacados
+                {user?.id && recommendedEvents.length > 0 ? 'Eventos Recomendados Para Ti' : 'Eventos Destacados'}
               </h2>
               <p className="text-xl text-gray-600">
-                Descubre algunos de los eventos más populares de nuestra plataforma
+                {user?.id && recommendedEvents.length > 0 
+                  ? 'Basados en tus intereses y organizadores que sigues'
+                  : 'Descubre algunos de los eventos más populares de nuestra plataforma'}
               </p>
             </div>
 
@@ -346,9 +352,9 @@ export function HomePage() {
                     Intentar de nuevo
                   </button>
                 </div>
-              ) : featuredEvents.length > 0 ? (
-                // Eventos destacados
-                featuredEvents.map((event) => (
+              ) : (user?.id && recommendedEvents.length > 0 ? recommendedEvents.slice(0, 3) : featuredEvents).length > 0 ? (
+                // Eventos destacados o recomendados
+                (user?.id && recommendedEvents.length > 0 ? recommendedEvents.slice(0, 3) : featuredEvents).map((event) => (
                   <div key={event.id} className="bg-gradient-to-br from-white to-indigo-100/98 backdrop-blur-lg shadow-xl border border-white/20 rounded-2xl overflow-hidden hover:shadow-2xl transition-all duration-300 group transform hover:-translate-y-1 flex flex-col h-full">
                     <div className="relative h-48 overflow-hidden flex-shrink-0">
                       {event.image ? (
@@ -438,7 +444,7 @@ export function HomePage() {
               )}
             </div>
 
-            {featuredEvents.length > 0 && (
+            {(user?.id && recommendedEvents.length > 0 ? recommendedEvents.slice(0, 3) : featuredEvents).length > 0 && (
               <div className="text-center">
                 <button
                   onClick={handleExploreEvents}

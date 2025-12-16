@@ -221,24 +221,24 @@ export function HomePage() {
           </div>
 
           <div className="absolute inset-0 bg-black/30 pointer-events-none" style={{ zIndex: 1 }}></div>
-          <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 sm:pt-24 md:pt-32 pb-16 sm:pb-20 md:pb-24 pointer-events-none" style={{ zIndex: 2 }}>
+          <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 sm:pt-20 md:pt-32 pb-40 sm:pb-28 md:pb-36 pointer-events-none" style={{ zIndex: 2 }}>
             <div className="text-center space-y-4 sm:space-y-6 md:space-y-8 pointer-events-none">
-              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-bold text-white leading-tight">
+              <h1 className="text-5xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white leading-tight px-2">
                 Eventos en
-                <span className="block bg-gradient-to-r from-indigo-400 via-purple-400 to-blue-500 bg-clip-text text-transparent">
+                <span className="block bg-gradient-to-r from-indigo-400 via-purple-400 to-blue-500 bg-clip-text text-transparent mt-1">
                   Colombia
                 </span>
               </h1>
 
-              <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-blue-100 max-w-3xl mx-auto leading-relaxed px-2">
+              <p className="text-lg sm:text-lg md:text-xl lg:text-2xl text-blue-100 max-w-3xl mx-auto leading-relaxed px-4 sm:px-2">
                 La plataforma nacional para eventos en todo Colombia.
-                Conecta con comunidades de todo el país y descubre eventos únicos.
+                <span className="hidden sm:inline"> Conecta con comunidades de todo el país y descubre eventos únicos.</span>
               </p>
 
-              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center pt-4 sm:pt-6 md:pt-8 pointer-events-auto">
+              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center pt-6 sm:pt-8 md:pt-10 pointer-events-auto px-4">
                 <button
                   onClick={handleExploreEvents}
-                  className="group inline-flex items-center px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold rounded-xl hover:from-blue-600 hover:to-purple-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1 text-sm sm:text-base w-full sm:w-auto justify-center"
+                  className="group inline-flex items-center px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold rounded-xl hover:from-blue-600 hover:to-purple-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1 text-sm sm:text-base min-w-[170px] sm:w-auto justify-center"
                 >
                   Explorar Eventos
                   <ArrowRight className="ml-2 w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform duration-200" />
@@ -246,9 +246,9 @@ export function HomePage() {
 
                 <button
                   onClick={handleCreateAccount}
-                  className="group inline-flex items-center px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-semibold rounded-xl hover:from-green-600 hover:to-emerald-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1 text-sm sm:text-base w-full sm:w-auto justify-center"
+                  className="group inline-flex items-center px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-semibold rounded-xl hover:from-green-600 hover:to-emerald-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1 text-sm sm:text-base min-w-[170px] sm:w-auto justify-center"
                 >
-                  Crear Cuenta Gratis
+                  Crear Cuenta
                   <Play className="ml-2 w-4 h-4 sm:w-5 sm:h-5 group-hover:scale-110 transition-transform duration-200" />
                 </button>
               </div>
@@ -257,43 +257,43 @@ export function HomePage() {
         </section>
 
         {/* Stats Section */}
-        <section className="py-10 sm:py-16 md:py-20 bg-gradient-to-br from-gray-50/80 to-blue-50/80">
+        <section className="py-8 sm:py-12 md:py-20 bg-gradient-to-br from-gray-50/80 to-blue-50/80">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
-              <div className="text-center bg-gradient-to-br from-white to-indigo-100/98 backdrop-blur-lg shadow-xl border border-white/20 rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-6 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
-                <div className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-1 sm:mb-2">1000+</div>
-                <div className="text-gray-700 font-semibold text-xs sm:text-sm md:text-base">Eventos Nacionales</div>
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+              <div className="text-center bg-gradient-to-br from-white to-indigo-100/98 backdrop-blur-lg shadow-xl border border-white/20 rounded-xl sm:rounded-2xl p-4 sm:p-6 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
+                <div className="text-3xl sm:text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-1 sm:mb-2">1000+</div>
+                <div className="text-gray-700 font-semibold text-xs sm:text-sm md:text-base">Eventos</div>
               </div>
-              <div className="text-center bg-gradient-to-br from-white to-indigo-100/98 backdrop-blur-lg shadow-xl border border-white/20 rounded-2xl p-6 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
-                <div className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent mb-2">50K+</div>
-                <div className="text-gray-700 font-semibold">Colombianos</div>
+              <div className="text-center bg-gradient-to-br from-white to-indigo-100/98 backdrop-blur-lg shadow-xl border border-white/20 rounded-xl sm:rounded-2xl p-4 sm:p-6 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
+                <div className="text-3xl sm:text-4xl md:text-5xl font-bold bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent mb-1 sm:mb-2">50K+</div>
+                <div className="text-gray-700 font-semibold text-xs sm:text-sm md:text-base">Usuarios</div>
               </div>
-              <div className="text-center bg-gradient-to-br from-white to-indigo-100/98 backdrop-blur-lg shadow-xl border border-white/20 rounded-2xl p-6 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
-                <div className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent mb-2">95%</div>
-                <div className="text-gray-700 font-semibold">Satisfacción</div>
+              <div className="text-center bg-gradient-to-br from-white to-indigo-100/98 backdrop-blur-lg shadow-xl border border-white/20 rounded-xl sm:rounded-2xl p-4 sm:p-6 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
+                <div className="text-3xl sm:text-4xl md:text-5xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent mb-1 sm:mb-2">95%</div>
+                <div className="text-gray-700 font-semibold text-xs sm:text-sm md:text-base">Satisfacción</div>
               </div>
-              <div className="text-center bg-gradient-to-br from-white to-indigo-100/98 backdrop-blur-lg shadow-xl border border-white/20 rounded-2xl p-6 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
-                <div className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent mb-2">24/7</div>
-                <div className="text-gray-700 font-semibold">Soporte</div>
+              <div className="text-center bg-gradient-to-br from-white to-indigo-100/98 backdrop-blur-lg shadow-xl border border-white/20 rounded-xl sm:rounded-2xl p-4 sm:p-6 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
+                <div className="text-3xl sm:text-4xl md:text-5xl font-bold bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent mb-1 sm:mb-2">24/7</div>
+                <div className="text-gray-700 font-semibold text-xs sm:text-sm md:text-base">Soporte</div>
               </div>
             </div>
           </div>
         </section>
 
         {/* Features Section */}
-        <section className="py-24 bg-gradient-to-br from-gray-50/80 to-blue-50/80">
+        <section className="py-12 sm:py-16 md:py-24 bg-gradient-to-br from-gray-50/80 to-blue-50/80">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-16">
-              <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
-                Todo lo que necesitas en un solo lugar
+            <div className="text-center mb-8 sm:mb-12 md:mb-16">
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 mb-3 sm:mb-4 md:mb-6">
+                Todo lo que necesitas
               </h2>
-              <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              <p className="text-base sm:text-lg md:text-xl text-gray-600 max-w-3xl mx-auto px-4">
                 Desde la creación hasta el control de asistencia, EventHub te ofrece todas las herramientas
                 para hacer de tu evento un éxito rotundo.
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 md:gap-8">
               {features.map((feature, index) => (
                 <div
                   key={index}
@@ -324,11 +324,11 @@ export function HomePage() {
               </p>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-8 mb-8 sm:mb-12">
+            <div className="flex flex-wrap justify-center gap-4 sm:gap-6 md:gap-8 mb-8 sm:mb-12">
               {loading ? (
                 // Estados de carga
                 Array.from({ length: 3 }).map((_, index) => (
-                  <div key={index} className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden animate-pulse">
+                  <div key={index} className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden animate-pulse w-full sm:w-[calc(50%-1rem)] lg:w-[calc(33.333%-1.5rem)] max-w-md">
                     <div className="h-48 bg-gray-200"></div>
                     <div className="p-6">
                       <div className="h-6 bg-gray-200 rounded mb-2"></div>
@@ -339,7 +339,7 @@ export function HomePage() {
                 ))
               ) : error ? (
                 // Estado de error
-                <div className="col-span-full text-center py-12">
+                <div className="w-full text-center py-12">
                   <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
                     <Calendar className="w-8 h-8 text-red-600" />
                   </div>
@@ -355,7 +355,7 @@ export function HomePage() {
               ) : (user?.id && recommendedEvents.length > 0 ? recommendedEvents.slice(0, 3) : featuredEvents).length > 0 ? (
                 // Eventos destacados o recomendados
                 (user?.id && recommendedEvents.length > 0 ? recommendedEvents.slice(0, 3) : featuredEvents).map((event) => (
-                  <div key={event.id} className="bg-gradient-to-br from-white to-indigo-100/98 backdrop-blur-lg shadow-xl border border-white/20 rounded-2xl overflow-hidden hover:shadow-2xl transition-all duration-300 group transform hover:-translate-y-1 flex flex-col h-full">
+                  <div key={event.id} className="bg-gradient-to-br from-white to-indigo-100/98 backdrop-blur-lg shadow-xl border border-white/20 rounded-2xl overflow-hidden hover:shadow-2xl transition-all duration-300 group transform hover:-translate-y-1 flex flex-col w-full sm:w-[calc(50%-1rem)] lg:w-[calc(33.333%-1.5rem)] max-w-md">
                     <div className="relative h-48 overflow-hidden flex-shrink-0">
                       {event.image ? (
                         <img

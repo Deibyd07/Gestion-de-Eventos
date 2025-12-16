@@ -554,19 +554,6 @@ Si encuentras un bug, por favor abre un issue con:
 
 ---
 
-## 📝 Roadmap
-
-- [ ] Integración con proveedores de pago (Stripe, PayPal)
-- [ ] App móvil con React Native
-- [ ] Sistema de reviews y calificaciones
-- [ ] Chat en tiempo real entre organizadores y asistentes
-- [ ] Recomendaciones de eventos con IA
-- [ ] Exportación de reportes a PDF/Excel
-- [ ] Integración con redes sociales
-- [ ] Sistema de referidos y afiliados
-
----
-
 ## 📄 Licencia
 
 Este proyecto está bajo la Licencia MIT. Ver `LICENSE` para más información.

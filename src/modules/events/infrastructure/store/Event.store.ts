@@ -35,6 +35,7 @@ interface EventState {
   events: Event[];
   filteredEvents: Event[];
   featuredEvents: Event[];
+  recommendedEvents: Event[];
   categories: string[];
   searchQuery: string;
   selectedCategory: string;
@@ -54,6 +55,7 @@ interface EventState {
   getEventById: (id: string) => Event | undefined;
   loadEvents: () => Promise<void>;
   loadFeaturedEvents: () => Promise<void>;
+  loadRecommendedEvents: (userId: string, userLocation?: string) => Promise<void>;
 }
 
 const mockEvents: Event[] = [
@@ -76,27 +78,33 @@ const mockEvents: Event[] = [
     ticketTypes: [
       {
         id: '1',
+        id_evento: '1',
         nombre_tipo: 'Early Bird',
-        price: 69000,
-        description: 'Entrada con descuento por reserva anticipada',
-        maxQuantity: 5,
-        available: 0
+        precio: 69000,
+        descripcion: 'Entrada con descuento por reserva anticipada',
+        cantidad_maxima: 5,
+        cantidad_disponible: 0,
+        fecha_creacion: new Date().toISOString()
       },
       {
         id: '2',
+        id_evento: '1',
         nombre_tipo: 'General',
-        price: 89000,
-        description: 'Entrada general con acceso completo',
-        maxQuantity: 10,
-        available: 158
+        precio: 89000,
+        descripcion: 'Entrada general con acceso completo',
+        cantidad_maxima: 10,
+        cantidad_disponible: 158,
+        fecha_creacion: new Date().toISOString()
       },
       {
         id: '3',
+        id_evento: '1',
         nombre_tipo: 'VIP',
-        price: 149000,
-        description: 'Acceso VIP con networking exclusivo',
-        maxQuantity: 3,
-        available: 12
+        precio: 149000,
+        descripcion: 'Acceso VIP con networking exclusivo',
+        cantidad_maxima: 3,
+        cantidad_disponible: 12,
+        fecha_creacion: new Date().toISOString()
       }
     ]
   },
@@ -119,11 +127,13 @@ const mockEvents: Event[] = [
     ticketTypes: [
       {
         id: '4',
+        id_evento: '2',
         nombre_tipo: 'General',
-        price: 45000,
-        description: 'Entrada general',
-        maxQuantity: 8,
-        available: 244
+        precio: 45000,
+        descripcion: 'Entrada general',
+        cantidad_maxima: 1000,
+        cantidad_disponible: 244,
+        fecha_creacion: new Date().toISOString()
       }
     ]
   },
@@ -146,19 +156,23 @@ const mockEvents: Event[] = [
     ticketTypes: [
       {
         id: '5',
+        id_evento: '3',
         nombre_tipo: 'Estudiante',
-        price: 25000,
-        description: 'Descuento para estudiantes',
-        maxQuantity: 3,
-        available: 8
+        precio: 25000,
+        descripcion: 'Descuento para estudiantes',
+        cantidad_maxima: 20,
+        cantidad_disponible: 8,
+        fecha_creacion: new Date().toISOString()
       },
       {
         id: '6',
+        id_evento: '3',
         nombre_tipo: 'General',
-        price: 35000,
-        description: 'Entrada general',
-        maxQuantity: 5,
-        available: 10
+        precio: 35000,
+        descripcion: 'Entrada general',
+        cantidad_maxima: 30,
+        cantidad_disponible: 10,
+        fecha_creacion: new Date().toISOString()
       }
     ]
   }
@@ -208,6 +222,7 @@ export const useEventStore = create<EventState>((set, get) => ({
   events: [],
   filteredEvents: [],
   featuredEvents: [],
+  recommendedEvents: [],
   categories: ['Todos', 'Agropecuario', 'Cultura', 'Deportes', 'Educación', 'Gastronomía'],
   searchQuery: '',
   selectedCategory: 'Todos',
@@ -439,6 +454,38 @@ export const useEventStore = create<EventState>((set, get) => ({
     } catch (error) {
       console.error('Error loading featured events:', error);
       set({ error: 'Error al cargar eventos destacados', featuredEvents: mockEvents.slice(0, 3) });
+    } finally {
+      set({ loading: false });
+    }
+  },
+
+  loadRecommendedEvents: async (userId: string, userLocation?: string) => {
+    try {
+      set({ loading: true, error: null });
+      
+      // Importar el servicio de recomendaciones dinámicamente
+      const { RecommendationService } = await import('@shared/lib/api/services/Recommendation.service');
+      
+      // Obtener ubicación del usuario si no se proporciona
+      let location = userLocation;
+      if (!location) {
+        location = await RecommendationService.getUserLocation(userId) || undefined;
+      }
+      
+      // Obtener eventos recomendados
+      const recommendedEvents = await RecommendationService.getRecommendedEvents(userId, location);
+      
+      if (recommendedEvents && recommendedEvents.length > 0) {
+        const convertedEvents = recommendedEvents.map(convertSupabaseEventToEvent);
+        set({ recommendedEvents: convertedEvents });
+      } else {
+        // Si no hay recomendaciones personalizadas, dejar array vacío
+        // El componente puede decidir mostrar todos los eventos si lo necesita
+        set({ recommendedEvents: [] });
+      }
+    } catch (error) {
+      console.error('Error loading recommended events:', error);
+      set({ error: 'Error al cargar eventos recomendados', recommendedEvents: [] });
     } finally {
       set({ loading: false });
     }

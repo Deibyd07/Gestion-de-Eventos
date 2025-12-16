@@ -1,0 +1,10 @@
+version: 2
+updates:
+  # Actualizar dependencias npm semanalmente
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 3
+    labels:
+      - "dependencies"

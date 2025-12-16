@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { TrendingUp, Users, DollarSign, Calendar, CheckCircle, AlertCircle, Download, Filter, ChevronDown, ChevronUp } from 'lucide-react';
+import { TrendingUp, Users, DollarSign, Calendar, CheckCircle, AlertCircle, Download, Filter, ChevronDown, ChevronUp, RefreshCw } from 'lucide-react';
 
 interface AnalyticsData {
   totalEvents: number;
@@ -67,6 +67,8 @@ interface AnalyticsDashboardProps {
   onExportReport: (format: 'csv' | 'excel' | 'pdf', filters: { month?: string; year: string }) => void;
   onFilterChange: (filters: AnalyticsFilters) => void;
   userRole: 'admin' | 'organizer';
+  onRefresh?: () => void;
+  isRefreshing?: boolean;
 }
 
 interface AnalyticsFilters {
@@ -78,7 +80,9 @@ interface AnalyticsFilters {
 
 export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
   data,
-  onExportReport
+  onExportReport,
+  onRefresh,
+  isRefreshing = false
 }) => {
   const [activeTab, setActiveTab] = useState<'overview' | 'revenue' | 'attendance' | 'reports'>('overview');
   const [showAllEvents, setShowAllEvents] = useState(false);
@@ -133,6 +137,20 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
 
   return (
     <div className="space-y-6 admin-panel panel-consistent-width">
+      {/* Action Buttons */}
+      {onRefresh && (
+        <div className="flex justify-end">
+          <button
+            onClick={onRefresh}
+            disabled={isRefreshing}
+            className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-xl hover:from-orange-600 hover:to-red-700 transition-all duration-200 shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+            <span>Actualizar</span>
+          </button>
+        </div>
+      )}
+
       {/* Key Metrics */}
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-3">
         <div className="bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-xl md:rounded-2xl p-3 sm:p-4 shadow-xl hover:shadow-2xl transition-all duration-200 backdrop-blur-lg">

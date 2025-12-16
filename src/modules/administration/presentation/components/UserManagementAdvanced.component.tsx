@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Plus } from 'lucide-react';
+import { Plus, RefreshCw } from 'lucide-react';
 import { UserManagementContent } from './user-management/UserManagementContent.component';
 import { UserEditModal } from './user-management/UserEditModal.component';
 import { UserDeleteModal } from './user-management/UserDeleteModal.component';
 import { UserService } from '@shared/lib/api/services/User.service';
 import { AddUserModal } from './user-management/AddUserModal.component';
 import { supabase } from '@shared/lib/api/supabase';
+import { Alert } from '@shared/ui/components/Alert/Alert.component';
 
 interface User {
   id: string;
@@ -29,9 +30,11 @@ interface User {
 
 interface UserManagementProps {
   onViewOrganizerProfile?: () => void;
+  onRefresh?: () => void;
+  isRefreshing?: boolean;
 }
 
-export const UserManagement: React.FC<UserManagementProps> = ({ onViewOrganizerProfile }) => {
+export const UserManagement: React.FC<UserManagementProps> = ({ onViewOrganizerProfile, onRefresh, isRefreshing = false }) => {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -50,6 +53,7 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onViewOrganizerP
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [userToDelete, setUserToDelete] = useState<User | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showSuccessAlert, setShowSuccessAlert] = useState(false);
 
   // Función para obtener estadísticas basadas en el rol del usuario
   const getStatsByRole = (userRole: string) => {
@@ -378,7 +382,8 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onViewOrganizerP
 
       await loadUsers();
       setShowAddModal(false);
-      alert('Usuario creado correctamente');
+      setShowSuccessAlert(true);
+      setTimeout(() => setShowSuccessAlert(false), 5000);
     } catch (error: any) {
       console.error('❌ Error al crear usuario:', error);
       alert(error?.message || 'Error al crear el usuario');
@@ -413,8 +418,25 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onViewOrganizerP
   return (
     <div className="space-y-4 md:space-y-6 w-full max-w-full">
 
-      {/* Botón agregar usuario */}
-      <div className="flex justify-end">
+      {/* Alerta de éxito */}
+      {showSuccessAlert && (
+        <Alert variant="success" title="¡Usuario creado exitosamente!" onClose={() => setShowSuccessAlert(false)}>
+          El usuario ha sido agregado correctamente al sistema.
+        </Alert>
+      )}
+
+      {/* Botones de acción */}
+      <div className="flex justify-end gap-2">
+        {onRefresh && (
+          <button
+            onClick={onRefresh}
+            disabled={isRefreshing}
+            className="inline-flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-xl hover:from-orange-600 hover:to-red-700 transition-all duration-200 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+            <span>Actualizar</span>
+          </button>
+        )}
         <button
           onClick={() => setShowAddModal(true)}
           className="inline-flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-xl hover:from-blue-600 hover:to-purple-700 transition-all duration-200 shadow-sm"

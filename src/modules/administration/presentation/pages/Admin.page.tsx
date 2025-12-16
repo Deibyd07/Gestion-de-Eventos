@@ -251,16 +251,6 @@ export function AdminPage() {
                 <Menu className="w-5 h-5" />
               </button>
               
-              {/* Refresh Button */}
-              <button
-                onClick={handleRefresh}
-                disabled={isRefreshing}
-                className="p-2 rounded-xl hover:bg-white/20 backdrop-blur-sm transition-all duration-200 text-white border border-white/20 disabled:opacity-50 disabled:cursor-not-allowed"
-                title="Actualizar datos"
-              >
-                <RefreshCw className={`w-5 h-5 ${isRefreshing ? 'animate-spin' : ''}`} />
-              </button>
-              
               <div className="flex items-center space-x-2 md:space-x-3 flex-1 min-w-0">
                 <div className="min-w-0 flex-1">
                   <h2 className="text-base md:text-2xl font-bold text-white truncate">
@@ -313,13 +303,28 @@ export function AdminPage() {
         <div className="flex-1 min-w-0 overflow-y-auto bg-gray-100 mt-16 w-full px-3 sm:px-4 md:px-6 py-3 sm:py-4 md:py-6 box-border" style={{height: 'calc(100vh - 80px)'}}>
           {/* Content Header */}
           <div className="mb-4 md:mb-6 w-full max-w-full px-0">
-            <div>
-              <h2 className="text-xl md:text-2xl font-bold text-gray-900">
-                {navigationItems.find(item => item.id === activeTab)?.label}
-              </h2>
-              <p className="text-gray-600 mt-1">
-                {navigationItems.find(item => item.id === activeTab)?.description}
-              </p>
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-xl md:text-2xl font-bold text-gray-900">
+                  {navigationItems.find(item => item.id === activeTab)?.label}
+                </h2>
+                <p className="text-gray-600 mt-1">
+                  {navigationItems.find(item => item.id === activeTab)?.description}
+                </p>
+              </div>
+              
+              {/* Refresh Button - Hidden for tabs that have their own buttons */}
+              {activeTab !== 'dashboard' && activeTab !== 'payments' && activeTab !== 'events' && activeTab !== 'users' && activeTab !== 'analytics' && (
+                <button
+                  onClick={handleRefresh}
+                  disabled={isRefreshing}
+                  className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-xl hover:from-orange-600 hover:to-red-700 transition-all duration-200 shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+                  title="Actualizar datos"
+                >
+                  <RefreshCw className={`w-5 h-5 ${isRefreshing ? 'animate-spin' : ''}`} />
+                  <span className="hidden sm:inline font-medium">Actualizar</span>
+                </button>
+              )}
             </div>
           </div>
 
@@ -329,10 +334,10 @@ export function AdminPage() {
               <AdminDashboard stats={adminStats} onRefresh={handleRefresh} onExportData={handleExportData} onSystemAction={handleSystemAction} />
             )}
             {activeTab === 'events' && (
-              <EventManagement />
+              <EventManagement onRefresh={handleRefresh} isRefreshing={isRefreshing} />
             )}
             {activeTab === 'users' && (
-              <UserManagement onViewOrganizerProfile={() => setActiveTab('organizer-profile')} />
+              <UserManagement onViewOrganizerProfile={() => setActiveTab('organizer-profile')} onRefresh={handleRefresh} isRefreshing={isRefreshing} />
             )}
             {activeTab === 'analytics' && (
               isLoadingAnalytics ? (
@@ -350,7 +355,9 @@ export function AdminPage() {
                     }
                   }}
                   onFilterChange={(filters) => console.log('Filtros:', filters)} 
-                  userRole="admin" 
+                  userRole="admin"
+                  onRefresh={handleRefresh}
+                  isRefreshing={isRefreshing}
                 />
               ) : (
                 <div className="flex items-center justify-center h-64">

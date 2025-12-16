@@ -9,9 +9,9 @@ env:
   NODE_VERSION: '20.x'
 
 jobs:
-  # Job 1: Tests y Build
-  test-and-build:
-    name: 🧪 Tests & Build
+  # Job 1: Tests
+  test:
+    name: 🧪 Tests
     runs-on: ubuntu-latest
     
     steps:
@@ -29,15 +29,12 @@ jobs:
         
       - name: 🧪 Run tests
         run: npm test
-        
-      - name: 🏗️ Build
-        run: npm run build
 
   # Job 2: Deploy a Vercel
   deploy:
     name: 🚀 Deploy to Vercel
     runs-on: ubuntu-latest
-    needs: test-and-build
+    needs: test
     if: success()
     
     steps:

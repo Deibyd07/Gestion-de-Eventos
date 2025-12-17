@@ -235,7 +235,7 @@ export function HomePage() {
                 <span className="hidden sm:inline"> Conecta con comunidades de todo el país y descubre eventos únicos.</span>
               </p>
 
-              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center pt-6 sm:pt-8 md:pt-10 pointer-events-auto px-4">
+              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center pt-16 sm:pt-20 md:pt-24 pointer-events-auto px-4">
                 <button
                   onClick={handleExploreEvents}
                   className="group inline-flex items-center px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold rounded-xl hover:from-blue-600 hover:to-purple-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1 text-sm sm:text-base min-w-[170px] sm:w-auto justify-center"

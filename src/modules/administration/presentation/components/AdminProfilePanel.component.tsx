@@ -401,7 +401,7 @@ export const AdminProfilePanel: React.FC = () => {
                             <div className="flex flex-wrap items-center gap-3 mt-3 text-xs text-gray-500">
                               <div className="flex items-center gap-1">
                                 <Calendar className="w-3 h-3" />
-                                <span>{event.fecha_evento ? new Date(event.fecha_evento).toLocaleDateString() : 'Fecha no disponible'}</span>
+                                <span>{event.fecha_evento ? new Date(event.fecha_evento + 'T00:00:00').toLocaleDateString() : 'Fecha no disponible'}</span>
                               </div>
                               <div className="flex items-center gap-1">
                                 <MapPin className="w-3 h-3" />

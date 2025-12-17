@@ -222,7 +222,8 @@ export const PaymentsDashboard: React.FC = () => {
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('es-CO', {
+    const date = dateString.includes('T') ? new Date(dateString) : new Date(dateString + 'T00:00:00');
+    return date.toLocaleDateString('es-CO', {
       year: 'numeric',
       month: 'short',
       day: 'numeric',

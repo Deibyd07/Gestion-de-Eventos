@@ -233,7 +233,8 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onViewOrganizerP
   };
 
   const formatDate = (date: string) => {
-    return new Date(date).toLocaleDateString('es-CO', {
+    const dateObj = date.includes('T') ? new Date(date) : new Date(date + 'T00:00:00');
+    return dateObj.toLocaleDateString('es-CO', {
       year: 'numeric',
       month: 'short',
       day: 'numeric'

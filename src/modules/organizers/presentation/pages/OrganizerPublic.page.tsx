@@ -285,9 +285,9 @@ export const OrganizerPublicPage: React.FC = () => {
                 <p>Este organizador no tiene eventos próximos programados.</p>
               </div>
             ) : (
-              <div className="grid grid-cols-[repeat(auto-fit,minmax(300px,1fr))] gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {events.map(ev => (
-                  <div key={ev.id} className="h-full w-full">
+                  <div key={ev.id} className="h-full">
                     <EventCard event={ev} viewMode="grid" />
                   </div>
                 ))}

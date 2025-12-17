@@ -371,12 +371,12 @@ export function EventCard({ event, viewMode = 'grid' }: EventCardProps) {
 
   return (
     <div className="bg-white rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 border border-gray-200 overflow-hidden group h-full flex flex-col">
-      <div className="relative h-48 overflow-hidden">
+      <div className="relative w-full h-44 overflow-hidden bg-gray-100">
         {event.image ? (
           <img
             src={event.image}
             alt={event.title}
-            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+            className="w-full h-full object-cover object-center group-hover:scale-110 transition-transform duration-300"
           />
         ) : (
           <div className="w-full h-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center">
@@ -417,9 +417,9 @@ export function EventCard({ event, viewMode = 'grid' }: EventCardProps) {
         </div>
       </div>
 
-      <div className="p-6 flex-1 flex flex-col">
-        <div className="mb-4">
-          <h3 className="text-xl font-bold text-gray-900 mb-2 line-clamp-2 group-hover:text-blue-600 transition-colors duration-200">
+      <div className="p-4 sm:p-6 flex-1 flex flex-col">
+        <div className="mb-3 sm:mb-4">
+          <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2 line-clamp-2 group-hover:text-blue-600 transition-colors duration-200">
             {event.title}
           </h3>
           <p className="text-gray-600 text-sm line-clamp-2 leading-relaxed">
@@ -439,20 +439,20 @@ export function EventCard({ event, viewMode = 'grid' }: EventCardProps) {
           </div>
         </div>
 
-        <div className="space-y-2 mb-4">
+        <div className="space-y-2 mb-3 sm:mb-4">
           <div className="flex items-center text-gray-600 text-sm">
-            <Clock className="w-4 h-4 mr-2 text-gray-400" />
+            <Clock className="w-4 h-4 mr-2 text-gray-400 flex-shrink-0" />
             <span>{formatTime(event.time)}</span>
           </div>
 
           <div className="flex items-center text-gray-600 text-sm">
-            <MapPin className="w-4 h-4 mr-2 text-gray-400" />
+            <MapPin className="w-4 h-4 mr-2 text-gray-400 flex-shrink-0" />
             <span className="truncate">{event.location}</span>
           </div>
 
-          <div className="flex items-center text-gray-600 text-sm">
-            <Users className="w-4 h-4 mr-2 text-gray-400" />
-            <span>
+          <div className="flex items-start text-gray-600 text-sm">
+            <Users className="w-4 h-4 mr-2 mt-0.5 text-gray-400 flex-shrink-0" />
+            <span className="flex-1">
               {loading ? 'Cargando...' : (
                 <>
                   <span className={`font-semibold ${isSoldOut ? 'text-red-600' : isAlmostFull ? 'text-orange-600' : 'text-blue-600'}`}>
@@ -478,7 +478,7 @@ export function EventCard({ event, viewMode = 'grid' }: EventCardProps) {
 
         {/* Tags */}
         {event.tags && event.tags.length > 0 && (
-          <div className="flex flex-wrap gap-1 mb-4">
+          <div className="flex flex-wrap gap-1 mb-3 sm:mb-4">
             {event.tags.slice(0, 3).map((tag, index) => (
               <span
                 key={index}
@@ -495,14 +495,14 @@ export function EventCard({ event, viewMode = 'grid' }: EventCardProps) {
           </div>
         )}
 
-        <div className="flex justify-between items-center pt-3 border-t border-gray-100 mt-auto">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 pt-3 border-t border-gray-100 mt-auto">
           <div className="flex-1">
             <div className="flex items-baseline space-x-2">
               <span className="text-xl font-bold text-gray-900">
                 {formatPriceDisplay(event.price)}
               </span>
               {event.price > 0 && (
-                <span className="hidden sm:inline text-gray-500 text-xs font-medium">por persona</span>
+                <span className="text-gray-500 text-xs font-medium">por persona</span>
               )}
             </div>
             {event.price === 0 && (
@@ -515,11 +515,11 @@ export function EventCard({ event, viewMode = 'grid' }: EventCardProps) {
             )}
           </div>
 
-          <div className="flex space-x-2 ml-3">
+          <div className="flex space-x-2">
             <button
               onClick={handleAddToCart}
               disabled={isSoldOut || loading}
-              className={`px-3 py-1.5 rounded-lg transition-all duration-300 font-medium shadow-md flex items-center space-x-1 text-xs ${isSoldOut || loading
+              className={`flex-1 sm:flex-none px-3 py-2 sm:py-1.5 rounded-lg transition-all duration-300 font-medium shadow-md flex items-center justify-center space-x-1 text-xs ${isSoldOut || loading
                 ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                 : 'bg-gradient-to-r from-green-500 to-green-600 text-white hover:from-green-600 hover:to-green-700 hover:shadow-lg transform hover:scale-105 border border-green-400'
                 }`}
@@ -529,7 +529,7 @@ export function EventCard({ event, viewMode = 'grid' }: EventCardProps) {
             </button>
             <Link
               to={`/events/${event.id}`}
-              className="px-4 py-1.5 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all duration-300 font-medium shadow-md hover:shadow-lg transform hover:scale-105 border border-blue-400 text-xs"
+              className="flex-1 sm:flex-none px-4 py-2 sm:py-1.5 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all duration-300 font-medium shadow-md hover:shadow-lg transform hover:scale-105 border border-blue-400 text-xs text-center"
             >
               Ver Detalles
             </Link>

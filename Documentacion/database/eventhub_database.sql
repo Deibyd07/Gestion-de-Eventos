@@ -545,6 +545,8 @@ BEGIN
         u.nombre_completo AS usuario_nombre,
         u.correo_electronico AS usuario_email,
         c.total_pagado,
+        c.precio_unitario,
+        c.cantidad,
         c.fecha_creacion AS fecha_compra,
         te.nombre_tipo AS tipo_entrada,
         te.precio
@@ -569,7 +571,7 @@ BEGIN
         'user_name', v_ticket.usuario_nombre,
         'user_email', v_ticket.usuario_email,
         'ticket_type', COALESCE(v_ticket.tipo_entrada, 'Entrada General'),
-        'price', COALESCE(v_ticket.precio, v_ticket.total_pagado),
+        'price', ROUND(v_ticket.total_pagado / NULLIF(v_ticket.cantidad, 0), 2),
         'purchase_date', v_ticket.fecha_compra,
         'ticket_number', v_ticket.numero_entrada,
         'status', v_ticket.estado,

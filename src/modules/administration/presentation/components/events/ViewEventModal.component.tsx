@@ -77,7 +77,8 @@ export const ViewEventModal: React.FC<ViewEventModalProps> = ({ event, isOpen, o
     : '0';
 
   const formatDate = (dateStr: string) => {
-    return new Date(dateStr).toLocaleDateString('es-CO', {
+    const date = new Date(dateStr + 'T00:00:00');
+    return date.toLocaleDateString('es-CO', {
       weekday: 'long',
       year: 'numeric',
       month: 'long',

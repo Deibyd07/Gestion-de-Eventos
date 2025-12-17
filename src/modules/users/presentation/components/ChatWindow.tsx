@@ -96,7 +96,7 @@ export function ChatWindow({ isOpen, onClose }: ChatWindowProps) {
     <div
       className={`
         fixed z-50
-        bottom-4 left-4 sm:bottom-6 sm:left-6
+        bottom-4 right-4 sm:bottom-6 sm:right-6
         w-[calc(100vw-2rem)] sm:w-96
         h-[400px] sm:h-[500px] max-h-[calc(100vh-120px)]
         bg-white rounded-2xl shadow-2xl
@@ -207,7 +207,7 @@ export function ChatWindow({ isOpen, onClose }: ChatWindowProps) {
             placeholder="Escribe tu mensaje..."
             disabled={isLoading}
             className="
-              flex-1 px-3 sm:px-4 py-2 sm:py-2.5 rounded-full text-sm
+              flex-1 px-3 sm:px-4 py-2 sm:py-2.5 rounded-full text-base
               border border-gray-300 focus:border-purple-500 focus:ring-2 focus:ring-purple-200
               outline-none transition-all
               disabled:bg-gray-100 disabled:cursor-not-allowed

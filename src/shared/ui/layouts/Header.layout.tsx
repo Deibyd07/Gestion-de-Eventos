@@ -113,10 +113,10 @@ export function Header() {
           <div className="flex items-center space-x-4">
             {isAuthenticated ? (
               <>
-                {/* Notifications Bell */}
+                {/* Notifications Bell - Desktop only */}
                 <Link 
                   to="/notifications" 
-                  className="relative p-2 text-white/80 hover:text-white hover:bg-white/10 rounded-xl backdrop-blur-sm transition-all duration-200 border border-transparent hover:border-white/20"
+                  className="hidden md:block relative p-2 text-white/80 hover:text-white hover:bg-white/10 rounded-xl backdrop-blur-sm transition-all duration-200 border border-transparent hover:border-white/20"
                 >
                   <Bell className="w-6 h-6" />
                   {unreadCount > 0 && (
@@ -139,8 +139,8 @@ export function Header() {
                   )}
                 </Link>
 
-                {/* Profile Menu */}
-                <div className="relative">
+                {/* Profile Menu - Desktop only */}
+                <div className="hidden md:block relative">
                   <button
                     onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
                     className="flex items-center space-x-2 p-2 rounded-xl hover:bg-white/10 backdrop-blur-sm transition-all duration-200 border border-transparent hover:border-white/20"
@@ -252,58 +252,163 @@ export function Header() {
         {isMobileMenuOpen && (
           <div className="md:hidden border-t border-white/20 pb-4">
             <div className="pt-4 space-y-2">
+              {/* User Profile Section in Mobile */}
+              {isAuthenticated && (
+                <div className="px-4 py-3 mb-3 rounded-xl bg-white/10 backdrop-blur-sm border border-white/20">
+                  <div className="flex items-center space-x-3">
+                    {user?.avatar ? (
+                      <img 
+                        src={user.avatar} 
+                        alt={user.name}
+                        className="w-12 h-12 rounded-full border-2 border-white/30 shadow-lg"
+                      />
+                    ) : (
+                      <div className="w-12 h-12 bg-gradient-to-r from-purple-500/80 to-blue-500/80 backdrop-blur-sm rounded-full flex items-center justify-center border-2 border-white/30 shadow-lg">
+                        <User className="w-6 h-6 text-white" />
+                      </div>
+                    )}
+                    <div className="flex-1">
+                      <p className="text-sm font-semibold text-white">{user?.name}</p>
+                      <p className="text-xs text-white/70">{user?.email}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               <Link 
                 to="/events"
-                className={`block px-4 py-3 rounded-xl text-base font-medium transition-all duration-200 backdrop-blur-sm ${
+                className={`flex items-center space-x-3 px-4 py-3 rounded-xl text-base font-medium transition-all duration-200 backdrop-blur-sm ${
                   isActive('/events')
                     ? 'text-white bg-white/20 shadow-lg border border-white/30'
                     : 'text-white/80 hover:text-white hover:bg-white/10 hover:shadow-lg hover:border hover:border-white/20'
                 }`}
                 onClick={() => setIsMobileMenuOpen(false)}
               >
-                Explorar Eventos
+                <Search className="w-5 h-5" />
+                <span>Explorar Eventos</span>
               </Link>
+
+              {isAuthenticated && (
+                <>
+                  <Link 
+                    to="/profile"
+                    className={`flex items-center space-x-3 px-4 py-3 rounded-xl text-base font-medium transition-all duration-200 backdrop-blur-sm ${
+                      isActive('/profile')
+                        ? 'text-white bg-white/20 shadow-lg border border-white/30'
+                        : 'text-white/80 hover:text-white hover:bg-white/10 hover:shadow-lg hover:border hover:border-white/20'
+                    }`}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    <User className="w-5 h-5" />
+                    <span>Mi Perfil</span>
+                  </Link>
+
+                  <Link 
+                    to="/tickets"
+                    className={`flex items-center space-x-3 px-4 py-3 rounded-xl text-base font-medium transition-all duration-200 backdrop-blur-sm ${
+                      isActive('/tickets')
+                        ? 'text-white bg-white/20 shadow-lg border border-white/30'
+                        : 'text-white/80 hover:text-white hover:bg-white/10 hover:shadow-lg hover:border hover:border-white/20'
+                    }`}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    <Calendar className="w-5 h-5" />
+                    <span>Mis Entradas</span>
+                  </Link>
+
+                  <Link 
+                    to="/followed-organizers"
+                    className={`flex items-center space-x-3 px-4 py-3 rounded-xl text-base font-medium transition-all duration-200 backdrop-blur-sm ${
+                      isActive('/followed-organizers')
+                        ? 'text-white bg-white/20 shadow-lg border border-white/30'
+                        : 'text-white/80 hover:text-white hover:bg-white/10 hover:shadow-lg hover:border hover:border-white/20'
+                    }`}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    <User className="w-5 h-5" />
+                    <span>Organizadores Seguidos</span>
+                  </Link>
+
+                  <Link 
+                    to="/notifications"
+                    className={`flex items-center justify-between px-4 py-3 rounded-xl text-base font-medium transition-all duration-200 backdrop-blur-sm ${
+                      isActive('/notifications')
+                        ? 'text-white bg-white/20 shadow-lg border border-white/30'
+                        : 'text-white/80 hover:text-white hover:bg-white/10 hover:shadow-lg hover:border hover:border-white/20'
+                    }`}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    <div className="flex items-center space-x-3">
+                      <Bell className="w-5 h-5" />
+                      <span>Notificaciones</span>
+                    </div>
+                    {unreadCount > 0 && (
+                      <span className="px-2 py-1 bg-red-500 text-white text-xs font-bold rounded-full">
+                        {unreadCount > 9 ? '9+' : unreadCount}
+                      </span>
+                    )}
+                  </Link>
+
+                  <Link 
+                    to="/checkout"
+                    className={`flex items-center justify-between px-4 py-3 rounded-xl text-base font-medium transition-all duration-200 backdrop-blur-sm ${
+                      isActive('/checkout')
+                        ? 'text-white bg-white/20 shadow-lg border border-white/30'
+                        : 'text-white/80 hover:text-white hover:bg-white/10 hover:shadow-lg hover:border hover:border-white/20'
+                    }`}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    <div className="flex items-center space-x-3">
+                      <ShoppingCart className="w-5 h-5" />
+                      <span>Carrito</span>
+                    </div>
+                    {cartItemsCount > 0 && (
+                      <span className="px-2 py-1 bg-red-500 text-white text-xs font-bold rounded-full">
+                        {cartItemsCount}
+                      </span>
+                    )}
+                  </Link>
+                </>
+              )}
               
               {isAuthenticated && user?.role === 'organizer' && (
                 <Link 
                   to="/organizer/dashboard"
-                  className={`block px-4 py-3 rounded-xl text-base font-medium transition-all duration-200 backdrop-blur-sm ${
+                  className={`flex items-center space-x-3 px-4 py-3 rounded-xl text-base font-medium transition-all duration-200 backdrop-blur-sm ${
                     isActive('/organizer/dashboard')
                       ? 'text-white bg-white/20 shadow-lg border border-white/30'
                       : 'text-white/80 hover:text-white hover:bg-white/10 hover:shadow-lg hover:border hover:border-white/20'
                   }`}
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
-                  Dashboard
+                  <Calendar className="w-5 h-5" />
+                  <span>Dashboard</span>
                 </Link>
               )}
               
               {isAuthenticated && user?.role === 'admin' && (
                 <Link 
                   to="/admin"
-                  className={`block px-4 py-3 rounded-xl text-base font-medium transition-all duration-200 backdrop-blur-sm ${
+                  className={`flex items-center space-x-3 px-4 py-3 rounded-xl text-base font-medium transition-all duration-200 backdrop-blur-sm ${
                     isActive('/admin')
                       ? 'text-white bg-white/20 shadow-lg border border-white/30'
                       : 'text-white/80 hover:text-white hover:bg-white/10 hover:shadow-lg hover:border hover:border-white/20'
                   }`}
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
-                  Panel de Administración
+                  <Shield className="w-5 h-5" />
+                  <span>Panel de Administración</span>
                 </Link>
               )}
-              
+
               {isAuthenticated && (
-                <Link 
-                  to="/tickets"
-                  className={`block px-4 py-3 rounded-xl text-base font-medium transition-all duration-200 backdrop-blur-sm ${
-                    isActive('/tickets')
-                      ? 'text-white bg-white/20 shadow-lg border border-white/30'
-                      : 'text-white/80 hover:text-white hover:bg-white/10 hover:shadow-lg hover:border hover:border-white/20'
-                  }`}
-                  onClick={() => setIsMobileMenuOpen(false)}
+                <button
+                  onClick={handleLogout}
+                  className="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-base font-medium text-red-400 hover:text-red-300 hover:bg-red-500/10 backdrop-blur-sm transition-all duration-200 border border-transparent hover:border-red-400/30"
                 >
-                  Mis Entradas
-                </Link>
+                  <LogOut className="w-5 h-5" />
+                  <span>Cerrar Sesión</span>
+                </button>
               )}
               
               {!isAuthenticated && (

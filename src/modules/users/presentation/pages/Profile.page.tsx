@@ -738,7 +738,7 @@ export function ProfilePage() {
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {followedOrganizers.map((organizer) => (
-                      <div key={organizer.id} className="bg-gradient-to-br from-white to-indigo-100/98 backdrop-blur-lg shadow-xl border border-white/20 rounded-2xl p-6 hover:shadow-2xl transition-all duration-200">
+                      <div key={organizer.id} className="bg-gradient-to-br from-white to-indigo-100/98 backdrop-blur-lg shadow-xl border border-white/20 rounded-2xl p-6 hover:shadow-2xl transition-all duration-200 flex flex-col h-full">
                         <div className="flex items-start space-x-4">
                           <div className="flex-shrink-0">
                             {organizer.url_avatar ? (
@@ -759,33 +759,35 @@ export function ProfilePage() {
                             </h3>
                             {organizer.correo_electronico && (
                               <div className="flex items-center space-x-1 text-sm text-gray-600 mt-1">
-                                <Mail className="w-3 h-3" />
+                                <Mail className="w-3 h-3 flex-shrink-0" />
                                 <span className="truncate">{organizer.correo_electronico}</span>
                               </div>
                             )}
                             {organizer.ubicacion && (
                               <div className="flex items-center space-x-1 text-sm text-gray-600 mt-1">
-                                <MapPin className="w-3 h-3" />
+                                <MapPin className="w-3 h-3 flex-shrink-0" />
                                 <span className="truncate">{organizer.ubicacion}</span>
                               </div>
                             )}
                             {organizer.organizacion && (
                               <div className="flex items-center space-x-1 text-sm text-gray-600 mt-1">
-                                <UserCheck className="w-3 h-3" />
+                                <UserCheck className="w-3 h-3 flex-shrink-0" />
                                 <span className="truncate">{organizer.organizacion}</span>
                               </div>
                             )}
                             {organizer.fecha_seguimiento && (
                               <div className="flex items-center space-x-1 text-xs text-gray-500 mt-2">
-                                <Calendar className="w-3 h-3" />
+                                <Calendar className="w-3 h-3 flex-shrink-0" />
                                 <span>Siguiendo desde {formatDate(organizer.fecha_seguimiento)}</span>
                               </div>
                             )}
                           </div>
                         </div>
-                        {organizer.bio && (
-                          <p className="mt-3 text-sm text-gray-600 line-clamp-2">{organizer.bio}</p>
-                        )}
+                        <div className="flex-1 mt-3">
+                          {organizer.bio && (
+                            <p className="text-sm text-gray-600 line-clamp-2">{organizer.bio}</p>
+                          )}
+                        </div>
                         <button
                           onClick={async () => {
                             try {

@@ -14,7 +14,8 @@ export class ChatService {
     const payload: ChatWebhookPayload = {
       message,
       timestamp: new Date().toISOString(),
-      userId,
+      userId: userId || 'guest-user',
+      sessionId: userId ? `session-${userId}` : `session-${Date.now()}`,
     };
 
     try {

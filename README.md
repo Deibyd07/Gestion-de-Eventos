@@ -402,6 +402,8 @@ npm run typecheck    # Verificación de tipos TypeScript
 - **[Arquitectura del Sistema](./Documentacion/Arquitectura_Sistema.md)** - Arquitectura general y patrones de diseño
 - **[Análisis y Requerimientos](./Documentacion/Analisis_Levantamiento_Requerimientos.md)** - Levantamiento de requerimientos
 - **[Base de Datos](./Documentacion/Base_Datos.md)** - Documentación de la base de datos
+- **[Configuración n8n Cloud](./Documentacion/Configuracion_n8n_cloud.md)** - 🤖 **NUEVO** - Configuración del asistente virtual con n8n.cloud
+- **[Migración n8n](./Documentacion/Migracion_n8n_cloud.md)** - 🔄 Guía paso a paso para migrar workflows a n8n.cloud
 
 ### **🎨 Documentación de Diseño**
 - **[Diagramas del Sistema](./Documentacion/Diagramas/)** - Diagramas UML y de arquitectura

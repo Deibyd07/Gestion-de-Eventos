@@ -5,14 +5,26 @@
  * - Asegúrate de que n8n esté corriendo en localhost:5678
  * - El webhook debe estar activo y escuchando
  * 
- * Para producción:
- * - Cambia CHAT_WEBHOOK_URL a la URL pública de tu n8n desplegado
+ * Para producción con n8n.cloud:
+ * - Configura VITE_N8N_WEBHOOK_URL en las variables de entorno de Vercel
+ * - URL formato: https://tu-workspace.app.n8n.cloud/webhook/tu-webhook-id
  * - Asegúrate de configurar CORS en n8n para permitir tu dominio
  */
 
+// Obtener URL del webhook desde variables de entorno o usar localhost por defecto
+const getWebhookUrl = () => {
+  // En producción, usa la variable de entorno
+  if (import.meta.env.VITE_N8N_WEBHOOK_URL) {
+    return import.meta.env.VITE_N8N_WEBHOOK_URL;
+  }
+  
+  // En desarrollo local, usa localhost
+  return 'http://localhost:5678/webhook/c74be9ff-5080-4c12-86e5-f1100406b90b/chat';
+};
+
 export const CHAT_CONFIG = {
-  // URL del webhook de n8n
-  WEBHOOK_URL: 'http://localhost:5678/webhook/c74be9ff-5080-4c12-86e5-f1100406b90b/chat',
+  // URL del webhook de n8n (local o cloud según entorno)
+  WEBHOOK_URL: getWebhookUrl(),
   
   // Timeout para las peticiones (en milisegundos)
   REQUEST_TIMEOUT: 30000,

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { formatEventDate } from '@shared/lib/utils/Date.utils';
 import { Download, Calendar, MapPin, Clock, User, Ticket, CheckCircle2, XCircle, AlertCircle, Copy, Check } from 'lucide-react';
 
 interface QRTicketDisplayProps {
@@ -96,14 +97,7 @@ export const QRTicketDisplay: React.FC<QRTicketDisplayProps> = ({ ticket, compac
     document.body.removeChild(link);
   };
 
-  const formatDate = (dateStr: string) => {
-    return new Date(dateStr).toLocaleDateString('es-ES', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
-  };
+
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('es-CO', {
@@ -166,7 +160,7 @@ export const QRTicketDisplay: React.FC<QRTicketDisplayProps> = ({ ticket, compac
         <div className="grid grid-cols-2 gap-4 text-sm">
           <div className="flex items-center gap-2">
             <Calendar className="w-4 h-4" />
-            <span>{formatDate(datos_qr.event_date)}</span>
+            <span>{formatEventDate(datos_qr.event_date)}</span>
           </div>
           <div className="flex items-center gap-2">
             <Clock className="w-4 h-4" />
@@ -288,9 +282,9 @@ export const QRTicketDisplay: React.FC<QRTicketDisplayProps> = ({ ticket, compac
       {/* Footer */}
       <div className="px-6 py-4 bg-gray-50 border-t border-gray-200">
         <p className="text-xs text-gray-600 text-center">
-          Comprado el {new Date(datos_qr.purchase_date).toLocaleDateString('es-ES', { 
-            day: 'numeric', 
-            month: 'long', 
+          Comprado el {new Date(datos_qr.purchase_date).toLocaleDateString('es-ES', {
+            day: 'numeric',
+            month: 'long',
             year: 'numeric',
             hour: '2-digit',
             minute: '2-digit'

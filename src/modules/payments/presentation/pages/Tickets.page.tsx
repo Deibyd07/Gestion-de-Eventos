@@ -6,6 +6,7 @@ import { useAuthStore } from '../../../authentication/infrastructure/store/Auth.
 import { useEventStore } from '../../../events/infrastructure/store/Event.store';
 import { QRTicketDisplay } from '@shared/ui/components/QRTicketDisplay';
 import { formatPriceDisplay } from '@shared/lib/utils/Currency.utils';
+import { formatEventDate } from '@shared/lib/utils/Date.utils';
 import { QRCodeService } from '@shared/lib/services/QRCode.service';
 import { PurchaseService } from '@shared/lib/api/services/Purchase.service';
 
@@ -362,7 +363,7 @@ export function TicketsPage() {
                         <div className="flex flex-wrap gap-3 text-blue-100 text-xs sm:text-sm">
                           <div className="flex items-center space-x-1">
                             <Calendar className="w-3 h-3 sm:w-4 sm:h-4" />
-                            <span>{firstTicket.datos_qr?.event_date ? new Date(firstTicket.datos_qr.event_date).toLocaleDateString('es-ES') : 'Fecha N/D'}</span>
+                            <span>{firstTicket.datos_qr?.event_date ? formatEventDate(firstTicket.datos_qr.event_date) : 'Fecha N/D'}</span>
                           </div>
                           <div className="flex items-center space-x-1">
                             <MapPin className="w-3 h-3 sm:w-4 sm:h-4" />

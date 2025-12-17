@@ -17,7 +17,7 @@ export function getCurrentColombiaDate(): Date {
  * @returns String formateado
  */
 export function formatDate(
-  date: string | Date, 
+  date: string | Date,
   options: {
     format?: 'short' | 'medium' | 'long' | 'full';
     includeTime?: boolean;
@@ -31,7 +31,7 @@ export function formatDate(
   } = options;
 
   const dateObj = typeof date === 'string' ? new Date(date) : date;
-  
+
   const formatOptions: Intl.DateTimeFormatOptions = {
     timeZone: 'America/Bogota',
     ...(includeTime && {
@@ -75,10 +75,14 @@ export function formatDate(
  * @returns String formateado para UI
  */
 export function formatEventDate(date: string | Date): string {
-  const dateObj = typeof date === 'string' ? new Date(date) : date;
-  
+  // Usar parseDateString para strings para evitar problemas de timezone
+  const dateObj = typeof date === 'string' ? parseDateString(date) : date;
+
   return dateObj.toLocaleDateString('es-CO', {
-    timeZone: 'America/Bogota',
+    // No forzar timezone aquí si ya viene parseada localmente, o usar UTC si se prefiere,
+    // pero parseDateString ya devuelve una fecha local correcta (00:00).
+    // Al formatear con 'es-CO' sin timezone específico, usará el del navegador/sistema
+    // que coincide con el de parseDateString (local).
     day: 'numeric',
     month: 'short',
     year: 'numeric'
@@ -92,7 +96,7 @@ export function formatEventDate(date: string | Date): string {
  */
 export function formatDashboardDate(date: string | Date): string {
   const dateObj = typeof date === 'string' ? new Date(date) : date;
-  
+
   return dateObj.toLocaleDateString('es-CO', {
     timeZone: 'America/Bogota',
     day: 'numeric',
@@ -110,7 +114,7 @@ export function formatDashboardDate(date: string | Date): string {
  */
 export function formatDateInput(date: string | Date): string {
   const dateObj = typeof date === 'string' ? new Date(date) : date;
-  
+
   return dateObj.toLocaleDateString('en-CA', {
     timeZone: 'America/Bogota'
   });
@@ -125,7 +129,7 @@ export function formatTime(time: string | Date): string {
   if (typeof time === 'string') {
     return time.slice(0, 5); // HH:MM
   }
-  
+
   return time.toLocaleTimeString('es-CO', {
     timeZone: 'America/Bogota',
     hour: '2-digit',
@@ -163,7 +167,7 @@ export function parseDateString(dateString: string): Date {
   if (dateString.includes('T') || dateString.includes(' ')) {
     return new Date(dateString);
   }
-  
+
   // Para fechas en formato YYYY-MM-DD, parsear manualmente
   const [year, month, day] = dateString.split('-').map(Number);
   return new Date(year, month - 1, day);
@@ -208,12 +212,12 @@ export function getRegistrationDate(): string {
 export function getDateDifference(startDate: string | Date, endDate: string | Date) {
   const start = typeof startDate === 'string' ? new Date(startDate) : startDate;
   const end = typeof endDate === 'string' ? new Date(endDate) : endDate;
-  
+
   const diffMs = end.getTime() - start.getTime();
   const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
   const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
   const diffMinutes = Math.floor(diffMs / (1000 * 60));
-  
+
   return {
     days: diffDays,
     hours: diffHours,
@@ -230,7 +234,7 @@ export function getDateDifference(startDate: string | Date, endDate: string | Da
 export function isToday(date: string | Date): boolean {
   const dateObj = typeof date === 'string' ? new Date(date) : date;
   const today = getCurrentColombiaDate();
-  
+
   return dateObj.toDateString() === today.toDateString();
 }
 
@@ -242,7 +246,7 @@ export function isToday(date: string | Date): boolean {
 export function isFuture(date: string | Date): boolean {
   const dateObj = typeof date === 'string' ? new Date(date) : date;
   const now = getCurrentColombiaDate();
-  
+
   return dateObj > now;
 }
 
@@ -254,6 +258,6 @@ export function isFuture(date: string | Date): boolean {
 export function isPast(date: string | Date): boolean {
   const dateObj = typeof date === 'string' ? new Date(date) : date;
   const now = getCurrentColombiaDate();
-  
+
   return dateObj < now;
 }

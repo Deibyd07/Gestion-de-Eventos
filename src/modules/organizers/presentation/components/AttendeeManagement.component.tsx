@@ -85,7 +85,7 @@ export function AttendeeManagement({ eventId, eventTitle, onRefreshRequest }: At
 
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
-  const [filterTicketType, setFilterTicketType] = useState('all');
+
   const [selectedAttendees, setSelectedAttendees] = useState<string[]>([]);
   const [showBulkActions, setShowBulkActions] = useState(false);
   const [expandedEvent, setExpandedEvent] = useState<string | null>(eventId || null);
@@ -310,8 +310,7 @@ export function AttendeeManagement({ eventId, eventTitle, onRefreshRequest }: At
     // Si hay eventId seleccionado, solo mostrar asistentes de ese evento
     const matchesEvent = !eventId || attendee.eventId === eventId;
     const matchesStatus = filterStatus === 'all' || attendee.checkInStatus === filterStatus;
-    const matchesTicketType = filterTicketType === 'all' || attendee.ticketType === filterTicketType;
-    return matchesSearch && matchesEvent && matchesStatus && matchesTicketType;
+    return matchesSearch && matchesEvent && matchesStatus;
   });
 
   const getStatusColor = (status: string) => {
@@ -498,8 +497,8 @@ export function AttendeeManagement({ eventId, eventTitle, onRefreshRequest }: At
 
       {/* Filters and Search */}
       <div className="bg-gradient-to-br from-white to-indigo-100/98 backdrop-blur-lg shadow-xl border border-gray-300 rounded-2xl p-4 md:p-6">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
-          <div className="relative sm:col-span-2 lg:col-span-1">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
+          <div className="relative md:col-span-2">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
             <input
               type="text"
@@ -519,16 +518,7 @@ export function AttendeeManagement({ eventId, eventTitle, onRefreshRequest }: At
             <option value="pending">Pendiente</option>
             <option value="no-show">No asistió</option>
           </select>
-          <select
-            value={filterTicketType}
-            onChange={(e) => setFilterTicketType(e.target.value)}
-            className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
-          >
-            <option value="all">Todos los tipos</option>
-            <option value="General">General</option>
-            <option value="VIP">VIP</option>
-            <option value="Early Bird">Early Bird</option>
-          </select>
+
         </div>
         {eventId && (
           <div className="mt-3 flex items-center space-x-2 text-sm text-blue-600">

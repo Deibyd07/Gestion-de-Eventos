@@ -1,4 +1,4 @@
-import { MapPin, Users, Clock, Share2, ShoppingCart, ImageIcon, AlertTriangle } from 'lucide-react';
+import { MapPin, Users, Clock, ShoppingCart, ImageIcon, AlertTriangle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { Event } from '../../../events/infrastructure/store/Event.store';
@@ -165,19 +165,7 @@ export function EventCard({ event, viewMode = 'grid' }: EventCardProps) {
   const isAlmostFull = availableSpots <= totalCapacity * 0.1 && availableSpots > 0;
   const isSoldOut = availableSpots <= 0;
 
-  const handleShare = () => {
-    if (navigator.share) {
-      navigator.share({
-        title: event.title,
-        text: event.description,
-        url: window.location.href
-      });
-    } else {
-      // Fallback: copy to clipboard
-      navigator.clipboard.writeText(window.location.href);
-      alert('Enlace copiado al portapapeles');
-    }
-  };
+
 
   const handleAddToCart = () => {
     // Si el evento tiene tipos de tickets
@@ -268,14 +256,7 @@ export function EventCard({ event, viewMode = 'grid' }: EventCardProps) {
                 </div>
               </div>
             </div>
-            <div className="absolute top-2 right-2 flex space-x-1">
-              <button
-                onClick={handleShare}
-                className="p-1.5 bg-white/95 backdrop-blur-sm rounded-full text-gray-700 hover:bg-white transition-all duration-200"
-              >
-                <Share2 className="w-3 h-3" />
-              </button>
-            </div>
+
           </div>
 
           <div className="flex-1 p-4">
@@ -406,15 +387,7 @@ export function EventCard({ event, viewMode = 'grid' }: EventCardProps) {
           {getStatusText(event.status)}
         </div>
 
-        {/* Action Buttons */}
-        <div className="absolute bottom-4 right-4 flex space-x-2">
-          <button
-            onClick={handleShare}
-            className="p-2 bg-white/95 backdrop-blur-sm rounded-full text-gray-700 hover:bg-white transition-all duration-200"
-          >
-            <Share2 className="w-4 h-4" />
-          </button>
-        </div>
+
       </div>
 
       <div className="p-4 sm:p-6 flex-1 flex flex-col">

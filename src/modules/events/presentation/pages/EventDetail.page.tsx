@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { Calendar, MapPin, Clock, Users, Share2, Plus, Minus, ArrowLeft } from 'lucide-react';
+import { Calendar, MapPin, Clock, Users, Plus, Minus, ArrowLeft } from 'lucide-react';
 import { supabase } from '@shared/lib/api/supabase';
 import { useEventStore } from '../../../events/infrastructure/store/Event.store';
 import { useCartStore } from '../../../payments/infrastructure/store/Cart.store';
@@ -222,32 +222,6 @@ export function EventDetailPage() {
                   </div>
                 </div>
               </div>
-              <div className="absolute top-3 sm:top-6 right-3 sm:right-6 flex space-x-2">
-                <button
-                  onClick={() => {
-                    const shareUrl = `${window.location.origin}/events/${event.id}`;
-                    const shareData = {
-                      title: event.title,
-                      text: `¡Mira este evento: ${event.title}! ${event.description?.substring(0, 100)}...`,
-                      url: shareUrl
-                    };
-
-                    if (navigator.share) {
-                      navigator.share(shareData).catch(console.error);
-                    } else {
-                      navigator.clipboard.writeText(shareUrl).then(() => {
-                        alert('¡Enlace copiado al portapapeles!');
-                      }).catch(() => {
-                        alert('No se pudo copiar el enlace');
-                      });
-                    }
-                  }}
-                  className="p-2 sm:p-3 bg-white/95 backdrop-blur-sm rounded-full text-gray-700 hover:bg-white hover:text-blue-600 transition-all duration-200"
-                  title="Compartir evento"
-                >
-                  <Share2 className="w-4 h-4 sm:w-5 sm:h-5" />
-                </button>
-              </div>
             </div>
 
             {/* Event Details */}
@@ -359,87 +333,87 @@ export function EventDetailPage() {
               {event.status !== 'cancelado' && (
                 <>
                   <div className="space-y-3 sm:space-y-4 mb-4 sm:mb-6">
-                {ticketTypesData.map((ticketType: any) => (
-                  <div key={ticketType.id} className="border border-gray-200 rounded-lg p-3 sm:p-4">
-                    <div className="flex justify-between items-start mb-2 sm:mb-3">
-                      <div className="flex-1 min-w-0 mr-2">
-                        <h4 className="font-semibold text-gray-900 text-sm sm:text-base">{ticketType.nombre_tipo}</h4>
-                        <p className="text-xs sm:text-sm text-gray-600 mt-1 line-clamp-2">{ticketType.descripcion}</p>
-                        {ticketType.cantidad_disponible <= 5 && ticketType.cantidad_disponible > 0 && (
-                          <p className="text-xs sm:text-sm text-orange-600 mt-1">
-                            ¡Solo quedan {ticketType.cantidad_disponible}!
-                          </p>
+                    {ticketTypesData.map((ticketType: any) => (
+                      <div key={ticketType.id} className="border border-gray-200 rounded-lg p-3 sm:p-4">
+                        <div className="flex justify-between items-start mb-2 sm:mb-3">
+                          <div className="flex-1 min-w-0 mr-2">
+                            <h4 className="font-semibold text-gray-900 text-sm sm:text-base">{ticketType.nombre_tipo}</h4>
+                            <p className="text-xs sm:text-sm text-gray-600 mt-1 line-clamp-2">{ticketType.descripcion}</p>
+                            {ticketType.cantidad_disponible <= 5 && ticketType.cantidad_disponible > 0 && (
+                              <p className="text-xs sm:text-sm text-orange-600 mt-1">
+                                ¡Solo quedan {ticketType.cantidad_disponible}!
+                              </p>
+                            )}
+                          </div>
+                          <div className="text-right flex-shrink-0">
+                            <span className="text-base sm:text-lg font-bold text-gray-900">
+                              {formatPriceDisplay(ticketType.precio)}
+                            </span>
+                          </div>
+                        </div>
+
+                        {ticketType.cantidad_disponible > 0 ? (
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs sm:text-sm text-gray-600">
+                              {ticketType.cantidad_disponible} disponibles
+                            </span>
+                            <div className="flex items-center space-x-2 sm:space-x-3">
+                              <button
+                                onClick={() => updateTicketQuantity(ticketType.id, -1)}
+                                disabled={!selectedTickets[ticketType.id]}
+                                className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-50 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                              >
+                                <Minus className="w-3 h-3 sm:w-4 sm:h-4" />
+                              </button>
+                              <span className="w-6 sm:w-8 text-center font-medium text-sm sm:text-base">
+                                {selectedTickets[ticketType.id] || 0}
+                              </span>
+                              <button
+                                onClick={() => updateTicketQuantity(ticketType.id, 1)}
+                                disabled={
+                                  (selectedTickets[ticketType.id] || 0) >= ticketType.cantidad_disponible ||
+                                  (selectedTickets[ticketType.id] || 0) >= ticketType.cantidad_maxima
+                                }
+                                className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-50 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                              >
+                                <Plus className="w-3 h-3 sm:w-4 sm:h-4" />
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="text-center py-2">
+                            <span className="text-red-600 text-xs sm:text-sm font-medium">Agotado</span>
+                          </div>
                         )}
                       </div>
-                      <div className="text-right flex-shrink-0">
-                        <span className="text-base sm:text-lg font-bold text-gray-900">
-                          {formatPriceDisplay(ticketType.precio)}
-                        </span>
+                    ))}
+                  </div>
+
+                  {getTotalTickets() > 0 && (
+                    <div className="border-t border-gray-200 pt-3 sm:pt-4 mb-4 sm:mb-6">
+                      <div className="flex justify-between items-center text-base sm:text-lg font-semibold">
+                        <span>Total ({getTotalTickets()} entradas)</span>
+                        <span>{formatPriceDisplay(getTotalPrice())}</span>
                       </div>
                     </div>
+                  )}
 
-                    {ticketType.cantidad_disponible > 0 ? (
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs sm:text-sm text-gray-600">
-                          {ticketType.cantidad_disponible} disponibles
-                        </span>
-                        <div className="flex items-center space-x-2 sm:space-x-3">
-                          <button
-                            onClick={() => updateTicketQuantity(ticketType.id, -1)}
-                            disabled={!selectedTickets[ticketType.id]}
-                            className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-50 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                          >
-                            <Minus className="w-3 h-3 sm:w-4 sm:h-4" />
-                          </button>
-                          <span className="w-6 sm:w-8 text-center font-medium text-sm sm:text-base">
-                            {selectedTickets[ticketType.id] || 0}
-                          </span>
-                          <button
-                            onClick={() => updateTicketQuantity(ticketType.id, 1)}
-                            disabled={
-                              (selectedTickets[ticketType.id] || 0) >= ticketType.cantidad_disponible ||
-                              (selectedTickets[ticketType.id] || 0) >= ticketType.cantidad_maxima
-                            }
-                            className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-50 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                          >
-                            <Plus className="w-3 h-3 sm:w-4 sm:h-4" />
-                          </button>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="text-center py-2">
-                        <span className="text-red-600 text-xs sm:text-sm font-medium">Agotado</span>
-                      </div>
-                    )}
+                  <button
+                    onClick={handleAddToCart}
+                    disabled={getTotalTickets() === 0}
+                    className="w-full py-2.5 sm:py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-blue-600 text-sm sm:text-base"
+                  >
+                    {getTotalTickets() > 0 ? 'Añadir al carrito' : 'Selecciona entradas'}
+                  </button>
+
+                  <div className="mt-3 sm:mt-4 text-center">
+                    <Link
+                      to="/checkout"
+                      className="text-blue-600 hover:text-blue-500 text-xs sm:text-sm font-medium"
+                    >
+                      Ver carrito
+                    </Link>
                   </div>
-                ))}
-              </div>
-
-              {getTotalTickets() > 0 && (
-                <div className="border-t border-gray-200 pt-3 sm:pt-4 mb-4 sm:mb-6">
-                  <div className="flex justify-between items-center text-base sm:text-lg font-semibold">
-                    <span>Total ({getTotalTickets()} entradas)</span>
-                    <span>{formatPriceDisplay(getTotalPrice())}</span>
-                  </div>
-                </div>
-              )}
-
-              <button
-                onClick={handleAddToCart}
-                disabled={getTotalTickets() === 0}
-                className="w-full py-2.5 sm:py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-blue-600 text-sm sm:text-base"
-              >
-                {getTotalTickets() > 0 ? 'Añadir al carrito' : 'Selecciona entradas'}
-              </button>
-
-              <div className="mt-3 sm:mt-4 text-center">
-                <Link
-                  to="/checkout"
-                  className="text-blue-600 hover:text-blue-500 text-xs sm:text-sm font-medium"
-                >
-                  Ver carrito
-                </Link>
-              </div>
                 </>
               )}
             </div>

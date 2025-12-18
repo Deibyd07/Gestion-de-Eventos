@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
-import { 
-  Ticket, 
-  Plus, 
-  Edit, 
-  Trash2, 
-  Star, 
-  Clock, 
-  DollarSign, 
-  Users, 
+import {
+  Ticket,
+  Plus,
+  Edit,
+  Trash2,
+  Star,
+  Clock,
+  DollarSign,
+  Users,
   Percent,
   Shield,
   AlertCircle,
@@ -57,7 +57,6 @@ export const TicketManagement: React.FC<TicketManagementProps> = ({
   onViewAnalytics
 }) => {
   const [filterType, setFilterType] = useState<'all' | 'general' | 'vip' | 'early_bird' | 'student' | 'group'>('all');
-  const [filterStatus, setFilterStatus] = useState<'all' | 'active' | 'inactive'>('all');
   const [searchTerm, setSearchTerm] = useState('');
 
   const getTypeColor = (type: string) => {
@@ -100,21 +99,18 @@ export const TicketManagement: React.FC<TicketManagementProps> = ({
 
   const filteredTickets = tickets.filter(ticket => {
     const matchesType = filterType === 'all' || ticket.type === filterType;
-    const matchesStatus = filterStatus === 'all' || 
-      (filterStatus === 'active' && ticket.isActive) ||
-      (filterStatus === 'inactive' && !ticket.isActive);
     const matchesSearch = ticket.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         ticket.description.toLowerCase().includes(searchTerm.toLowerCase());
-    return matchesType && matchesStatus && matchesSearch;
+      ticket.description.toLowerCase().includes(searchTerm.toLowerCase());
+    return matchesType && matchesSearch;
   });
 
   const totalRevenue = tickets.reduce((sum, ticket) => {
-    const ticketRevenue = typeof ticket.revenue === 'number' ? ticket.revenue : (ticket.price * ticket.sold);
+    const ticketRevenue = (ticket as any).revenue ?? (ticket.price * ticket.sold);
     return sum + ticketRevenue;
   }, 0);
   const totalSold = tickets.reduce((sum, ticket) => sum + ticket.sold, 0);
   const totalAvailable = tickets.reduce((sum, ticket) => sum + ticket.available, 0);
-  
+
   // Contar tipos de entrada únicos (general, VIP, estudiante, etc.)
   const uniqueTicketTypes = new Set(tickets.map(t => t.type || 'general')).size;
   const activeUniqueTypes = new Set(tickets.filter(t => t.isActive).map(t => t.type || 'general')).size;
@@ -166,8 +162,8 @@ export const TicketManagement: React.FC<TicketManagementProps> = ({
 
       {/* Filters */}
       <div className="bg-gradient-to-br from-white to-indigo-100/98 backdrop-blur-lg shadow-xl border border-white/20 rounded-2xl p-4 md:p-6">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
-          <div className="sm:col-span-2 lg:col-span-1">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+          <div className="sm:col-span-2 lg:col-span-2">
             <label className="block text-xs md:text-sm font-medium text-gray-700 mb-2">Buscar Entradas</label>
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -180,7 +176,7 @@ export const TicketManagement: React.FC<TicketManagementProps> = ({
               />
             </div>
           </div>
-          <div>
+          <div className="sm:col-span-2 lg:col-span-2">
             <label className="block text-xs md:text-sm font-medium text-gray-700 mb-2">Tipo</label>
             <select
               value={filterType}
@@ -195,18 +191,6 @@ export const TicketManagement: React.FC<TicketManagementProps> = ({
               <option value="group">Grupo</option>
             </select>
           </div>
-          <div>
-            <label className="block text-xs md:text-sm font-medium text-gray-700 mb-2">Estado</label>
-            <select
-              value={filterStatus}
-              onChange={(e) => setFilterStatus(e.target.value as any)}
-              className="w-full px-3 py-2 text-sm border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            >
-              <option value="all">Todos</option>
-              <option value="active">Activos</option>
-              <option value="inactive">Inactivos</option>
-            </select>
-          </div>
         </div>
       </div>
 
@@ -215,7 +199,7 @@ export const TicketManagement: React.FC<TicketManagementProps> = ({
         {filteredTickets.map((ticket) => {
           const TypeIcon = getTypeIcon(ticket.type);
           const salesPercentage = ticket.available > 0 ? (ticket.sold / (ticket.available + ticket.sold)) * 100 : 0;
-          
+
           return (
             <div key={ticket.id} className="bg-gradient-to-br from-white to-indigo-100/98 backdrop-blur-lg shadow-xl border border-white/20 rounded-2xl hover:shadow-2xl transition-all duration-200">
               {/* Ticket Header */}
@@ -227,7 +211,7 @@ export const TicketManagement: React.FC<TicketManagementProps> = ({
                     </div>
                     <div>
                       <h4 className="font-semibold text-gray-900">{ticket.name}</h4>
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getTypeColor(ticket.type)}">
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getTypeColor(ticket.type)}`}>
                         {getTypeText(ticket.type)}
                       </span>
                     </div>
@@ -235,11 +219,10 @@ export const TicketManagement: React.FC<TicketManagementProps> = ({
                   <div className="flex items-center space-x-2">
                     <button
                       onClick={() => onToggleTicket(ticket.id)}
-                      className={`p-2 rounded-lg transition-all duration-200 ${
-                        ticket.isActive 
-                          ? 'bg-green-100 text-green-600 hover:bg-green-200' 
+                      className={`p-2 rounded-lg transition-all duration-200 ${ticket.isActive
+                          ? 'bg-green-100 text-green-600 hover:bg-green-200'
                           : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                      }`}
+                        }`}
                       title={ticket.isActive ? 'Desactivar' : 'Activar'}
                     >
                       {ticket.isActive ? <CheckCircle className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />}
@@ -277,7 +260,7 @@ export const TicketManagement: React.FC<TicketManagementProps> = ({
                     <span>{salesPercentage.toFixed(1)}%</span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div 
+                    <div
                       className="bg-gradient-to-r from-blue-500 to-purple-600 h-2 rounded-full transition-all duration-300"
                       style={{ width: `${Math.min(salesPercentage, 100)}%` }}
                     />
@@ -324,7 +307,7 @@ export const TicketManagement: React.FC<TicketManagementProps> = ({
                     <p className="text-xs text-gray-600">Vendidas</p>
                   </div>
                   <div className="text-center p-3 bg-gray-50 rounded-lg">
-                    <p className="text-2xl font-bold text-gray-900">{formatCurrency((typeof ticket.revenue === 'number' ? ticket.revenue : ticket.price * ticket.sold))}</p>
+                    <p className="text-2xl font-bold text-gray-900">{formatCurrency((ticket as any).revenue ?? (ticket.price * ticket.sold))}</p>
                     <p className="text-xs text-gray-600">Ingresos</p>
                   </div>
                 </div>
@@ -373,7 +356,7 @@ export const TicketManagement: React.FC<TicketManagementProps> = ({
           <Ticket className="w-16 h-16 text-gray-400 mx-auto mb-4" />
           <h3 className="text-lg font-medium text-gray-900 mb-2">No hay tipos de entrada</h3>
           <p className="text-gray-600 mb-6">
-            {searchTerm || filterType !== 'all' || filterStatus !== 'all'
+            {searchTerm || filterType !== 'all'
               ? 'No se encontraron entradas que coincidan con los filtros aplicados.'
               : 'Comienza creando tu primer tipo de entrada.'
             }

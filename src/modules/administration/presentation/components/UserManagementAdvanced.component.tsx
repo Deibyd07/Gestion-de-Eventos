@@ -7,6 +7,7 @@ import { UserService } from '@shared/lib/api/services/User.service';
 import { AddUserModal } from './user-management/AddUserModal.component';
 import { supabase } from '@shared/lib/api/supabase';
 import { Alert } from '@shared/ui/components/Alert/Alert.component';
+import { Toast, ToastContainer, useToast } from '@shared/ui/components/Toast/Toast.component';
 
 interface User {
   id: string;
@@ -54,12 +55,13 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onViewOrganizerP
   const [userToDelete, setUserToDelete] = useState<User | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showSuccessAlert, setShowSuccessAlert] = useState(false);
+  const { toasts, addToast, removeToast } = useToast();
 
   // Función para obtener estadísticas basadas en el rol del usuario
   const getStatsByRole = (userRole: string) => {
     const allUsers = users;
     const filteredUsers = filterRole === 'all' ? allUsers : allUsers.filter(u => u.rol === filterRole);
-    
+
     switch (userRole) {
       case 'admin':
         return {
@@ -102,7 +104,7 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onViewOrganizerP
     try {
       console.log('🔄 Cargando usuarios desde Supabase...');
       const usuariosDB = await UserService.obtenerTodosUsuarios();
-      
+
       // Obtener estadísticas reales para cada usuario según su rol
       const usuariosMapeados: User[] = await Promise.all(usuariosDB.map(async (usuario) => {
         let eventos_creados = 0;
@@ -119,7 +121,7 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onViewOrganizerP
               .from('eventos')
               .select('id')
               .eq('id_organizador', usuario.id);
-            
+
             if (eventosError) {
               console.error(`Error eventos para ${usuario.id}:`, eventosError);
             }
@@ -135,7 +137,7 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onViewOrganizerP
                 .select('total_pagado')
                 .in('id_evento', eventosIds)
                 .eq('estado', 'completada');
-              
+
               if (comprasError) {
                 console.error(`Error compras para ${usuario.id}:`, comprasError);
               } else {
@@ -151,7 +153,7 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onViewOrganizerP
               .from('asistencia_eventos')
               .select('id')
               .eq('id_usuario', usuario.id);
-            
+
             if (asistError) {
               console.error(`Error asistencias para ${usuario.id}:`, asistError);
             }
@@ -164,7 +166,7 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onViewOrganizerP
               .select('id, total_pagado, cantidad')
               .eq('id_usuario', usuario.id)
               .eq('estado', 'completada');
-            
+
             if (comprasError) {
               console.error(`Error compras asistente ${usuario.id}:`, comprasError);
             }
@@ -213,7 +215,8 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onViewOrganizerP
       setUsers(usuariosMapeados);
     } catch (error) {
       console.error('❌ Error al cargar usuarios:', error);
-      alert('Error al cargar usuarios desde la base de datos');
+      console.error('❌ Error al cargar usuarios:', error);
+      addToast('Error al cargar usuarios desde la base de datos', { variant: 'error', position: 'top-right' });
     } finally {
       setLoading(false);
     }
@@ -242,8 +245,8 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onViewOrganizerP
   };
 
   const handleSelectUser = (userId: string) => {
-    setSelectedUsers(prev => 
-      prev.includes(userId) 
+    setSelectedUsers(prev =>
+      prev.includes(userId)
         ? prev.filter(id => id !== userId)
         : [...prev, userId]
     );
@@ -278,27 +281,27 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onViewOrganizerP
         rol: updates.rol as 'administrador' | 'organizador' | 'asistente',
         // estado y verificacion se manejan por separado si es necesario
       });
-      
+
       // Si el estado cambió, actualizarlo
       if (updates.estado) {
         await UserService.actualizarEstadoUsuario(userId, updates.estado);
       }
-      
+
       console.log('✅ Usuario actualizado exitosamente');
-      
+
       // Actualizar el estado local
-      setUsers(prev => prev.map(u => 
-        u.id === userId 
+      setUsers(prev => prev.map(u =>
+        u.id === userId
           ? { ...u, ...updates }
           : u
       ));
-      
+
       setShowEditModal(false);
       setUserToEdit(null);
-      alert('Usuario actualizado exitosamente');
+      addToast('Usuario actualizado exitosamente', { variant: 'success', position: 'top-right' });
     } catch (error) {
       console.error('❌ Error al actualizar usuario:', error);
-      alert('Error al actualizar el usuario');
+      addToast('Error al actualizar el usuario', { variant: 'error', position: 'top-right' });
     }
   };
 
@@ -315,10 +318,10 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onViewOrganizerP
       setUsers(prev => prev.filter(u => u.id !== userId));
       setShowDeleteModal(false);
       setUserToDelete(null);
-      alert('Usuario eliminado exitosamente');
+      addToast('Usuario eliminado exitosamente', { variant: 'success', position: 'top-right' });
     } catch (error) {
       console.error('❌ Error al eliminar usuario:', error);
-      alert('Error al eliminar el usuario');
+      addToast('Error al eliminar el usuario', { variant: 'error', position: 'top-right' });
     }
   };
 
@@ -332,18 +335,19 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onViewOrganizerP
     try {
       const nuevoEstado = user.estado === 'activo' ? 'suspendido' : 'activo';
       console.log('🔄 Cambiando estado de usuario:', user.id, 'de', user.estado, 'a', nuevoEstado);
-      
+
       await UserService.actualizarEstadoUsuario(user.id, nuevoEstado);
       console.log('✅ Estado actualizado exitosamente');
-      
-      setUsers(prev => prev.map(u => 
-        u.id === user.id 
+
+      setUsers(prev => prev.map(u =>
+        u.id === user.id
           ? { ...u, estado: nuevoEstado }
           : u
       ));
+      addToast(`Estado del usuario actualizado a ${nuevoEstado}`, { variant: 'success', position: 'top-right' });
     } catch (error) {
       console.error('❌ Error al cambiar estado:', error);
-      alert('Error al cambiar el estado del usuario');
+      addToast('Error al cambiar el estado del usuario', { variant: 'error', position: 'top-right' });
     }
   };
 
@@ -383,11 +387,21 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onViewOrganizerP
 
       await loadUsers();
       setShowAddModal(false);
-      setShowSuccessAlert(true);
-      setTimeout(() => setShowSuccessAlert(false), 5000);
+      await loadUsers();
+      setShowAddModal(false);
+      addToast('Usuario creado exitosamente', { variant: 'success', position: 'top-right' });
+      // setShowSuccessAlert(true); // Toast replaces this or we keep both? User asked for toast.
+      // Keeping setShowSuccessAlert(false) implicitly or removing it? 
+      // User said "dame un alerta de exito... como... la web". 
+      // The original code had: setShowSuccessAlert(true); setTimeout... 
+      // I will replace that block with just the toast for consistency with "User asked to REPLACE browser notification", 
+      // but actually for creation maybe they still want the big alert? 
+      // The prompt said "when I change the status or role... give me a success alert in the top right".
+      // It didn't explicitly forbid the existing inline alert for creation, but toast is nicer.
+      // I'll stick to toast for consistency.
     } catch (error: any) {
       console.error('❌ Error al crear usuario:', error);
-      alert(error?.message || 'Error al crear el usuario');
+      addToast(error?.message || 'Error al crear el usuario', { variant: 'error', position: 'top-right' });
       throw error;
     }
   };
@@ -400,26 +414,35 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onViewOrganizerP
           rol: newRole as 'administrador' | 'organizador' | 'asistente'
         });
         console.log('✅ Rol actualizado exitosamente');
-        setUsers(prev => prev.map(user => 
-          user.id === userToUpdateRole.id 
+        setUsers(prev => prev.map(user =>
+          user.id === userToUpdateRole.id
             ? { ...user, rol: newRole }
             : user
         ));
         setShowRoleModal(false);
         setUserToUpdateRole(null);
         setNewRole('');
-        alert('Rol de usuario actualizado exitosamente');
+        addToast('Rol de usuario actualizado exitosamente', { variant: 'success', position: 'top-right' });
       } catch (error) {
         console.error('❌ Error al actualizar rol:', error);
-        alert('Error al actualizar el rol del usuario');
+        addToast('Error al actualizar el rol del usuario', { variant: 'error', position: 'top-right' });
       }
     }
   };
 
   return (
     <div className="space-y-4 md:space-y-6 w-full max-w-full">
+      <ToastContainer position="top-right">
+        {toasts.map(toast => (
+          <Toast
+            key={toast.id}
+            {...toast}
+            onClose={() => removeToast(toast.id)}
+          />
+        ))}
+      </ToastContainer>
 
-      {/* Alerta de éxito */}
+      {/* Alerta de éxito - Optional, keeping if state is still used, but I removed the setter call above so it won't show for creation anymore, which is fine as toast covers it */}
       {showSuccessAlert && (
         <Alert variant="success" title="¡Usuario creado exitosamente!" onClose={() => setShowSuccessAlert(false)}>
           El usuario ha sido agregado correctamente al sistema.
@@ -512,9 +535,9 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onViewOrganizerP
             </div>
           </div>
         </div>
-        </div>
+      </div>
 
-        <UserManagementContent
+      <UserManagementContent
         users={users}
         loading={loading}
         searchTerm={searchTerm}

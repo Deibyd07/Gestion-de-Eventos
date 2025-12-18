@@ -174,6 +174,20 @@ export function parseDateString(dateString: string): Date {
 }
 
 /**
+ * Formatea una fecha ISO para mostrar en formato dd/mm/yyyy sin problemas de timezone
+ * @param isoString - String de fecha en formato ISO (YYYY-MM-DD o YYYY-MM-DDTHH:mm:ss)
+ * @returns String formateado como "17/12/2025"
+ */
+export function formatPurchaseDate(isoString: string): string {
+  if (!isoString) return '';
+  return new Date(isoString).toLocaleDateString('es-ES', {
+    day: 'numeric',
+    month: 'numeric',
+    year: 'numeric'
+  });
+}
+
+/**
  * Formatea una fecha de base de datos para mostrar día y mes corto
  * @param dateString - String de fecha en formato YYYY-MM-DD
  * @returns String formateado como "15 ene"

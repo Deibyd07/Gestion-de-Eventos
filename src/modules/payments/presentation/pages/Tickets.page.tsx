@@ -108,6 +108,11 @@ export function TicketsPage() {
     return acc;
   }, {} as Record<string, typeof qrTickets>);
 
+  // Sort tickets within each event by numero_entrada
+  Object.keys(qrTicketsByEvent).forEach(eventTitle => {
+    qrTicketsByEvent[eventTitle].sort((a, b) => (a.numero_entrada || 0) - (b.numero_entrada || 0));
+  });
+
   // Ayudantes para compras sin QR
   const countQrsForPurchase = (purchaseId: string) => qrTickets.filter(t => t.id_compra === purchaseId).length;
   const purchasesWithoutQR = purchases.filter(p => countQrsForPurchase(p.id) < (p.cantidad || 0));

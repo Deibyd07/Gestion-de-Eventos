@@ -456,7 +456,7 @@ npm run typecheck    # Verificación de tipos TypeScript
 - Crear códigos promocionales
 
 ### 🛡️ **Administrador**
-- Todo lo del organizador +
+
 - Gestionar todos los usuarios
 - Gestionar todos los eventos
 - Ver analíticas globales
@@ -553,19 +553,6 @@ Si encuentras un bug, por favor abre un issue con:
 - Comportamiento esperado
 - Capturas de pantalla (si aplica)
 - Entorno (navegador, SO, etc.)
-
----
-
-## 📝 Roadmap
-
-- [ ] Integración con proveedores de pago (Stripe, PayPal)
-- [ ] App móvil con React Native
-- [ ] Sistema de reviews y calificaciones
-- [ ] Chat en tiempo real entre organizadores y asistentes
-- [ ] Recomendaciones de eventos con IA
-- [ ] Exportación de reportes a PDF/Excel
-- [ ] Integración con redes sociales
-- [ ] Sistema de referidos y afiliados
 
 ---
 

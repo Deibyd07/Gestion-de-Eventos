@@ -227,8 +227,8 @@ export const PromotionManagement: React.FC<PromotionManagementProps> = ({
 
       {/* Filters */}
       <div className="bg-gradient-to-br from-white to-indigo-100/98 backdrop-blur-lg shadow-xl border border-white/20 rounded-2xl p-4 md:p-6">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
-          <div className="sm:col-span-2 lg:col-span-2">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4">
+          <div className="sm:col-span-2">
             <label className="block text-xs md:text-sm font-medium text-gray-700 mb-2">Buscar Descuentos</label>
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -241,7 +241,7 @@ export const PromotionManagement: React.FC<PromotionManagementProps> = ({
               />
             </div>
           </div>
-          <div className="sm:col-span-2 lg:col-span-2">
+          <div className="sm:col-span-1">
             <label className="block text-xs md:text-sm font-medium text-gray-700 mb-2">Tipo</label>
             <select
               value={filterType}
@@ -288,8 +288,8 @@ export const PromotionManagement: React.FC<PromotionManagementProps> = ({
                     <button
                       onClick={() => onTogglePromotion(promotion.id)}
                       className={`p-2 rounded-lg transition-all duration-200 ${promotion.isActive
-                          ? 'bg-green-100 text-green-600 hover:bg-green-200'
-                          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                        ? 'bg-green-100 text-green-600 hover:bg-green-200'
+                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                         }`}
                       title={promotion.isActive ? 'Desactivar' : 'Activar'}
                     >

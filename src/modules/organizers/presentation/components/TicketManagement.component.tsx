@@ -57,6 +57,7 @@ export const TicketManagement: React.FC<TicketManagementProps> = ({
   onViewAnalytics
 }) => {
   const [filterType, setFilterType] = useState<'all' | 'general' | 'vip' | 'early_bird' | 'student' | 'group'>('all');
+  const [filterStatus, setFilterStatus] = useState<'all' | 'active' | 'inactive'>('all');
   const [searchTerm, setSearchTerm] = useState('');
 
   const getTypeColor = (type: string) => {
@@ -99,9 +100,12 @@ export const TicketManagement: React.FC<TicketManagementProps> = ({
 
   const filteredTickets = tickets.filter(ticket => {
     const matchesType = filterType === 'all' || ticket.type === filterType;
+    const matchesStatus = filterStatus === 'all' ||
+      (filterStatus === 'active' && ticket.isActive) ||
+      (filterStatus === 'inactive' && !ticket.isActive);
     const matchesSearch = ticket.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       ticket.description.toLowerCase().includes(searchTerm.toLowerCase());
-    return matchesType && matchesSearch;
+    return matchesType && matchesStatus && matchesSearch;
   });
 
   const totalRevenue = tickets.reduce((sum, ticket) => {
@@ -176,7 +180,7 @@ export const TicketManagement: React.FC<TicketManagementProps> = ({
               />
             </div>
           </div>
-          <div className="sm:col-span-2 lg:col-span-2">
+          <div className="sm:col-span-1 lg:col-span-1">
             <label className="block text-xs md:text-sm font-medium text-gray-700 mb-2">Tipo</label>
             <select
               value={filterType}
@@ -189,6 +193,18 @@ export const TicketManagement: React.FC<TicketManagementProps> = ({
               <option value="early_bird">Early Bird</option>
               <option value="student">Estudiante</option>
               <option value="group">Grupo</option>
+            </select>
+          </div>
+          <div className="sm:col-span-1 lg:col-span-1">
+            <label className="block text-xs md:text-sm font-medium text-gray-700 mb-2">Estado</label>
+            <select
+              value={filterStatus}
+              onChange={(e) => setFilterStatus(e.target.value as any)}
+              className="w-full px-3 py-2 text-sm border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="all">Todos</option>
+              <option value="active">Activos</option>
+              <option value="inactive">Inactivos</option>
             </select>
           </div>
         </div>
@@ -220,8 +236,8 @@ export const TicketManagement: React.FC<TicketManagementProps> = ({
                     <button
                       onClick={() => onToggleTicket(ticket.id)}
                       className={`p-2 rounded-lg transition-all duration-200 ${ticket.isActive
-                          ? 'bg-green-100 text-green-600 hover:bg-green-200'
-                          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                        ? 'bg-green-100 text-green-600 hover:bg-green-200'
+                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                         }`}
                       title={ticket.isActive ? 'Desactivar' : 'Activar'}
                     >
@@ -356,7 +372,7 @@ export const TicketManagement: React.FC<TicketManagementProps> = ({
           <Ticket className="w-16 h-16 text-gray-400 mx-auto mb-4" />
           <h3 className="text-lg font-medium text-gray-900 mb-2">No hay tipos de entrada</h3>
           <p className="text-gray-600 mb-6">
-            {searchTerm || filterType !== 'all'
+            {searchTerm || filterType !== 'all' || filterStatus !== 'all'
               ? 'No se encontraron entradas que coincidan con los filtros aplicados.'
               : 'Comienza creando tu primer tipo de entrada.'
             }

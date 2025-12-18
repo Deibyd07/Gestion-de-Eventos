@@ -42,10 +42,10 @@ export function QRScannerModal({ isOpen, onClose, eventId }: QRScannerModalProps
   const startCamera = async () => {
     try {
       setError(null);
-      const stream = await navigator.mediaDevices.getUserMedia({ 
-        video: { facingMode: 'environment' } 
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'environment' }
       });
-      
+
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
         streamRef.current = stream;
@@ -105,9 +105,9 @@ export function QRScannerModal({ isOpen, onClose, eventId }: QRScannerModalProps
     try {
       // Extraer código del QR (puede ser URL, JSON o código directo)
       let qrCode: string = qrData.trim();
-      
+
       console.log('📷 Dato escaneado:', qrData);
-      
+
       // Si contiene una URL con el parámetro 'code'
       if (qrCode.includes('code=')) {
         try {
@@ -126,7 +126,7 @@ export function QRScannerModal({ isOpen, onClose, eventId }: QRScannerModalProps
             console.log('🔗 Código extraído manualmente:', qrCode);
           }
         }
-      } 
+      }
       // Si parece ser JSON
       else if (qrCode.startsWith('{')) {
         try {
@@ -166,7 +166,7 @@ export function QRScannerModal({ isOpen, onClose, eventId }: QRScannerModalProps
 
   const handleManualInput = async (code: string) => {
     if (!code.trim()) return;
-    
+
     setIsScanning(false);
     stopCamera();
 
@@ -186,11 +186,11 @@ export function QRScannerModal({ isOpen, onClose, eventId }: QRScannerModalProps
           }
         }
       }
-      
+
       console.log('🔍 Código a validar:', qrCode);
-      
+
       const result = await QRCodeService.validateQRCode(qrCode, user!.id);
-      
+
       setScanResult({
         valid: result.valid,
         message: result.message,
@@ -274,11 +274,10 @@ export function QRScannerModal({ isOpen, onClose, eventId }: QRScannerModalProps
               <div className="flex flex-col sm:flex-row gap-3">
                 <button
                   onClick={() => setIsScanning(!isScanning)}
-                  className={`flex-1 px-6 py-3 rounded-xl font-medium transition-all duration-200 flex items-center justify-center space-x-2 ${
-                    isScanning
+                  className={`flex-1 px-6 py-3 rounded-xl font-medium transition-all duration-200 flex items-center justify-center space-x-2 ${isScanning
                       ? 'bg-red-500 hover:bg-red-600 text-white'
                       : 'bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white'
-                  }`}
+                    }`}
                 >
                   {isScanning ? (
                     <>
@@ -326,15 +325,13 @@ export function QRScannerModal({ isOpen, onClose, eventId }: QRScannerModalProps
           ) : (
             <div className="space-y-6">
               {/* Result Status */}
-              <div className={`p-6 rounded-xl border-2 ${
-                scanResult.valid
+              <div className={`p-6 rounded-xl border-2 ${scanResult.valid
                   ? 'bg-green-50 border-green-200'
                   : 'bg-red-50 border-red-200'
-              }`}>
+                }`}>
                 <div className="flex items-start space-x-4">
-                  <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
-                    scanResult.valid ? 'bg-green-100' : 'bg-red-100'
-                  }`}>
+                  <div className={`w-12 h-12 rounded-full flex items-center justify-center ${scanResult.valid ? 'bg-green-100' : 'bg-red-100'
+                    }`}>
                     {scanResult.valid ? (
                       <CheckCircle className="w-6 h-6 text-green-600" />
                     ) : (
@@ -342,14 +339,12 @@ export function QRScannerModal({ isOpen, onClose, eventId }: QRScannerModalProps
                     )}
                   </div>
                   <div className="flex-1">
-                    <h3 className={`text-lg font-bold ${
-                      scanResult.valid ? 'text-green-900' : 'text-red-900'
-                    }`}>
+                    <h3 className={`text-lg font-bold ${scanResult.valid ? 'text-green-900' : 'text-red-900'
+                      }`}>
                       {scanResult.valid ? '✓ Entrada Válida' : '✗ Entrada No Válida'}
                     </h3>
-                    <p className={`text-sm mt-1 ${
-                      scanResult.valid ? 'text-green-700' : 'text-red-700'
-                    }`}>
+                    <p className={`text-sm mt-1 ${scanResult.valid ? 'text-green-700' : 'text-red-700'
+                      }`}>
                       {scanResult.message}
                     </p>
                     <p className="text-xs text-gray-500 mt-2">

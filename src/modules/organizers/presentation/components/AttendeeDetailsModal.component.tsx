@@ -1,5 +1,6 @@
 import { X, User, Mail, Phone, Calendar, MapPin, Ticket, DollarSign, CheckCircle, Clock, QrCode, Package, Hash, CreditCard } from 'lucide-react';
 import { formatPrice } from '@shared/lib/utils/Currency.utils';
+import { formatPurchaseDate } from '@shared/lib/utils/Date.utils';
 import { useEffect, useState } from 'react';
 // Eliminamos fetch directo vía RPC de usuarios y usamos información del ticket (consultTicketInfo)
 import { QRCodeService } from '@shared/lib/services/QRCode.service';
@@ -58,7 +59,7 @@ export function AttendeeDetailsModal({ isOpen, onClose, attendee }: AttendeeDeta
         if (info?.user_email && info.user_email.trim() !== '') {
           setUserEmail(info.user_email.trim());
         }
-      } catch (e:any) {
+      } catch (e: any) {
         setFetchError(e.message || 'Error consultando ticket');
       } finally {
         setLoadingUser(false);
@@ -115,212 +116,212 @@ export function AttendeeDetailsModal({ isOpen, onClose, attendee }: AttendeeDeta
       {/* Contenedor centrado */}
       <div className="fixed inset-0 flex items-center justify-center p-4">
         <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto relative z-[1000]">
-        {/* Header */}
-        <div className="sticky top-0 bg-gradient-to-r from-blue-500 to-purple-600 text-white p-6 rounded-t-2xl flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
-              <User className="w-6 h-6" />
+          {/* Header */}
+          <div className="sticky top-0 bg-gradient-to-r from-blue-500 to-purple-600 text-white p-6 rounded-t-2xl flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
+                <User className="w-6 h-6" />
+              </div>
+              <div>
+                <h2 className="text-xl font-bold">Detalles del Asistente</h2>
+                <p className="text-sm text-white/80">Información completa del participante</p>
+              </div>
             </div>
+            <button
+              onClick={onClose}
+              className="w-10 h-10 bg-white/20 hover:bg-white/30 rounded-lg flex items-center justify-center transition-all duration-200"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+
+          {/* Content */}
+          <div className="p-6 space-y-6">
+            {/* Estado */}
+            <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+              <span className="text-sm font-medium text-gray-600">Estado de Asistencia</span>
+              <span className={`px-3 py-1 text-sm font-medium rounded-full border ${getStatusColor(attendee.checkInStatus)}`}>
+                {getStatusText(attendee.checkInStatus)}
+              </span>
+            </div>
+
+            {/* Información Personal */}
             <div>
-              <h2 className="text-xl font-bold">Detalles del Asistente</h2>
-              <p className="text-sm text-white/80">Información completa del participante</p>
-            </div>
-          </div>
-          <button
-            onClick={onClose}
-            className="w-10 h-10 bg-white/20 hover:bg-white/30 rounded-lg flex items-center justify-center transition-all duration-200"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                <User className="w-5 h-5 mr-2 text-blue-600" />
+                Información Personal
+              </h3>
+              <div className="space-y-3">
+                <div className="flex items-start space-x-3">
+                  {attendee.avatar ? (
+                    <img
+                      src={attendee.avatar}
+                      alt={attendee.name}
+                      className="w-10 h-10 rounded-lg object-cover flex-shrink-0"
+                    />
+                  ) : (
+                    <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <User className="w-5 h-5 text-blue-600" />
+                    </div>
+                  )}
+                  <div>
+                    <p className="text-sm text-gray-500">Nombre Completo</p>
+                    <p className="font-medium text-gray-900">{userName || attendee.name || 'Sin nombre'}</p>
+                    {attendee.userRole && (
+                      <span className="inline-block mt-1 px-2 py-0.5 text-xs font-medium bg-gray-100 text-gray-700 rounded">
+                        {attendee.userRole}
+                      </span>
+                    )}
+                  </div>
+                </div>
 
-        {/* Content */}
-        <div className="p-6 space-y-6">
-          {/* Estado */}
-          <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
-            <span className="text-sm font-medium text-gray-600">Estado de Asistencia</span>
-            <span className={`px-3 py-1 text-sm font-medium rounded-full border ${getStatusColor(attendee.checkInStatus)}`}>
-              {getStatusText(attendee.checkInStatus)}
-            </span>
-          </div>
+                <div className="flex items-start space-x-3">
+                  <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <Mail className="w-5 h-5 text-purple-600" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">Correo Electrónico</p>
+                    <p className="font-medium text-gray-900">{userEmail || attendee.email || 'Sin correo'}</p>
+                    {loadingUser && <p className="text-xs text-blue-600 mt-1">Consultando ticket…</p>}
+                    {fetchError && <p className="text-xs text-red-600 mt-1">{fetchError}</p>}
+                  </div>
+                </div>
 
-          {/* Información Personal */}
-          <div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-              <User className="w-5 h-5 mr-2 text-blue-600" />
-              Información Personal
-            </h3>
-            <div className="space-y-3">
-              <div className="flex items-start space-x-3">
-                {attendee.avatar ? (
-                  <img 
-                    src={attendee.avatar} 
-                    alt={attendee.name}
-                    className="w-10 h-10 rounded-lg object-cover flex-shrink-0"
-                  />
-                ) : (
-                  <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <User className="w-5 h-5 text-blue-600" />
+                {attendee.phone && (
+                  <div className="flex items-start space-x-3">
+                    <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <Phone className="w-5 h-5 text-green-600" />
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-500">Teléfono</p>
+                      <p className="font-medium text-gray-900">{attendee.phone}</p>
+                    </div>
                   </div>
                 )}
-                <div>
-                  <p className="text-sm text-gray-500">Nombre Completo</p>
-                  <p className="font-medium text-gray-900">{userName || attendee.name || 'Sin nombre'}</p>
-                  {attendee.userRole && (
-                    <span className="inline-block mt-1 px-2 py-0.5 text-xs font-medium bg-gray-100 text-gray-700 rounded">
-                      {attendee.userRole}
-                    </span>
-                  )}
-                </div>
               </div>
+            </div>
 
-              <div className="flex items-start space-x-3">
-                <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <Mail className="w-5 h-5 text-purple-600" />
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500">Correo Electrónico</p>
-                  <p className="font-medium text-gray-900">{userEmail || attendee.email || 'Sin correo'}</p>
-                  {loadingUser && <p className="text-xs text-blue-600 mt-1">Consultando ticket…</p>}
-                  {fetchError && <p className="text-xs text-red-600 mt-1">{fetchError}</p>}
-                </div>
-              </div>
-
-              {attendee.phone && (
+            {/* Información del Evento */}
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                <Calendar className="w-5 h-5 mr-2 text-blue-600" />
+                Información del Evento
+              </h3>
+              <div className="space-y-3">
                 <div className="flex items-start space-x-3">
-                  <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <Phone className="w-5 h-5 text-green-600" />
+                  <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <Calendar className="w-5 h-5 text-blue-600" />
                   </div>
                   <div>
-                    <p className="text-sm text-gray-500">Teléfono</p>
-                    <p className="font-medium text-gray-900">{attendee.phone}</p>
+                    <p className="text-sm text-gray-500">Evento</p>
+                    <p className="font-medium text-gray-900">{attendee.eventTitle}</p>
                   </div>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Información del Evento */}
-          <div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-              <Calendar className="w-5 h-5 mr-2 text-blue-600" />
-              Información del Evento
-            </h3>
-            <div className="space-y-3">
-              <div className="flex items-start space-x-3">
-                <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <Calendar className="w-5 h-5 text-blue-600" />
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500">Evento</p>
-                  <p className="font-medium text-gray-900">{attendee.eventTitle}</p>
                 </div>
               </div>
             </div>
-          </div>
 
-          {/* Información de Entrada */}
-          <div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-              <Ticket className="w-5 h-5 mr-2 text-blue-600" />
-              Información de Entrada
-            </h3>
-            <div className="space-y-3">
+            {/* Información de Entrada */}
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                <Ticket className="w-5 h-5 mr-2 text-blue-600" />
+                Información de Entrada
+              </h3>
+              <div className="space-y-3">
 
 
-              <div className="flex items-start space-x-3">
-                <div className="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <Ticket className="w-5 h-5 text-yellow-600" />
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500">Tipo de Entrada</p>
-                  <p className="font-medium text-gray-900">{attendee.ticketType}</p>
-                  {attendee.purchaseQuantity && attendee.purchaseQuantity > 1 && (
-                    <p className="text-xs text-gray-600 mt-1">Cantidad: {attendee.purchaseQuantity}</p>
-                  )}
-                </div>
-              </div>
-
-              {typeof attendee.purchaseTotalPaid === 'number' ? (
                 <div className="flex items-start space-x-3">
-                  <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <CreditCard className="w-5 h-5 text-green-600" />
+                  <div className="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <Ticket className="w-5 h-5 text-yellow-600" />
                   </div>
                   <div>
-                    <p className="text-sm text-gray-500">Total Pagado</p>
-                    <p className="font-medium text-gray-900">{formatPrice(attendee.purchaseTotalPaid)}</p>
-                    <p className="text-xs text-gray-600 mt-1">Precio unitario: {formatPrice((() => { const qty = attendee.purchaseQuantity && attendee.purchaseQuantity > 0 ? attendee.purchaseQuantity : 1; return qty > 0 ? (attendee.purchaseTotalPaid as number) / qty : (attendee.ticketPrice || 0); })())}</p>
+                    <p className="text-sm text-gray-500">Tipo de Entrada</p>
+                    <p className="font-medium text-gray-900">{attendee.ticketType}</p>
+                    {attendee.purchaseQuantity && attendee.purchaseQuantity > 1 && (
+                      <p className="text-xs text-gray-600 mt-1">Cantidad: {attendee.purchaseQuantity}</p>
+                    )}
                   </div>
                 </div>
-              ) : (
+
+                {typeof attendee.purchaseTotalPaid === 'number' ? (
+                  <div className="flex items-start space-x-3">
+                    <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <CreditCard className="w-5 h-5 text-green-600" />
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-500">Total Pagado</p>
+                      <p className="font-medium text-gray-900">{formatPrice(attendee.purchaseTotalPaid)}</p>
+                      <p className="text-xs text-gray-600 mt-1">Precio unitario: {formatPrice((() => { const qty = attendee.purchaseQuantity && attendee.purchaseQuantity > 0 ? attendee.purchaseQuantity : 1; return qty > 0 ? (attendee.purchaseTotalPaid as number) / qty : (attendee.ticketPrice || 0); })())}</p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex items-start space-x-3">
+                    <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <DollarSign className="w-5 h-5 text-green-600" />
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-500">Precio</p>
+                      <p className="font-medium text-gray-900">{formatPrice(attendee.ticketPrice)}</p>
+                    </div>
+                  </div>
+                )}
+
                 <div className="flex items-start space-x-3">
-                  <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <DollarSign className="w-5 h-5 text-green-600" />
+                  <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <Calendar className="w-5 h-5 text-blue-600" />
                   </div>
                   <div>
-                    <p className="text-sm text-gray-500">Precio</p>
-                    <p className="font-medium text-gray-900">{formatPrice(attendee.ticketPrice)}</p>
-                  </div>
-                </div>
-              )}
-
-              <div className="flex items-start space-x-3">
-                <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <Calendar className="w-5 h-5 text-blue-600" />
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500">Fecha de Compra</p>
-                  <p className="font-medium text-gray-900">
-                    {(() => { const iso = attendee.purchaseDate; const [datePart, timePartFull] = iso.split('T'); const [y,m,d] = datePart.split('-'); const timePart = (timePartFull || '').slice(0,5); return `${d}/${m}/${y}${timePart ? ` ${timePart}` : ''}`; })()}
-                  </p>
-                  {attendee.purchaseOrderNumber && (
-                    <p className="text-xs text-gray-600 mt-1">Orden: {attendee.purchaseOrderNumber}</p>
-                  )}
-                </div>
-              </div>
-
-              {attendee.checkInTime && (
-                <div className="flex items-start space-x-3">
-                  <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <CheckCircle className="w-5 h-5 text-green-600" />
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-500">Hora de Registro</p>
+                    <p className="text-sm text-gray-500">Fecha de Compra</p>
                     <p className="font-medium text-gray-900">
-                      {new Date(attendee.checkInTime).toLocaleDateString('es-ES', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit'
-                      })}
+                      {formatPurchaseDate(attendee.purchaseDate)}
                     </p>
+                    {attendee.purchaseOrderNumber && (
+                      <p className="text-xs text-gray-600 mt-1">Orden: {attendee.purchaseOrderNumber}</p>
+                    )}
                   </div>
                 </div>
-              )}
 
-              <div className="flex items-start space-x-3">
-                <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <QrCode className="w-5 h-5 text-purple-600" />
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500">Código QR</p>
-                  <p className="font-mono text-xs text-gray-600 break-all">{attendee.qrCode}</p>
+                {attendee.checkInTime && (
+                  <div className="flex items-start space-x-3">
+                    <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <CheckCircle className="w-5 h-5 text-green-600" />
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-500">Hora de Registro</p>
+                      <p className="font-medium text-gray-900">
+                        {new Date(attendee.checkInTime).toLocaleDateString('es-ES', {
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                <div className="flex items-start space-x-3">
+                  <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <QrCode className="w-5 h-5 text-purple-600" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">Código QR</p>
+                    <p className="font-mono text-xs text-gray-600 break-all">{attendee.qrCode}</p>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
 
-        {/* Footer */}
-        <div className="sticky bottom-0 bg-gray-50 p-4 rounded-b-2xl flex justify-end space-x-3 border-t">
-          <button
-            onClick={onClose}
-            className="px-6 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg font-medium transition-all duration-200"
-          >
-            Cerrar
-          </button>
-        </div>
+          {/* Footer */}
+          <div className="sticky bottom-0 bg-gray-50 p-4 rounded-b-2xl flex justify-end space-x-3 border-t">
+            <button
+              onClick={onClose}
+              className="px-6 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg font-medium transition-all duration-200"
+            >
+              Cerrar
+            </button>
+          </div>
         </div>
       </div>
     </div>

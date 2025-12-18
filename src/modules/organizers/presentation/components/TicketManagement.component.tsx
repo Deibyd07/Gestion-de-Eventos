@@ -57,7 +57,6 @@ export const TicketManagement: React.FC<TicketManagementProps> = ({
   onViewAnalytics
 }) => {
   const [filterType, setFilterType] = useState<'all' | 'general' | 'vip' | 'early_bird' | 'student' | 'group'>('all');
-  const [filterStatus, setFilterStatus] = useState<'all' | 'active' | 'inactive'>('all');
   const [searchTerm, setSearchTerm] = useState('');
 
   const getTypeColor = (type: string) => {
@@ -100,12 +99,9 @@ export const TicketManagement: React.FC<TicketManagementProps> = ({
 
   const filteredTickets = tickets.filter(ticket => {
     const matchesType = filterType === 'all' || ticket.type === filterType;
-    const matchesStatus = filterStatus === 'all' ||
-      (filterStatus === 'active' && ticket.isActive) ||
-      (filterStatus === 'inactive' && !ticket.isActive);
     const matchesSearch = ticket.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       ticket.description.toLowerCase().includes(searchTerm.toLowerCase());
-    return matchesType && matchesStatus && matchesSearch;
+    return matchesType && matchesSearch;
   });
 
   const totalRevenue = tickets.reduce((sum, ticket) => {
@@ -166,8 +162,8 @@ export const TicketManagement: React.FC<TicketManagementProps> = ({
 
       {/* Filters */}
       <div className="bg-gradient-to-br from-white to-indigo-100/98 backdrop-blur-lg shadow-xl border border-white/20 rounded-2xl p-4 md:p-6">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
-          <div className="sm:col-span-2 lg:col-span-2">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4">
+          <div className="sm:col-span-2">
             <label className="block text-xs md:text-sm font-medium text-gray-700 mb-2">Buscar Entradas</label>
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -193,18 +189,6 @@ export const TicketManagement: React.FC<TicketManagementProps> = ({
               <option value="early_bird">Early Bird</option>
               <option value="student">Estudiante</option>
               <option value="group">Grupo</option>
-            </select>
-          </div>
-          <div className="sm:col-span-1 lg:col-span-1">
-            <label className="block text-xs md:text-sm font-medium text-gray-700 mb-2">Estado</label>
-            <select
-              value={filterStatus}
-              onChange={(e) => setFilterStatus(e.target.value as any)}
-              className="w-full px-3 py-2 text-sm border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            >
-              <option value="all">Todos</option>
-              <option value="active">Activos</option>
-              <option value="inactive">Inactivos</option>
             </select>
           </div>
         </div>
@@ -372,7 +356,7 @@ export const TicketManagement: React.FC<TicketManagementProps> = ({
           <Ticket className="w-16 h-16 text-gray-400 mx-auto mb-4" />
           <h3 className="text-lg font-medium text-gray-900 mb-2">No hay tipos de entrada</h3>
           <p className="text-gray-600 mb-6">
-            {searchTerm || filterType !== 'all' || filterStatus !== 'all'
+            {searchTerm || filterType !== 'all'
               ? 'No se encontraron entradas que coincidan con los filtros aplicados.'
               : 'Comienza creando tu primer tipo de entrada.'
             }

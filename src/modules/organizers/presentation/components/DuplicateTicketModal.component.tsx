@@ -15,12 +15,17 @@ export const DuplicateTicketModal = ({ isOpen, onClose, ticket, onDuplicate }: {
   // Actualizar formulario cuando cambia el ticket
   useEffect(() => {
     if (ticket && isOpen) {
+      // Calcular cantidad máxima usando available + sold si no viene explícito
+      // El dashboard envía 'available' y 'sold'.
+      const maxQuantity = ticket.cantidad_maxima ??
+        ((ticket.available ?? 0) + (ticket.sold ?? 0));
+
       setFormData({
-        nombre_tipo: `${ticket.nombre_tipo} (Copia)`,
-        precio: Number(ticket.precio) || 0,
-        descripcion: ticket.descripcion || '',
-        cantidad_maxima: Number(ticket.cantidad_maxima) || 0,
-        cantidad_disponible: Number(ticket.cantidad_disponible) || 0,
+        nombre_tipo: `${ticket.nombre_tipo || ticket.name} (Copia)`,
+        precio: Number(ticket.precio ?? ticket.price ?? 0),
+        descripcion: ticket.descripcion || ticket.description || '',
+        cantidad_maxima: Number(maxQuantity) || 0,
+        cantidad_disponible: Number(ticket.cantidad_disponible ?? ticket.available ?? 0),
       });
     }
   }, [ticket, isOpen]);
@@ -69,15 +74,17 @@ export const DuplicateTicketModal = ({ isOpen, onClose, ticket, onDuplicate }: {
 
       {/* Tarjeta de información del original */}
       <div className="bg-gradient-to-br from-gray-50 to-blue-50 rounded-xl p-4 mb-6 border border-blue-100 shadow-sm">
-        <h3 className="font-bold text-blue-900 mb-1 text-sm">Original: {ticket.nombre_tipo}</h3>
+        <h3 className="font-bold text-blue-900 mb-1 text-sm">Original: {ticket.nombre_tipo || ticket.name}</h3>
         <div className="flex flex-wrap gap-4 text-xs text-gray-700">
           <span className="inline-flex items-center gap-1">
             <span className="font-medium text-blue-700">Precio:</span>
-            <span className="font-semibold">${ticket.precio}</span>
+            <span className="font-semibold">${ticket.precio ?? ticket.price}</span>
           </span>
           <span className="inline-flex items-center gap-1">
             <span className="font-medium text-blue-700">Disponibles:</span>
-            <span>{ticket.cantidad_disponible} / {ticket.cantidad_maxima}</span>
+            <span>
+              {ticket.cantidad_disponible ?? ticket.available} / {ticket.cantidad_maxima ?? ((ticket.available ?? 0) + (ticket.sold ?? 0))}
+            </span>
           </span>
         </div>
       </div>

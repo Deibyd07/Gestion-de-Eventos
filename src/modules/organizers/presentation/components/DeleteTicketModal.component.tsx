@@ -34,11 +34,11 @@ export const DeleteTicketModal = ({ isOpen, onClose, ticket, onDelete }: { isOpe
         </button>
       </div>
       <div className="bg-gradient-to-br from-gray-50 to-red-50 rounded-xl p-4 mb-6 border border-red-100 shadow-sm">
-        <h3 className="font-bold text-red-900 mb-1 text-lg">{ticket.nombre_tipo}</h3>
-        <div className="text-sm text-gray-800 mb-2">{ticket.descripcion}</div>
+        <h3 className="font-bold text-red-900 mb-1 text-lg">{ticket.nombre_tipo || ticket.name}</h3>
+        <div className="text-sm text-gray-800 mb-2">{ticket.descripcion || ticket.description}</div>
         <div className="flex flex-wrap gap-4 text-sm text-gray-700">
-          <span className="font-medium text-red-700">Precio:</span> <span className="font-semibold">${ticket.precio}</span>
-          <span className="font-medium text-red-700">Disponibles:</span> <span>{ticket.cantidad_disponible} / {ticket.cantidad_maxima}</span>
+          <span className="font-medium text-red-700">Precio:</span> <span className="font-semibold">${ticket.precio || ticket.price}</span>
+          <span className="font-medium text-red-700">Disponibles:</span> <span>{ticket.cantidad_disponible ?? ticket.available} / {ticket.cantidad_maxima ?? ((ticket.available ?? 0) + (ticket.sold ?? 0))}</span>
         </div>
       </div>
       <div className="flex justify-end space-x-2">

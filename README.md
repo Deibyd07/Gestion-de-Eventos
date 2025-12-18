@@ -2,13 +2,7 @@
 
 <div align="center">
 
-![EventHub](https://img.shields.io/badge/EventHub-v1.0-blueviolet?style=for-the-badge&logo=calendar)
-![React](https://img.shields.io/badge/React-18.3-61dafb?style=for-the-badge&logo=react)
-![TypeScript](https://img.shields.io/badge/TypeScript-5.5-3178c6?style=for-the-badge&logo=typescript)
-![Tailwind](https://img.shields.io/badge/Tailwind-3.4-06b6d4?style=for-the-badge&logo=tailwindcss)
-![Supabase](https://img.shields.io/badge/Supabase-BaaS-3ecf8e?style=for-the-badge&logo=supabase)
-![Zustand](https://img.shields.io/badge/Zustand-Estado-ff6b35?style=for-the-badge)
-![Vite](https://img.shields.io/badge/Vite-5.4-646cff?style=for-the-badge&logo=vite)
+![EventHub](https://img.shields.io/badge/EventHub-v1.0-blueviolet?style=for-the-badge&logo=calendar) ![React](https://img.shields.io/badge/React-18.3-61dafb?style=for-the-badge&logo=react) ![TypeScript](https://img.shields.io/badge/TypeScript-5.5-3178c6?style=for-the-badge&logo=typescript) ![Tailwind](https://img.shields.io/badge/Tailwind-3.4-06b6d4?style=for-the-badge&logo=tailwindcss) ![Supabase](https://img.shields.io/badge/Supabase-BaaS-3ecf8e?style=for-the-badge&logo=supabase) ![Zustand](https://img.shields.io/badge/Zustand-Estado-ff6b35?style=for-the-badge) ![Vite](https://img.shields.io/badge/Vite-5.4-646cff?style=for-the-badge&logo=vite) ![Vitest](https://img.shields.io/badge/Vitest-4.0-6e9f18?style=for-the-badge&logo=vitest) ![GitHub Actions](https://img.shields.io/badge/GitHub_Actions-CI/CD-2088FF?style=for-the-badge&logo=github-actions)
 
 **🎯 Plataforma integral de gestión de eventos con arquitectura moderna y 10 paradigmas de programación**
 
@@ -27,6 +21,7 @@
 - [🚀 Instalación](#-instalación-rápida)
 - [📁 Estructura del Proyecto](#-estructura-del-proyecto)
 - [🎮 Scripts Disponibles](#-scripts-disponibles)
+- [🧪 Testing y CI/CD](#-testing-y-cicd)
 - [📚 Documentación](#-documentación)
 - [👥 Roles de Usuario](#-roles-de-usuario)
 - [🌟 Características Destacadas](#-características-destacadas)
@@ -358,6 +353,10 @@ eventhub/
 │   │   ├── 🔔 notifications/      # Sistema de notificaciones
 │   │   ├── 👨‍💼 organizers/        # Panel de organizadores
 │   │   └── ⚙️ administration/     # Panel de administración
+│   ├── 🧪 tests/                # Suite de tests
+│   │   ├── unit/                # Tests unitarios (21 HU)
+│   │   ├── mocks/               # Datos mock para testing
+│   │   └── setup.ts             # Configuración de Vitest
 │   └── 🔧 shared/               # Código compartido entre módulos
 │       ├── 🎨 ui/                # Sistema de diseño y componentes
 │       ├── 📏 lib/               # Servicios, APIs, utilidades
@@ -391,6 +390,125 @@ npm run preview      # Preview del build
 # Calidad de Código
 npm run lint         # Ejecuta ESLint
 npm run typecheck    # Verificación de tipos TypeScript
+```
+
+---
+
+## 🧪 Testing y CI/CD
+
+### **🎯 Framework de Testing**
+
+EventHub implementa un sistema robusto de testing utilizando:
+
+- **🧪 Vitest** - Framework de testing moderno y rápido
+- **📚 React Testing Library** - Testing de componentes React
+- **🎭 Testing Library User Event** - Simulación de interacciones de usuario
+
+### **📋 Tests Implementados**
+
+El proyecto cuenta con **21 suites de tests unitarios** que cubren las principales historias de usuario:
+
+<details>
+<summary><strong>👁️ Ver todas las historias de usuario testeadas</strong></summary>
+
+#### **🔐 Autenticación y Gestión de Usuarios**
+- ✅ **HU1**: Registro de usuario con email y contraseña
+- ✅ **HU3**: Gestión de roles (Asistente, Organizador, Administrador)
+
+#### **📅 Gestión de Eventos**
+- ✅ **HU4**: Crear eventos
+- ✅ **HU5**: Editar y cancelar eventos
+- ✅ **HU6**: Subir imágenes de eventos
+- ✅ **HU7**: Duplicar eventos
+- ✅ **HU11**: Explorar eventos
+
+#### **🎫 Sistema de Entradas**
+- ✅ **HU8**: Tipos de entrada (General, VIP, Early Bird)
+- ✅ **HU9**: Códigos promocionales y descuentos
+- ✅ **HU10**: Límites de compra por usuario
+- ✅ **HU12**: Comprar entradas
+- ✅ **HU14**: Métodos de pago
+
+#### **📱 Control de Acceso**
+- ✅ **HU17**: Escanear códigos QR
+- ✅ **HU18**: Listas de acceso
+- ✅ **HU19**: Reportes de asistencia
+
+#### **📊 Analíticas y Reportes**
+- ✅ **HU23**: Dashboard de métricas
+- ✅ **HU24**: Exportar reportes (PDF, Excel)
+
+#### **📱 Experiencia Móvil**
+- ✅ **HU26**: Diseño responsive para móvil
+- ✅ **HU27**: Control táctil optimizado
+
+#### **🎯 Funcionalidades Avanzadas**
+- ✅ **HU28**: Recomendaciones de eventos
+- ✅ **HU29**: Seguir organizadores
+
+</details>
+
+### **🚀 Comandos de Testing**
+
+```bash
+# 🧪 Ejecutar tests en modo watch
+npm test
+
+# 🎯 Ejecutar tests una vez
+npm run test:run
+
+# 📊 Generar reporte de cobertura
+npm run test:coverage
+
+# 🎨 Ejecutar tests con UI interactiva
+npm run test:ui
+```
+
+### **⚙️ GitHub Actions - CI/CD**
+
+EventHub implementa **2 workflows automatizados** para garantizar la calidad del código:
+
+#### **🚀 Deploy to Production** (`ci-cd-main.yml`)
+Se ejecuta automáticamente en cada push a la rama `main`:
+
+1. **🧪 Tests**: Ejecuta toda la suite de tests
+2. **🚀 Deploy**: Si los tests pasan, despliega automáticamente a Vercel
+
+```yaml
+Trigger: push a main
+Jobs:
+  ✅ Tests → 🚀 Deploy a Producción (Vercel)
+```
+
+#### **🔍 PR Checks** (`pr-checks.yml`)
+Se ejecuta en cada Pull Request a `main`:
+
+1. **🧪 Tests**: Valida que todos los tests pasen
+2. **🔍 Preview**: Crea un preview deployment en Vercel
+
+```yaml
+Trigger: Pull Request a main
+Jobs:
+  ✅ Tests → 🔍 Preview Deploy
+```
+
+### **📊 Configuración de Coverage**
+
+El proyecto está configurado para generar reportes de cobertura en múltiples formatos:
+
+- 📄 **Text**: Resumen en consola
+- 📊 **JSON**: Para integración con herramientas
+- 🌐 **HTML**: Reporte visual detallado
+
+
+### **🛡️ Calidad de Código**
+
+```bash
+# 🔍 Linting con ESLint
+npm run lint
+
+# 📘 Verificación de tipos TypeScript
+npm run typecheck
 ```
 
 ---

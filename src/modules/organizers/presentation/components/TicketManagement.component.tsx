@@ -109,7 +109,7 @@ export const TicketManagement: React.FC<TicketManagementProps> = ({
   });
 
   const totalRevenue = tickets.reduce((sum, ticket) => {
-    const ticketRevenue = typeof ticket.revenue === 'number' ? ticket.revenue : (ticket.price * ticket.sold);
+    const ticketRevenue = (ticket as any).revenue ?? (ticket.price * ticket.sold);
     return sum + ticketRevenue;
   }, 0);
   const totalSold = tickets.reduce((sum, ticket) => sum + ticket.sold, 0);
@@ -166,8 +166,8 @@ export const TicketManagement: React.FC<TicketManagementProps> = ({
 
       {/* Filters */}
       <div className="bg-gradient-to-br from-white to-indigo-100/98 backdrop-blur-lg shadow-xl border border-white/20 rounded-2xl p-4 md:p-6">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
-          <div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+          <div className="sm:col-span-2 lg:col-span-2">
             <label className="block text-xs md:text-sm font-medium text-gray-700 mb-2">Buscar Entradas</label>
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -180,7 +180,7 @@ export const TicketManagement: React.FC<TicketManagementProps> = ({
               />
             </div>
           </div>
-          <div>
+          <div className="sm:col-span-1 lg:col-span-1">
             <label className="block text-xs md:text-sm font-medium text-gray-700 mb-2">Tipo</label>
             <select
               value={filterType}
@@ -193,6 +193,18 @@ export const TicketManagement: React.FC<TicketManagementProps> = ({
               <option value="early_bird">Early Bird</option>
               <option value="student">Estudiante</option>
               <option value="group">Grupo</option>
+            </select>
+          </div>
+          <div className="sm:col-span-1 lg:col-span-1">
+            <label className="block text-xs md:text-sm font-medium text-gray-700 mb-2">Estado</label>
+            <select
+              value={filterStatus}
+              onChange={(e) => setFilterStatus(e.target.value as any)}
+              className="w-full px-3 py-2 text-sm border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="all">Todos</option>
+              <option value="active">Activos</option>
+              <option value="inactive">Inactivos</option>
             </select>
           </div>
         </div>
@@ -215,7 +227,7 @@ export const TicketManagement: React.FC<TicketManagementProps> = ({
                     </div>
                     <div>
                       <h4 className="font-semibold text-gray-900">{ticket.name}</h4>
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getTypeColor(ticket.type)}">
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getTypeColor(ticket.type)}`}>
                         {getTypeText(ticket.type)}
                       </span>
                     </div>
@@ -311,7 +323,7 @@ export const TicketManagement: React.FC<TicketManagementProps> = ({
                     <p className="text-xs text-gray-600">Vendidas</p>
                   </div>
                   <div className="text-center p-3 bg-gray-50 rounded-lg">
-                    <p className="text-2xl font-bold text-gray-900">{formatCurrency((typeof ticket.revenue === 'number' ? ticket.revenue : ticket.price * ticket.sold))}</p>
+                    <p className="text-2xl font-bold text-gray-900">{formatCurrency((ticket as any).revenue ?? (ticket.price * ticket.sold))}</p>
                     <p className="text-xs text-gray-600">Ingresos</p>
                   </div>
                 </div>

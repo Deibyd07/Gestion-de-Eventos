@@ -17,10 +17,15 @@ erDiagram
         text nombre_completo
         tipo_usuario rol
         text url_avatar
+        text telefono
+        text ubicacion
+        text estado
+        bool verificacion
+        bool email_verified
+        text bio
         jsonb preferencias
         timestamptz fecha_creacion
         timestamptz fecha_actualizacion
-        text contraseña
     }
 
     EVENTOS {
@@ -60,12 +65,18 @@ erDiagram
         uuid id_usuario FK
         uuid id_evento FK
         uuid id_tipo_entrada FK
+        uuid id_metodo_pago FK
         int4 cantidad
         numeric precio_unitario
         numeric total_pagado
         estado_compra estado
         text codigo_qr UK
         text numero_orden UK
+        text metodo_pago
+        text codigo_descuento
+        numeric descuento_aplicado
+        text estado_pago
+        text id_transaccion
         timestamptz fecha_creacion
         timestamptz fecha_actualizacion
     }
@@ -250,6 +261,7 @@ erDiagram
 
     TIPOS_ENTRADA ||--o{ COMPRAS : "se_compra"
     COMPRAS ||--o{ ASISTENCIA_EVENTOS : "valida"
+    METODOS_PAGO ||--o{ COMPRAS : "procesa_pago"
 
     %% Relaciones QR
     COMPRAS ||--o{ CODIGOS_QR_ENTRADAS : "genera_qr"
@@ -288,6 +300,7 @@ erDiagram
     - `id_usuario` → USUARIOS.id
     - `id_evento` → EVENTOS.id
     - `id_tipo_entrada` → TIPOS_ENTRADA.id
+    - `id_metodo_pago` → METODOS_PAGO.id
 - **Relaciones Salientes:** 2 (ASISTENCIA_EVENTOS, CODIGOS_QR_ENTRADAS)
 - **Función:** Registro de transacciones
 
@@ -363,6 +376,7 @@ erDiagram
 #### **15. METODOS_PAGO**
 - **Clave Primaria:** `id` (UUID)
 - **Clave Foránea:** `id_organizador` → USUARIOS.id
+- **Relaciones Salientes:** 1 (COMPRAS)
 - **Función:** Catálogo de métodos/pasarelas de pago configurados por cada organizador.
 
 ---
@@ -372,11 +386,13 @@ erDiagram
 
 
 ### **Resumen de Relaciones**
-- **Total de relaciones:** 24
+- **Total de relaciones:** 25
 - **Relaciones de USUARIOS:** 13 (central: eventos, compras, notificaciones, asiste, valida, códigos, favoritos, calificaciones, configuraciones, QR, sigue, es_seguido, métodos_pago)
 - **Relaciones de EVENTOS:** 8 (incluye relación con CODIGOS_QR_ENTRADAS)
+- **Relaciones de COMPRAS:** 4 (usuarios, eventos, tipos_entrada, metodos_pago)
 - **Relaciones de flujo:** 2 (TIPOS_ENTRADA → COMPRAS, COMPRAS → ASISTENCIA)
 - **Relaciones QR:** 3 (COMPRAS → CODIGOS_QR_ENTRADAS, EVENTOS → CODIGOS_QR_ENTRADAS, USUARIOS → CODIGOS_QR_ENTRADAS)
+- **Relaciones de pago:** 2 (METODOS_PAGO → COMPRAS, USUARIOS → METODOS_PAGO)
 
 ### **Tipos de Datos Utilizados**
 - **UUID:** Claves primarias y foráneas
@@ -392,7 +408,7 @@ erDiagram
 
 ### **Claves y Restricciones**
 - **Claves Primarias:** 15 (una por tabla)
-- **Claves Foráneas:** 24 (relaciones entre tablas)
+- **Claves Foráneas:** 25 (relaciones entre tablas)
 - **Claves Únicas:** 9
     - `usuarios.correo_electronico`
     - `compras.numero_orden`
@@ -434,5 +450,51 @@ erDiagram
 - **Escalabilidad** - Estructura preparada para crecimiento
 - **Flexibilidad** - Fácil adición de nuevas funcionalidades
 - **Rendimiento** - Índices y claves optimizadas
+
+---
+
+## 📝 **Notas Importantes sobre Cambios Recientes**
+
+### **Migración a Supabase Auth (USUARIOS)**
+- ✅ **Campo eliminado:** `contraseña` - Las credenciales ahora se gestionan en `auth.users` con encriptación nativa de Supabase
+- ✅ **Campos agregados:**
+  - `telefono` - Almacena el número de teléfono del usuario
+  - `ubicacion` - Ubicación geográfica del usuario (default: 'Colombia')
+  - `estado` - Estado del usuario: activo, inactivo, suspendido, pendiente
+  - `verificacion` - Indicador booleano de verificación
+  - `email_verified` - Sincronizado con `auth.users.email_confirmed_at`
+  - `bio` - Biografía del usuario (especialmente para organizadores)
+- ✅ **Sincronización:** El trigger `handle_new_user()` mantiene sincronizados `auth.users` y `usuarios` usando el mismo UUID
+
+### **Mejoras en Sistema de Pagos (COMPRAS)**
+- ✅ **Campos agregados:**
+  - `metodo_pago` - Método de pago utilizado (tarjeta, efectivo, transferencia)
+  - `codigo_descuento` - Código promocional aplicado
+  - `descuento_aplicado` - Monto numérico del descuento
+  - `estado_pago` - Estado del pago: completado, pendiente, fallido, reembolsado
+  - `id_transaccion` - ID de la transacción del procesador de pagos
+  - `id_metodo_pago` - **FK** hacia `metodos_pago` para tracking avanzado
+
+### **Nueva Tabla: METODOS_PAGO**
+- ✅ Permite a cada organizador configurar sus propias pasarelas de pago
+- ✅ Soporta múltiples proveedores (Stripe, PayPal, transferencias, etc.)
+- ✅ Incluye configuración de comisiones, límites y monedas
+- ✅ Campo `configuracion` (JSONB) para parámetros específicos del proveedor
+
+### **Sistema de QR Mejorado (CODIGOS_QR_ENTRADAS)**
+- ✅ QR individual por entrada dentro de cada compra
+- ✅ Estados: activo, usado, cancelado, expirado
+- ✅ Tracking de quién y cuándo escaneó cada entrada
+- ✅ Restricción única: `(id_compra, numero_entrada)`
+
+### **Funcionalidades Sociales (SEGUIDORES_ORGANIZADORES)**
+- ✅ Sistema de seguimiento entre usuarios y organizadores
+- ✅ Permite notificaciones personalizadas
+- ✅ Restricción única: `(id_usuario_seguidor, id_organizador)`
+
+---
+
+**Última Actualización:** Diciembre 2025  
+**Versión del Diagrama:** 2.0
 
 ---

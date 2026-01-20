@@ -256,6 +256,91 @@ export function HomePage() {
           </div>
         </section>
 
+        {/* Demo Credentials Section */}
+        <section className="py-8 sm:py-12 md:py-16 bg-gradient-to-br from-blue-50 via-purple-50 to-indigo-50">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-8">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-3">
+                🎯 Prueba el Proyecto
+              </h2>
+              <p className="text-base sm:text-lg text-gray-600 max-w-2xl mx-auto">
+                Usa estas credenciales para explorar diferentes perfiles y funcionalidades
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
+              {/* Admin Demo */}
+              <div className="bg-gradient-to-br from-white to-red-50 backdrop-blur-lg shadow-lg border-2 border-red-200 rounded-xl p-6 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                <div className="flex items-center justify-center mb-4">
+                  <div className="w-12 h-12 bg-gradient-to-r from-red-500 to-red-600 rounded-full flex items-center justify-center">
+                    <Shield className="w-6 h-6 text-white" />
+                  </div>
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 text-center mb-2">Administrador</h3>
+                <p className="text-sm text-gray-600 text-center mb-4">Panel completo de administración</p>
+                <div className="bg-white/80 backdrop-blur rounded-lg p-4 space-y-2 font-mono text-sm">
+                  <div className="flex flex-col">
+                    <span className="text-xs text-gray-500 mb-1">Email:</span>
+                    <span className="text-gray-900 font-semibold break-all">admin@eventhub.com</span>
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-xs text-gray-500 mb-1">Contraseña:</span>
+                    <span className="text-gray-900 font-semibold">admin123</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Organizer Demo */}
+              <div className="bg-gradient-to-br from-white to-purple-50 backdrop-blur-lg shadow-lg border-2 border-purple-200 rounded-xl p-6 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                <div className="flex items-center justify-center mb-4">
+                  <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-purple-600 rounded-full flex items-center justify-center">
+                    <Calendar className="w-6 h-6 text-white" />
+                  </div>
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 text-center mb-2">Organizador</h3>
+                <p className="text-sm text-gray-600 text-center mb-4">Crea y gestiona eventos</p>
+                <div className="bg-white/80 backdrop-blur rounded-lg p-4 space-y-2 font-mono text-sm">
+                  <div className="flex flex-col">
+                    <span className="text-xs text-gray-500 mb-1">Email:</span>
+                    <span className="text-gray-900 font-semibold break-all">organizador1@eventhub.com</span>
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-xs text-gray-500 mb-1">Contraseña:</span>
+                    <span className="text-gray-900 font-semibold">organizador123</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Attendee Demo */}
+              <div className="bg-gradient-to-br from-white to-blue-50 backdrop-blur-lg shadow-lg border-2 border-blue-200 rounded-xl p-6 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                <div className="flex items-center justify-center mb-4">
+                  <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center">
+                    <Users className="w-6 h-6 text-white" />
+                  </div>
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 text-center mb-2">Asistente</h3>
+                <p className="text-sm text-gray-600 text-center mb-4">Explora y compra entradas</p>
+                <div className="bg-white/80 backdrop-blur rounded-lg p-4 space-y-2 font-mono text-sm">
+                  <div className="flex flex-col">
+                    <span className="text-xs text-gray-500 mb-1">Email:</span>
+                    <span className="text-gray-900 font-semibold break-all">bayfrox@gmail.com</span>
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-xs text-gray-500 mb-1">Contraseña:</span>
+                    <span className="text-gray-900 font-semibold">usuario123</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-6 text-center">
+              <p className="text-sm text-gray-500 italic">
+                💡 Estas son cuentas de demostración. Siéntete libre de explorar todas las funcionalidades del sistema.
+              </p>
+            </div>
+          </div>
+        </section>
+
         {/* Stats Section */}
         <section className="py-8 sm:py-12 md:py-20 bg-gradient-to-br from-gray-50/80 to-blue-50/80">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

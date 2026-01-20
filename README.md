@@ -12,6 +12,35 @@
 
 ---
 
+## 🎯 Prueba el Proyecto (Demo)
+
+¿Quieres probar EventHub sin crear una cuenta? Usa estas credenciales de demostración:
+
+### 👨‍💼 **Administrador**
+```
+Email: admin@eventhub.com
+Contraseña: admin123
+```
+Acceso completo al panel de administración, gestión de usuarios y configuración del sistema.
+
+### 🎪 **Organizador**
+```
+Email: organizador1@eventhub.com
+Contraseña: organizador123
+```
+Crea eventos, gestiona tickets, escanea QR y visualiza estadísticas de ventas.
+
+### 🎫 **Asistente**
+```
+Email: bayfrox@gmail.com
+Contraseña: usuario123
+```
+Explora eventos, compra entradas y gestiona tu perfil.
+
+📖 **Más información:** Ver [CREDENCIALES_DEMO.md](./CREDENCIALES_DEMO.md)
+
+---
+
 ## 📋 Tabla de Contenido
 
 - [✨ Características](#-características)

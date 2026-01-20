@@ -252,7 +252,7 @@ describe('HU4: Crear eventos', () => {
 
   it('CA9: debe aceptar fechas futuras', () => {
     // Arrange
-    const futureDate = new Date('2025-12-31T20:00:00');
+    const futureDate = new Date('2026-12-31T20:00:00');
     const currentDate = new Date();
 
     // Act & Assert

@@ -21,7 +21,7 @@ import {
   FileBarChart
 } from 'lucide-react';
 import { useAuthStore } from '../../../authentication/infrastructure/store/Auth.store';
-import { useEventStore } from '../../../events/infrastructure/store/Event.store';
+import { useEventStore, type Event as StoreEvent } from '../../../events/infrastructure/store/Event.store';
 import { EventManagementAdvanced } from '../components/EventManagementAdvanced.component';
 import { TicketManagement } from '../components/TicketManagement.component';
 import { PromotionManagement } from '../components/PromotionManagement.component';
@@ -160,7 +160,7 @@ export function OrganizerDashboard() {
     const ticket = selectedEvent?.ticketTypes?.find((t: any) => t.id === ticketId);
     if (ticket) {
       // Normalizar clave para buscar el revenue correspondiente
-      const key = normalizeTicketKey(ticket.name || ticket.nombre_tipo);
+      const key = normalizeTicketKey(ticket.nombre_tipo);
 
       // Siempre calcular el revenue al abrir el modal para garantizar datos actualizados
       let revenue = ticketRevenueByType[key];
@@ -757,7 +757,7 @@ export function OrganizerDashboard() {
             features: [],
             eventId: dbEvent.id
           }))
-        }));
+        })) as StoreEvent[];
 
         const otherEvents = storeEvents.filter(e => e.organizerId !== user.id);
         setEvents([...otherEvents, ...convertedEvents]);
@@ -771,7 +771,8 @@ export function OrganizerDashboard() {
 
       // Recalcular ingresos reales por tipo de entrada (incluye descuentos) al refrescar
       if (activeTab === 'tickets') {
-        const currentEventId = selectedEventId || convertedEvents[0]?.id;
+        const myEvents = storeEvents.filter(e => e.organizerId === user.id);
+        const currentEventId = selectedEventId || myEvents[0]?.id;
         if (currentEventId) {
           try {
             const revenueMap = await calculateTicketRevenue(currentEventId);
@@ -1236,7 +1237,11 @@ export function OrganizerDashboard() {
         etiquetas: []
       } as any;
 
-      const createdEvent = await EventService.crearEvento(nuevoEvento);
+      const createdEvent = await EventService.crearEvento(nuevoEvento) as any;
+
+      if (!createdEvent || !createdEvent.id) {
+        throw new Error('No se pudo crear el evento');
+      }
 
       await TicketTypeService.crearTipoEntrada({
         id_evento: createdEvent.id,
@@ -2027,11 +2032,9 @@ export function OrganizerDashboard() {
                           available: t.cantidad_disponible || t.available || 0,
                           sold: (t.cantidad_maxima || t.maxQuantity || 0) - (t.cantidad_disponible || t.available || 0)
                         })),
-                        status: selectedEvent.status === 'draft' ? 'draft'
-                          : selectedEvent.status === 'paused' ? 'paused'
-                            : selectedEvent.status === 'cancelled' ? 'cancelled'
-                              : selectedEvent.status === 'completed' ? 'completed'
-                                : 'published' // upcoming/ongoing → published
+                        status: selectedEvent.status === 'cancelled' ? 'cancelled'
+                          : selectedEvent.status === 'completed' ? 'completed'
+                            : 'published' // upcoming/ongoing → published
                       }] : []}
                       onCreateEvent={() => setIsCreateEventModalOpen(true)}
                       onEditEvent={handleEditEvent}

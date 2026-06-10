@@ -44,11 +44,14 @@ export function Header() {
         <div className="flex justify-between items-center h-20">
           {/* Logo */}
           <div className="flex items-center space-x-2">
-            <div className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center shadow-lg border border-white/30">
-              <Calendar className="w-6 h-6 text-white" />
-            </div>
-            <span className="font-display text-2xl text-white">
-              EventHub
+            <img
+              src="/Logo-sin-texto.png"
+              alt=""
+              className="w-11 h-11 object-contain flex-shrink-0"
+              style={{ filter: 'drop-shadow(0 0 2px rgba(255,255,255,0.95)) drop-shadow(0 0 6px rgba(255,255,255,0.75))' }}
+            />
+            <span className="font-display text-2xl leading-none">
+              <span className="text-white">Event</span><span className="text-orange-400">Hub</span>
             </span>
           </div>
 

@@ -239,10 +239,7 @@ export function NotificationsPage() {
                   No tienes notificaciones
                 </h3>
                 <p className="text-gray-600">
-                  {activeTab === 'unread' 
-                    ? 'Ya has leído todas tus notificaciones'
-                    : 'Aún no tienes notificaciones'
-                  }
+                  Aún no tienes notificaciones
                 </p>
               </div>
             )}

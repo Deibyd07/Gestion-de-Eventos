@@ -65,7 +65,7 @@ export function MetricCard({
           </p>
           {subtitle && (
             <p className="text-sm text-blue-600">{subtitle}</p>
-          )
+          )}
           {change !== undefined && (
             <div className={`flex items-center mt-2 text-sm ${getChangeColor()}`}>
               {getChangeIcon()}

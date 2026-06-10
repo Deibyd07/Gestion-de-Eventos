@@ -297,7 +297,7 @@ export function ProfilePage() {
         <div className="mb-4 sm:mb-6 md:mb-8">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
             <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Mi Perfil</h1>
+              <h1 className="font-display text-2xl sm:text-3xl text-gray-900">Mi Perfil</h1>
               <p className="text-gray-600 mt-1 sm:mt-2 text-sm sm:text-base">Gestiona tu información personal y preferencias</p>
             </div>
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-3">
@@ -377,7 +377,7 @@ export function ProfilePage() {
                   </div>
 
                   <div className="text-white flex-1">
-                    <h2 className="text-xl sm:text-2xl font-bold">{user?.name}</h2>
+                    <h2 className="font-display text-xl sm:text-2xl">{user?.name}</h2>
                     <p className="text-blue-100 mt-1 flex items-center text-sm sm:text-base">
                       <Mail className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
                       <span className="truncate">{user?.email}</span>

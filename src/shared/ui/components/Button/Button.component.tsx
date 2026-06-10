@@ -74,7 +74,7 @@ export const Button: React.FC<ButtonProps> = ({
       onClick={onClick}
       disabled={disabled || loading}
       className={cn(
-        'inline-flex items-center justify-center font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2',
+        'inline-flex items-center justify-center font-medium transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2',
         buttonVariant,
         sizes[size],
         stateClasses.disabled,
@@ -142,7 +142,7 @@ export const IconButton: React.FC<IconButtonProps> = ({
       disabled={disabled || loading}
       aria-label={ariaLabel}
       className={cn(
-        'inline-flex items-center justify-center font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-xl',
+        'inline-flex items-center justify-center font-medium transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-xl',
         buttonVariant,
         iconSizes[size],
         'disabled:opacity-50 disabled:cursor-not-allowed',

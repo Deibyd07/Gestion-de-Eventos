@@ -47,7 +47,7 @@ export function Header() {
             <div className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center shadow-lg border border-white/30">
               <Calendar className="w-6 h-6 text-white" />
             </div>
-            <span className="text-2xl font-bold text-white">
+            <span className="font-display text-2xl text-white">
               EventHub
             </span>
           </div>

@@ -1718,12 +1718,12 @@ export function OrganizerDashboard() {
         <div className={`h-16 flex-shrink-0 flex items-center ${isSidebarOpen ? 'justify-between px-4' : 'justify-center px-2'} bg-gradient-to-r from-blue-600/90 to-purple-600/90 backdrop-blur-sm`}>
           {isSidebarOpen && (
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center shadow-lg border border-white/30">
-                <Calendar className="w-6 h-6 text-white" />
-              </div>
+              <img src="/Logo-sin-texto.png" alt="" className="w-14 h-14 object-contain flex-shrink-0" style={{ filter: 'drop-shadow(0 0 2px rgba(255,255,255,0.95)) drop-shadow(0 0 6px rgba(255,255,255,0.75))' }} />
               <div>
-                <h1 className="text-lg font-bold text-white">EventHub</h1>
-                <p className="text-xs text-blue-100">Panel de Organizador</p>
+                <h1 className="font-display text-lg leading-none">
+                  <span className="text-white">Event</span><span className="text-orange-400">Hub</span>
+                </h1>
+                <p className="text-xs text-blue-100 mt-1">Panel de Organizador</p>
               </div>
             </div>
           )}
@@ -1816,7 +1816,7 @@ export function OrganizerDashboard() {
 
               <div className="flex items-center space-x-2 md:space-x-3 flex-1 min-w-0">
                 <div className="min-w-0 flex-1">
-                  <h2 className="text-base md:text-2xl font-bold text-white truncate">
+                  <h2 className="font-display text-base md:text-2xl text-white truncate">
                     {navigationItems.find(item => item.id === activeTab)?.label || 'Panel Principal'}
                   </h2>
                   {selectedEvent && (
@@ -1919,7 +1919,7 @@ export function OrganizerDashboard() {
           {/* Content Header */}
           <div className="mb-4 md:mb-6 w-full max-w-full px-0">
             <div>
-              <h2 className="text-xl md:text-2xl font-bold text-gray-900">
+              <h2 className="font-display text-xl md:text-2xl text-gray-900">
                 {navigationItems.find(item => item.id === activeTab)?.label}
               </h2>
               <p className="text-gray-600 mt-1">

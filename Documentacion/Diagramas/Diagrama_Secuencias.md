@@ -1,16 +1,16 @@
-# 🔄 EventHub - Diagramas de Secuencia
+# 🔄 EventHub - Diagramas de Secuencia (alineados al código actual)
 ## Sistema de Gestión de Eventos - Flujos de Interacción Detallados
 
 ## 🎯 **Resumen del Sistema**
 
-**EventHub** es una plataforma integral de gestión de eventos que maneja múltiples flujos de interacción entre actores, sistema y servicios externos.
+**EventHub** (React + Vite + Supabase) opera con autenticación Supabase Auth, persistencia en el schema público y lógica de negocio en servicios/estados de frontend. Los flujos reflejan la implementación vigente (Zustand, servicios `supabase`, generación de QR, métodos de pago por evento y guards de verificación de email).
 
-### 🚀 **Características Principales**
-- **Autenticación y Autorización**: Flujos de login, registro y gestión de sesiones
-- **Gestión de Eventos**: Creación, edición y administración de eventos
-- **Procesamiento de Pagos**: Flujos de compra y generación de entradas
-- **Sistema de Notificaciones**: Comunicación en tiempo real
-- **Analytics y Reportes**: Generación de métricas y reportes
+### 🚀 **Características Principales (vigentes)**
+- **Autenticación y verificación de email** con Supabase Auth + guardas en UI
+- **Gestión de eventos** contra tablas `eventos`/`tipos_entrada` y cálculos de asistencia con códigos QR
+- **Pagos y compras**: validación de stock, métodos de pago por evento y generación de códigos QR persistidos en `codigos_qr_entradas`
+- **Notificaciones internas** mediante tabla `notificaciones` (sin push/email externo implementado)
+- **Analytics** calculadas desde tablas `compras`, `codigos_qr_entradas`, `analiticas_eventos`
 
 ---
 
@@ -18,53 +18,54 @@
 
 ### **🔐 Autenticación y Gestión de Usuarios**
 
-#### **UC-001: Registrar Usuario**
+#### **UC-001: Registrar Usuario (email + verificación obligatoria)**
 ```mermaid
 sequenceDiagram
     actor Usuario
-    participant Sistema
-    participant BD as Base de Datos
+    participant App as Frontend (React)
+    participant BD as Tabla usuarios
     participant Auth as Supabase Auth
-    participant Email as Servicio Email
-    
-    Usuario->>Sistema: Ingresar datos (nombre, email, contraseña)
-    Sistema->>BD: Validar email único
-    BD-->>Sistema: Resultado validación
-    alt Email disponible
-        Sistema->>Auth: Crear usuario
-        Auth->>BD: Guardar usuario con rol 'asistente'
-        BD-->>Auth: Confirmación
-        Auth-->>Sistema: Usuario creado
-        Sistema->>Email: Enviar email de bienvenida
-        Email-->>Sistema: Email enviado
-        Sistema->>Usuario: Registro exitoso, verificar email
-    else Email duplicado
-        Sistema->>Usuario: Error (email ya registrado)
+    participant Callback as /auth/callback
+    participant Email as Supabase Email
+
+    Usuario->>App: Enviar formulario (nombre, email, contraseña, rol)
+    App->>BD: Verificar correo en usuarios (maybeSingle)
+    BD-->>App: ¿Existe?
+    alt Correo libre
+        App->>Auth: signUp(email,password,redirect=/auth/callback, metadata)
+        Auth-->>Email: Envía enlace de verificación
+        App->>BD: upsert perfil pendiente (estado=pendiente, email_verified=false)
+        App-->>Usuario: Mostrar sala "Verifica tu email"
+        Usuario->>Email: Clic en enlace
+        Email-->>Callback: Redirección con access_token
+        Callback->>Auth: setSession(access_token)
+        Callback->>BD: crear/actualizar usuario (rol mapeado, email_verified=true)
+        Callback->>App: Guardar usuario en Zustand, isAuthenticated=true
+        App-->>Usuario: Redirigir según rol (events/organizer/admin)
+    else Correo en uso
+        App-->>Usuario: Mensaje "correo ya registrado"
     end
 ```
 
-#### **UC-002: Autenticar Usuario**
+#### **UC-002: Autenticar Usuario (login con password)**
 ```mermaid
 sequenceDiagram
     actor Usuario
-    participant Sistema
-    participant BD as Base de Datos
+    participant App as Frontend (React)
     participant Auth as Supabase Auth
-    
-    Usuario->>Sistema: Ingresar email y contraseña
-    Sistema->>Auth: Autenticar usuario
-    Auth->>BD: Validar credenciales
-    BD-->>Auth: Resultado (usuario, rol, estado)
-    alt Credenciales válidas
-        Auth-->>Sistema: Token de sesión + datos usuario
-        Sistema->>BD: Registrar inicio de sesión (auditoria)
-        BD-->>Sistema: Confirmación
-        Sistema->>Usuario: Sesión iniciada, redirigir por rol
-    else Credenciales inválidas
-        Auth-->>Sistema: Error de autenticación
-        Sistema->>BD: Registrar intento fallido (auditoria)
-        BD-->>Sistema: Confirmación
-        Sistema->>Usuario: Error de autenticación
+    participant BD as Tabla usuarios
+
+    Usuario->>App: Ingresar email y contraseña
+    App->>Auth: signOut() previo + signInWithPassword()
+    Auth-->>App: user + email_confirmed_at
+    alt Email verificado
+        App->>BD: Obtener usuario por correo (ServicioUsuarios)
+        BD-->>App: Perfil + rol db (administrador/organizador/asistente)
+        App->>App: Mapear rol a (admin/organizer/attendee) y set Zustand
+        App-->>Usuario: Sesión iniciada, redirección por rol
+    else Email sin confirmar
+        App->>Auth: signOut()
+        App-->>Usuario: Mostrar error "verifica tu correo"
     end
 ```
 
@@ -72,468 +73,385 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     actor Usuario
-    participant Sistema
-    participant BD as Base de Datos
+    participant App as Frontend (React)
     participant Auth as Supabase Auth
-    
-    Usuario->>Sistema: Seleccionar cerrar sesión
-    Sistema->>Auth: Invalidar token de sesión
-    Auth-->>Sistema: Token invalidado
-    Sistema->>BD: Registrar cierre de sesión (auditoria)
-    BD-->>Sistema: Confirmación
-    Sistema->>Usuario: Redirigir a página de login
+
+    Usuario->>App: Seleccionar "Cerrar sesión"
+    App->>Auth: signOut()
+    Auth-->>App: Sesión invalidada
+    App->>App: Limpiar Zustand + localStorage auth-storage
+    App-->>Usuario: Redirigir a home/login
 ```
 
-#### **UC-004: Recuperar Contraseña**
+#### **UC-004: Recuperar Contraseña (pendiente de implementación)**
 ```mermaid
 sequenceDiagram
     actor Usuario
-    participant Sistema
-    participant BD as Base de Datos
-    participant Email as Servicio Email
-    
-    Usuario->>Sistema: Ingresar email en formulario de recuperación
-    Sistema->>BD: Validar que el email esté registrado
-    BD-->>Sistema: Resultado validación
-    alt Email registrado
-        Sistema->>BD: Generar token de recuperación
-        BD-->>Sistema: Token generado
-        Sistema->>Email: Enviar email con enlace de recuperación
-        Email-->>Sistema: Email enviado
-        Sistema->>Usuario: Email de recuperación enviado
-    else Email no registrado
-        Sistema->>Usuario: Mensaje genérico (por seguridad)
-    end
+    participant App as Frontend (React)
+    participant Auth as Supabase Auth
+
+    Usuario->>App: Solicitar recuperación
+    App-->>Usuario: Mensaje "Flujo aún no disponible"
 ```
 
-#### **UC-005: Cambiar Contraseña**
+#### **UC-005: Cambiar Contraseña (pendiente de implementación)**
 ```mermaid
 sequenceDiagram
     actor Usuario
-    participant Sistema
-    participant BD as Base de Datos
-    participant Auth as Supabase Auth
-    
-    Usuario->>Sistema: Ingresar contraseña actual y nueva
-    Sistema->>Auth: Validar contraseña actual
-    Auth-->>Sistema: Resultado validación
-    alt Contraseña actual correcta
-        Sistema->>Auth: Actualizar contraseña
-        Auth->>BD: Guardar nueva contraseña (hash)
-        BD-->>Auth: Confirmación
-        Auth-->>Sistema: Contraseña actualizada
-        Sistema->>BD: Registrar cambio (auditoria)
-        BD-->>Sistema: Confirmación
-        Sistema->>Usuario: Contraseña actualizada exitosamente
-    else Contraseña actual incorrecta
-        Sistema->>Usuario: Error (contraseña actual incorrecta)
-    end
+    participant App as Frontend (React)
+
+    Usuario->>App: Solicitar cambio de contraseña
+    App-->>Usuario: Mensaje "Flujo aún no disponible"
 ```
 
 ### **📅 Gestión de Eventos**
 
-#### **UC-011: Explorar Eventos**
+#### **UC-011: Explorar Eventos (filtros + cálculo de asistencia real)**
 ```mermaid
 sequenceDiagram
     actor Usuario
-    participant Sistema
-    participant BD as Base de Datos
-    
-    Usuario->>Sistema: Acceder a explorar eventos
-    Sistema->>BD: Consultar eventos públicos
-    BD-->>Sistema: Lista de eventos
-    Sistema->>Usuario: Mostrar eventos con filtros básicos
-    Usuario->>Sistema: Aplicar filtros (categoría, fecha, ubicación)
-    Sistema->>BD: Consultar eventos con filtros
-    BD-->>Sistema: Eventos filtrados
-    Sistema->>Usuario: Mostrar eventos filtrados
+    participant App as Frontend (React)
+    participant EventSvc as EventService
+    participant BD as Supabase eventos/tipos_entrada/codigos_qr_entradas
+
+    Usuario->>App: Abrir /events
+    App->>EventSvc: obtenerEventos(filtros básicos)
+    EventSvc->>BD: SELECT eventos + tipos_entrada + analiticas_eventos
+    BD-->>EventSvc: Eventos
+    EventSvc->>BD: Contar codigos_qr_entradas usados por evento
+    BD-->>EventSvc: Asistencia real por evento
+    EventSvc-->>App: Eventos con ticketTypes y asistentes_reales
+    App->>App: Filtro adicional en frontend (precio, fecha, ubicación)
+    App-->>Usuario: Listado filtrado
 ```
 
-#### **UC-012: Buscar Eventos**
+#### **UC-012: Buscar Eventos (texto + filtros)**
 ```mermaid
 sequenceDiagram
     actor Usuario
-    participant Sistema
-    participant BD as Base de Datos
-    
-    Usuario->>Sistema: Ingresar término de búsqueda
-    Sistema->>BD: Buscar eventos por término
-    BD-->>Sistema: Resultados de búsqueda
-    Sistema->>Usuario: Mostrar resultados
-    Usuario->>Sistema: Refinar búsqueda con criterios adicionales
-    Sistema->>BD: Buscar con criterios específicos
-    BD-->>Sistema: Resultados refinados
-    Sistema->>Usuario: Mostrar resultados refinados
+    participant App as Frontend (React)
+    participant EventSvc as EventService
+    participant BD as Supabase
+
+    Usuario->>App: Ingresar término de búsqueda
+    App->>EventSvc: obtenerEventos({busqueda, categoria, ubicacion, fechas})
+    EventSvc->>BD: SELECT con filtros + tipos_entrada
+    BD-->>EventSvc: Resultados
+    EventSvc-->>App: Eventos
+    App->>App: Filtrar por rango de precio en UI
+    App-->>Usuario: Mostrar resultados
 ```
 
 #### **UC-013: Ver Detalle de Evento**
 ```mermaid
 sequenceDiagram
     actor Usuario
-    participant Sistema
-    participant BD as Base de Datos
-    
-    Usuario->>Sistema: Seleccionar evento
-    Sistema->>BD: Consultar detalles del evento
-    BD-->>Sistema: Información completa del evento
-    Sistema->>BD: Consultar tipos de entrada disponibles
-    BD-->>Sistema: Tipos de entrada y precios
-    Sistema->>BD: Consultar asistentes registrados
-    BD-->>Sistema: Número de asistentes
-    Sistema->>Usuario: Mostrar detalle completo del evento
+    participant App as Frontend (React)
+    participant EventSvc as EventService
+    participant BD as Supabase
+
+    Usuario->>App: Abrir /events/:id
+    App->>EventSvc: obtenerEventoPorId(id)
+    EventSvc->>BD: SELECT evento + tipos_entrada + analiticas_eventos
+    BD-->>EventSvc: Datos del evento
+    EventSvc-->>App: Detalle con ticketTypes
+    App-->>Usuario: Renderiza detalle + botón añadir al carrito
 ```
 
-#### **UC-014: Crear Evento**
+#### **UC-014: Crear Evento (sin storage, con notificación a seguidores)**
 ```mermaid
 sequenceDiagram
     actor Organizador
-    participant Sistema
-    participant BD as Base de Datos
-    participant Storage as Supabase Storage
-    
-    Organizador->>Sistema: Acceder a crear evento
-    Organizador->>Sistema: Completar información básica
-    Sistema->>BD: Validar datos del evento
-    BD-->>Sistema: Resultado validación
-    alt Datos válidos
-        Sistema->>Storage: Subir imagen del evento
-        Storage-->>Sistema: URL de imagen
-        Sistema->>BD: Guardar evento (estado: 'draft')
-        BD-->>Sistema: ID del evento
-        Sistema->>Organizador: Evento creado, configurar tipos de entrada
-        Organizador->>Sistema: Configurar tipos de entrada y precios
-        Sistema->>BD: Guardar tipos de entrada
-        BD-->>Sistema: Confirmación
-        Sistema->>Organizador: Evento listo para publicar
-    else Datos inválidos
-        Sistema->>Organizador: Error de validación
-    end
+    participant App as Frontend (React)
+    participant EventSvc as EventService
+    participant BD as Supabase
+
+    Organizador->>App: Completar formulario de evento
+    App->>EventSvc: crearEvento(datos evento)
+    EventSvc->>BD: INSERT en eventos
+    BD-->>EventSvc: Evento creado (id)
+    EventSvc->>BD: SELECT seguidores_organizadores
+    BD-->>EventSvc: Seguidores del organizador
+    EventSvc->>BD: INSERT notificaciones para seguidores
+    EventSvc-->>App: Evento creado
+    App-->>Organizador: Solicitar configuración de tipos de entrada
 ```
 
 #### **UC-015: Editar Evento**
 ```mermaid
 sequenceDiagram
     actor Organizador
-    participant Sistema
-    participant BD as Base de Datos
-    participant Storage as Supabase Storage
-    
-    Organizador->>Sistema: Seleccionar evento a editar
-    Sistema->>BD: Consultar datos del evento
-    BD-->>Sistema: Datos actuales del evento
-    Sistema->>Organizador: Mostrar formulario con datos
-    Organizador->>Sistema: Modificar información
-    Sistema->>BD: Validar cambios
-    BD-->>Sistema: Resultado validación
-    alt Datos válidos
-        Sistema->>Storage: Actualizar imagen (si cambió)
-        Storage-->>Sistema: Nueva URL de imagen
-        Sistema->>BD: Actualizar evento
-        BD-->>Sistema: Confirmación
-        Sistema->>BD: Registrar cambio (auditoria)
-        BD-->>Sistema: Confirmación
-        Sistema->>Organizador: Evento actualizado exitosamente
-    else Datos inválidos
-        Sistema->>Organizador: Error de validación
-    end
+    participant App as Frontend (React)
+    participant EventSvc as EventService
+    participant BD as Supabase
+
+    Organizador->>App: Abrir evento a editar
+    App->>EventSvc: obtenerEventoPorId(id)
+    EventSvc-->>App: Datos actuales
+    Organizador->>App: Modificar campos
+    App->>EventSvc: actualizarEvento(id, cambios)
+    EventSvc->>BD: UPDATE eventos
+    BD-->>EventSvc: Confirmación
+    EventSvc-->>App: Evento actualizado
+    App-->>Organizador: Mostrar cambios
 ```
 
 ### **🎫 Gestión de Pagos**
 
-#### **UC-017: Agregar al Carrito**
+#### **UC-017: Agregar al Carrito (store local)**
 ```mermaid
 sequenceDiagram
     actor Usuario
-    participant Sistema
-    participant BD as Base de Datos
-    
-    Usuario->>Sistema: Seleccionar tipo de entrada
-    Sistema->>BD: Consultar disponibilidad
-    BD-->>Sistema: Entradas disponibles
-    alt Entradas disponibles
-        Usuario->>Sistema: Seleccionar cantidad
-        Sistema->>BD: Validar disponibilidad de cantidad
-        BD-->>Sistema: Resultado validación
-        alt Cantidad válida
-            Sistema->>BD: Agregar al carrito
-            BD-->>Sistema: Confirmación
-            Sistema->>Usuario: Entrada agregada al carrito
-        else Cantidad no disponible
-            Sistema->>Usuario: Error (cantidad no disponible)
-        end
-    else Sin entradas disponibles
-        Sistema->>Usuario: Error (evento agotado)
+    participant App as Frontend (React)
+    participant Cart as Cart.store (Zustand)
+
+    Usuario->>App: Seleccionar tipo de entrada
+    App->>Cart: addItem(eventId, ticketTypeId, price, qty)
+    Cart-->>App: Totales recalculados (subtotal/discount/finalTotal)
+    App-->>Usuario: Actualiza UI del carrito
+```
+
+#### **UC-018: Procesar Pago (checkout con Supabase + QR)**
+```mermaid
+sequenceDiagram
+    actor Usuario
+    participant App as CheckoutPage
+    participant Promo as PromoCodeService
+    participant PayMethod as PaymentMethodService
+    participant Purchase as PurchaseService
+    participant QR as QRCodeService
+    participant BD as Supabase
+
+    Usuario->>App: Confirmar compra
+    App->>PayMethod: obtenerMetodosPagoEvento(eventId)
+    PayMethod-->>App: Métodos activos
+    opt Código promocional
+        App->>Promo: validarCodigo(codigo, eventId)
+        Promo-->>App: Descuento aplicado
     end
+    App->>App: Espera simulada de pasarela (setTimeout)
+    loop Por cada item del carrito
+        App->>Purchase: crearCompra(insert, metodo_pago)
+        Purchase->>BD: SELECT tipo_entrada (disponible)
+        BD-->>Purchase: Stock actual
+        alt Stock suficiente
+            Purchase->>BD: INSERT compra (compras)
+            Purchase->>BD: UPDATE tipos_entrada.cantidad_disponible
+            Purchase->>QR: createQRTicket() por cada entrada
+            QR->>BD: INSERT codigos_qr_entradas con hash seguro
+            QR-->>Purchase: códigos QR generados
+            Purchase->>BD: UPDATE compras.codigo_qr (concat)
+            Purchase-->>App: Compra creada
+        else Sin stock
+            Purchase-->>App: Error disponibilidad
+        end
+    end
+    App->>Cart: clearCart()
+    App-->>Usuario: Éxito, redirige a /tickets
 ```
 
-#### **UC-018: Procesar Pago**
+#### **UC-019: Ver Entradas (QR + compras)**
 ```mermaid
 sequenceDiagram
     actor Usuario
-    participant Sistema
-    participant BD as Base de Datos
-    participant Payment as Stripe/PayPal
-    participant QR as Generador QR
-    participant Email as Servicio Email
-    
-    Usuario->>Sistema: Confirmar compra
-    Sistema->>BD: Validar disponibilidad de entradas
-    BD-->>Sistema: Entradas disponibles
-    Sistema->>Payment: Crear intención de pago
-    Payment-->>Sistema: ID de pago
-    Sistema->>Usuario: Redirigir a pasarela de pago
-    Usuario->>Payment: Completar pago
-    Payment-->>Sistema: Pago confirmado
-    Sistema->>BD: Crear registro de compra
-    BD-->>Sistema: ID de compra
-    Sistema->>QR: Generar códigos QR para entradas
-    QR-->>Sistema: Códigos QR generados
-    Sistema->>BD: Guardar entradas con QR
-    BD-->>Sistema: Confirmación
-    Sistema->>Email: Enviar entradas por email
-    Email-->>Sistema: Email enviado
-    Sistema->>Usuario: Compra exitosa, entradas enviadas
+    participant App as TicketsPage
+    participant QR as QRCodeService
+    participant Purchase as PurchaseService
+    participant BD as Supabase
+
+    Usuario->>App: Abrir /tickets
+    App->>QR: getQRsByUser(userId)
+    QR->>BD: SELECT codigos_qr_entradas (por id_usuario o email)
+    BD-->>QR: Lista de QRs
+    QR-->>App: QRs del usuario
+    App->>Purchase: obtenerComprasUsuario(userId)
+    Purchase->>BD: SELECT compras JOIN eventos/metodos_pago
+    BD-->>Purchase: Compras
+    Purchase-->>App: Compras enriquecidas
+    App-->>Usuario: Mostrar QRs, compras y regenerar si falta alguno
 ```
 
-#### **UC-019: Ver Entradas**
+#### **UC-020: Generar QR (creación individual)**
 ```mermaid
 sequenceDiagram
-    actor Usuario
-    participant Sistema
-    participant BD as Base de Datos
-    
-    Usuario->>Sistema: Acceder a mis entradas
-    Sistema->>BD: Consultar entradas del usuario
-    BD-->>Sistema: Lista de entradas compradas
-    Sistema->>Usuario: Mostrar entradas con detalles
-    Usuario->>Sistema: Seleccionar entrada específica
-    Sistema->>BD: Consultar detalles de la entrada
-    BD-->>Sistema: Detalles de la entrada
-    Sistema->>Usuario: Mostrar código QR y detalles
+    participant Purchase as PurchaseService
+    participant QR as QRCodeService
+    participant BD as Supabase
+    participant Auth as Supabase Auth
+
+    Purchase->>Auth: getUser() (debug RLS)
+    Purchase->>QR: createQRTicket(ticketData)
+    QR->>QR: generateSecureCode(hash SHA256)
+    QR->>QR: generateQRImage(dataURL con qrcode)
+    QR->>BD: INSERT codigos_qr_entradas (datos_qr, numero_entrada, fecha_generacion)
+    BD-->>QR: Confirmación
+    QR-->>Purchase: codigo_qr + qr_image
 ```
 
-#### **UC-020: Generar QR**
-```mermaid
-sequenceDiagram
-    participant Sistema
-    participant BD as Base de Datos
-    participant QR as Generador QR
-    
-    Sistema->>BD: Consultar datos de la entrada
-    BD-->>Sistema: Datos de la entrada
-    Sistema->>QR: Generar código QR con datos
-    QR-->>Sistema: Código QR generado
-    Sistema->>BD: Guardar código QR
-    BD-->>Sistema: Confirmación
-    Sistema->>Sistema: Código QR listo para uso
-```
-
-#### **UC-021: Validar Entrada**
+#### **UC-021: Validar Entrada (RPC en DB)**
 ```mermaid
 sequenceDiagram
     actor Organizador
-    participant Sistema
-    participant BD as Base de Datos
-    participant QR as Escáner QR
-    
-    Organizador->>Sistema: Escanear código QR
-    Sistema->>QR: Decodificar código QR
-    QR-->>Sistema: ID de entrada
-    Sistema->>BD: Consultar entrada por ID
-    BD-->>Sistema: Datos de entrada (evento, usuario, estado)
-    alt Entrada válida y no usada
-        Sistema->>BD: Marcar entrada como usada
-        BD-->>Sistema: Confirmación
-        Sistema->>Organizador: Entrada válida, acceso autorizado
-    else Entrada ya usada
-        Sistema->>Organizador: Entrada ya utilizada
-    else Entrada inválida
-        Sistema->>Organizador: Código QR inválido
+    participant App as Frontend (scanner)
+    participant BD as Supabase RPC validar_ticket_qr
+
+    Organizador->>App: Escanear código QR
+    App->>BD: rpc validar_ticket_qr(p_codigo_qr, p_id_organizador)
+    BD-->>App: {valido, mensaje, ticket_info}
+    alt válido
+        BD-->>App: Estado actualizado a "usado"
+        App-->>Organizador: Acceso autorizado
+    else inválido o usado
+        App-->>Organizador: Mensaje de error
     end
 ```
 
 ### **🔔 Gestión de Notificaciones**
 
-#### **UC-022: Enviar Notificación**
+#### **UC-022: Enviar Notificación (interna)**
 ```mermaid
 sequenceDiagram
     actor Organizador
-    participant Sistema
-    participant BD as Base de Datos
-    participant Email as Servicio Email
-    participant Push as Notificaciones Push
-    
-    Organizador->>Sistema: Crear notificación
-    Sistema->>BD: Guardar notificación
-    BD-->>Sistema: ID de notificación
-    Sistema->>BD: Consultar usuarios objetivo
-    BD-->>Sistema: Lista de usuarios
-    loop Para cada usuario
-        Sistema->>Email: Enviar email
-        Email-->>Sistema: Email enviado
-        Sistema->>Push: Enviar notificación push
-        Push-->>Sistema: Push enviado
-        Sistema->>BD: Registrar entrega
-        BD-->>Sistema: Confirmación
-    end
-    Sistema->>Organizador: Notificaciones enviadas
+    participant App as Frontend (React)
+    participant Notif as NotificationService
+    participant BD as Supabase
+
+    Organizador->>App: Crear notificación
+    App->>Notif: crearNotificacion(insert)
+    Notif->>BD: INSERT notificaciones
+    BD-->>Notif: Notificación creada
+    Notif-->>App: Confirmación
+    App-->>Organizador: Notificación guardada (no hay envío push/email externo)
 ```
 
 #### **UC-023: Ver Notificaciones**
 ```mermaid
 sequenceDiagram
     actor Usuario
-    participant Sistema
-    participant BD as Base de Datos
-    
-    Usuario->>Sistema: Acceder a notificaciones
-    Sistema->>BD: Consultar notificaciones del usuario
-    BD-->>Sistema: Lista de notificaciones
-    Sistema->>Usuario: Mostrar notificaciones
-    Usuario->>Sistema: Marcar como leída
-    Sistema->>BD: Actualizar estado de lectura
-    BD-->>Sistema: Confirmación
-    Sistema->>Usuario: Notificación marcada como leída
+    participant App as Frontend
+    participant Notif as NotificationService
+    participant BD as Supabase
+
+    Usuario->>App: Abrir /notifications
+    App->>Notif: obtenerNotificacionesUsuario(id)
+    Notif->>BD: SELECT notificaciones WHERE id_usuario
+    BD-->>Notif: Lista ordenada
+    Notif-->>App: Datos
+    Usuario->>App: Marcar como leída
+    App->>Notif: marcarComoLeida(id)
+    Notif->>BD: UPDATE notificaciones.leida=true
+    BD-->>Notif: Confirmación
 ```
 
-#### **UC-024: Configurar Preferencias**
+#### **UC-024: Configurar Preferencias (pendiente)**
 ```mermaid
 sequenceDiagram
     actor Usuario
-    participant Sistema
-    participant BD as Base de Datos
-    
-    Usuario->>Sistema: Acceder a configuración de notificaciones
-    Sistema->>BD: Consultar preferencias actuales
-    BD-->>Sistema: Preferencias del usuario
-    Sistema->>Usuario: Mostrar opciones de configuración
-    Usuario->>Sistema: Modificar preferencias
-    Sistema->>BD: Guardar preferencias
-    BD-->>Sistema: Confirmación
-    Sistema->>Usuario: Preferencias actualizadas
+    participant App as Frontend
+
+    Usuario->>App: Abrir preferencias de notificación
+    App-->>Usuario: Flujo aún no implementado en frontend/BD
 ```
 
 ### **📊 Gestión de Analytics**
 
-#### **UC-025: Ver Dashboard**
+#### **UC-025: Ver Dashboard (según rol)**
 ```mermaid
 sequenceDiagram
     actor Usuario
-    participant Sistema
-    participant BD as Base de Datos
-    participant Analytics as Servicio Analíticas
-    
-    Usuario->>Sistema: Acceder al dashboard
-    Sistema->>BD: Consultar datos del usuario
-    BD-->>Sistema: Datos usuario y rol
-    alt Rol: Asistente
-        Sistema->>BD: Consultar compras y eventos
-        BD-->>Sistema: Historial de compras
-        Sistema->>Usuario: Dashboard personal
-    else Rol: Organizador
-        Sistema->>BD: Consultar eventos del organizador
-        BD-->>Sistema: Eventos y métricas
-        Sistema->>Analytics: Calcular métricas de eventos
-        Analytics-->>Sistema: Métricas calculadas
-        Sistema->>Usuario: Dashboard del organizador
-    else Rol: Administrador
-        Sistema->>BD: Consultar métricas globales
-        BD-->>Sistema: Datos globales
-        Sistema->>Analytics: Calcular métricas del sistema
-        Analytics-->>Sistema: Métricas globales
-        Sistema->>Usuario: Dashboard de administración
+    participant App as Frontend
+    participant Analytics as AnalyticsService
+    participant BD as Supabase
+
+    Usuario->>App: Abrir dashboard
+    App->>Analytics: obtener datos según rol
+    alt Rol asistente
+        Analytics->>BD: SELECT compras del usuario
+        BD-->>Analytics: Historial
+        Analytics-->>App: Métricas personales
+    else Rol organizador
+        Analytics->>BD: SELECT eventos del organizador
+        Analytics->>BD: SELECT compras + codigos_qr_entradas
+        Analytics-->>App: Métricas de eventos
+    else Rol admin
+        Analytics->>BD: SELECT global (compras, usuarios, codigos_qr_entradas)
+        Analytics-->>App: Métricas del sistema
     end
+    App-->>Usuario: Mostrar dashboard
 ```
 
-#### **UC-026: Generar Reportes**
+#### **UC-026: Generar Reportes (calculados en frontend)**
 ```mermaid
 sequenceDiagram
     actor Usuario
-    participant Sistema
-    participant BD as Base de Datos
-    participant Analytics as Servicio Analíticas
-    participant Export as Generador PDF/Excel
-    
-    Usuario->>Sistema: Seleccionar tipo de reporte
-    Sistema->>BD: Consultar datos según filtros
-    BD-->>Sistema: Datos del reporte
-    Sistema->>Analytics: Procesar y calcular métricas
-    Analytics-->>Sistema: Métricas calculadas
-    Sistema->>Export: Generar archivo (PDF/Excel)
-    Export-->>Sistema: Archivo generado
-    Sistema->>Usuario: Reporte generado y descargable
+    participant App as Frontend
+    participant Analytics as AnalyticsService
+    participant BD as Supabase
+
+    Usuario->>App: Seleccionar rango y evento
+    App->>Analytics: Consultas necesarias (compras, QR usados, vistas)
+    Analytics->>BD: SELECT tablas relevantes
+    BD-->>Analytics: Datos crudos
+    Analytics-->>App: Métricas + agregados
+    App-->>Usuario: Render/descarga (PDF/Excel pendiente en UI)
 ```
 
-#### **UC-027: Ver Métricas**
+#### **UC-027: Ver Métricas en Tiempo Real**
 ```mermaid
 sequenceDiagram
-    participant Sistema
-    participant BD as Base de Datos
-    participant Analytics as Servicio Analíticas
-    
-    Sistema->>BD: Consultar datos en tiempo real
-    BD-->>Sistema: Datos actuales
-    Sistema->>Analytics: Procesar métricas
-    Analytics-->>Sistema: Métricas calculadas
-    Sistema->>Sistema: Actualizar métricas en tiempo real
+    participant App as Frontend
+    participant Analytics as AnalyticsService
+    participant BD as Supabase
+
+    App->>Analytics: Polling/consultas periódicas
+    Analytics->>BD: SELECT compras + codigos_qr_entradas recientes
+    BD-->>Analytics: Datos actuales
+    Analytics-->>App: KPIs recalculados
+    App->>App: Actualizar UI en vivo
 ```
 
 #### **UC-028: Dashboard del Organizador**
 ```mermaid
 sequenceDiagram
     actor Organizador
-    participant Sistema
-    participant BD as Base de Datos
-    participant Analytics as Servicio Analíticas
-    
-    Organizador->>Sistema: Acceder al dashboard
-    Sistema->>BD: Consultar eventos del organizador
-    BD-->>Sistema: Lista de eventos
-    Sistema->>BD: Consultar métricas de eventos
-    BD-->>Sistema: Datos de métricas
-    Sistema->>Analytics: Calcular métricas específicas
-    Analytics-->>Sistema: Métricas del organizador
-    Sistema->>Organizador: Mostrar dashboard personalizado
+    participant App as Frontend
+    participant Analytics as AnalyticsService
+    participant BD as Supabase
+
+    Organizador->>App: Abrir /organizer/dashboard
+    App->>Analytics: obtenerActividadRecienteOrganizador(id)
+    Analytics->>BD: SELECT eventos del organizador
+    Analytics->>BD: SELECT compras + codigos_qr_entradas (estado=usado)
+    Analytics-->>App: Feed de ventas + escaneos
+    App-->>Organizador: Mostrar actividad y KPIs
 ```
 
-#### **UC-029: Gestionar Asistentes**
+#### **UC-029: Gestionar Asistentes (foco en compras/QR)**
 ```mermaid
 sequenceDiagram
     actor Organizador
-    participant Sistema
-    participant BD as Base de Datos
-    participant Email as Servicio Email
-    
-    Organizador->>Sistema: Seleccionar evento
-    Sistema->>BD: Consultar asistentes del evento
-    BD-->>Sistema: Lista de asistentes
-    Sistema->>Organizador: Mostrar lista de asistentes
-    Organizador->>Sistema: Seleccionar acción (enviar mensaje/exportar)
-    alt Enviar mensaje
-        Sistema->>Email: Enviar mensaje masivo
-        Email-->>Sistema: Mensajes enviados
-        Sistema->>Organizador: Mensajes enviados exitosamente
-    else Exportar lista
-        Sistema->>BD: Generar archivo con datos
-        BD-->>Sistema: Archivo generado
-        Sistema->>Organizador: Lista exportada
-    end
+    participant App as Frontend
+    participant BD as Supabase
+
+    Organizador->>App: Seleccionar evento
+    App->>BD: SELECT compras JOIN usuarios para el evento
+    BD-->>App: Lista de compradores
+    App-->>Organizador: Ver/filtrar asistentes (export/mensajes masivos no implementados)
 ```
 
 #### **UC-030: Ver Métricas de Eventos**
 ```mermaid
 sequenceDiagram
     actor Organizador
-    participant Sistema
-    participant BD as Base de Datos
-    participant Analytics as Servicio Analíticas
-    
-    Organizador->>Sistema: Seleccionar evento
-    Sistema->>BD: Consultar datos del evento
-    BD-->>Sistema: Datos del evento
-    Sistema->>Analytics: Calcular métricas del evento
-    Analytics-->>Sistema: Métricas calculadas
-    Sistema->>Organizador: Mostrar métricas del evento
+    participant App as Frontend
+    participant Analytics as AnalyticsService
+    participant BD as Supabase
+
+    Organizador->>App: Solicitar métricas de evento
+    Analytics->>BD: SELECT analiticas_eventos + compras + codigos_qr_entradas
+    BD-->>Analytics: Datos
+    Analytics-->>App: totalRevenue, conversionRate, asistenciaPromedio, etc.
+    App-->>Organizador: Mostrar métricas
 ```
 
 ### **⚙️ Gestión de Administración**
@@ -542,189 +460,107 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     actor Organizador
-    participant Sistema
-    participant BD as Base de Datos
-    
-    Organizador->>Sistema: Acceder a códigos promocionales
-    Organizador->>Sistema: Crear nuevo código (descuento, fecha, límite)
-    Sistema->>BD: Validar datos del código
-    BD-->>Sistema: Resultado validación
-    alt Datos válidos
-        Sistema->>BD: Guardar código promocional
-        BD-->>Sistema: Confirmación
-        Sistema->>Organizador: Código promocional creado
-    else Datos inválidos
-        Sistema->>Organizador: Error de validación
-    end
+    participant App as Frontend
+    participant Promo as PromoCodeService
+    participant BD as Supabase
+
+    Organizador->>App: Completar datos del código
+    App->>Promo: validar y guardar
+    Promo->>BD: INSERT codigos_promocionales
+    BD-->>Promo: Confirmación
+    Promo-->>App: Código creado
 ```
 
-#### **UC-032: Gestionar Lista de Espera**
+#### **UC-032: Gestionar Lista de Espera (pendiente)**
 ```mermaid
 sequenceDiagram
     actor Organizador
-    participant Sistema
-    participant BD as Base de Datos
-    participant Email as Servicio Email
-    
-    Organizador->>Sistema: Acceder a lista de espera
-    Sistema->>BD: Consultar lista de espera del evento
-    BD-->>Sistema: Lista de espera
-    Sistema->>Organizador: Mostrar lista de espera
-    Organizador->>Sistema: Activar lista de espera
-    Sistema->>BD: Activar lista de espera
-    BD-->>Sistema: Confirmación
-    Sistema->>Email: Notificar usuarios en lista de espera
-    Email-->>Sistema: Notificaciones enviadas
-    Sistema->>Organizador: Lista de espera activada
+    participant App as Frontend
+
+    Organizador->>App: Intentar activar lista de espera
+    App-->>Organizador: Flujo no implementado en código actual
 ```
 
-#### **UC-033: Configurar Check-in**
+#### **UC-033: Configurar Check-in (a través de validación QR)**
 ```mermaid
 sequenceDiagram
     actor Organizador
-    participant Sistema
-    participant BD as Base de Datos
-    
-    Organizador->>Sistema: Acceder a configuración de check-in
-    Organizador->>Sistema: Configurar parámetros de check-in
-    Sistema->>BD: Validar configuración
-    BD-->>Sistema: Resultado validación
-    alt Configuración válida
-        Sistema->>BD: Guardar configuración de check-in
-        BD-->>Sistema: Confirmación
-        Sistema->>Organizador: Check-in configurado exitosamente
-    else Configuración inválida
-        Sistema->>Organizador: Error de configuración
-    end
+    participant App as Frontend
+    participant BD as Supabase
+
+    Organizador->>App: Ajustar parámetros (UI limitada)
+    App-->>Organizador: El check-in se basa en rpc validar_ticket_qr (sin configuración extra)
 ```
 
 #### **UC-034: Dashboard de Administración**
 ```mermaid
 sequenceDiagram
     actor Administrador
-    participant Sistema
-    participant BD as Base de Datos
-    participant Analytics as Servicio Analíticas
-    
-    Administrador->>Sistema: Acceder al dashboard de administración
-    Sistema->>BD: Consultar métricas globales
-    BD-->>Sistema: Datos globales
-    Sistema->>Analytics: Calcular métricas del sistema
-    Analytics-->>Sistema: Métricas globales
-    Sistema->>Administrador: Mostrar dashboard de administración
+    participant App as Frontend
+    participant Analytics as AnalyticsService
+    participant BD as Supabase
+
+    Administrador->>App: Abrir /admin
+    App->>Analytics: Consultas globales (usuarios, eventos, compras)
+    Analytics->>BD: SELECT tablas globales
+    BD-->>Analytics: Datos
+    Analytics-->>App: KPIs globales
+    App-->>Administrador: Dashboard administración
 ```
 
-#### **UC-035: Gestionar Configuración del Sistema**
+#### **UC-035: Gestionar Configuración del Sistema (pendiente)**
 ```mermaid
 sequenceDiagram
     actor Administrador
-    participant Sistema
-    participant BD as Base de Datos
-    
-    Administrador->>Sistema: Acceder a configuración del sistema
-    Sistema->>BD: Consultar parámetros actuales
-    BD-->>Sistema: Configuración actual
-    Sistema->>Administrador: Mostrar configuración
-    Administrador->>Sistema: Modificar parámetros
-    Sistema->>BD: Validar nuevos parámetros
-    BD-->>Sistema: Resultado validación
-    alt Parámetros válidos
-        Sistema->>BD: Actualizar configuración
-        BD-->>Sistema: Confirmación
-        Sistema->>BD: Registrar cambio (auditoria)
-        BD-->>Sistema: Confirmación
-        Sistema->>Administrador: Configuración actualizada
-    else Parámetros inválidos
-        Sistema->>Administrador: Error en configuración
-    end
+    participant App as Frontend
+
+    Administrador->>App: Abrir ajustes del sistema
+    App-->>Administrador: Configuración avanzada no implementada en UI/BD
 ```
 
 #### **UC-036: Ver Métricas Globales**
 ```mermaid
 sequenceDiagram
     actor Administrador
-    participant Sistema
-    participant BD as Base de Datos
-    participant Analytics as Servicio Analíticas
-    
-    Administrador->>Sistema: Acceder a métricas globales
-    Sistema->>BD: Consultar datos globales
-    BD-->>Sistema: Datos del sistema
-    Sistema->>Analytics: Calcular métricas globales
-    Analytics-->>Sistema: Métricas globales
-    Sistema->>Administrador: Mostrar métricas globales
+    participant App as Frontend
+    participant Analytics as AnalyticsService
+    participant BD as Supabase
+
+    Administrador->>App: Acceder a métricas globales
+    Analytics->>BD: SELECT compras + usuarios + codigos_qr_entradas
+    BD-->>Analytics: Datos globales
+    Analytics-->>App: Métricas agregadas
+    App-->>Administrador: Mostrar KPIs
 ```
 
-#### **UC-037: Monitorear Rendimiento**
+#### **UC-037: Monitorear Rendimiento (no implementado)**
 ```mermaid
 sequenceDiagram
     actor Administrador
-    participant Sistema
-    participant BD as Base de Datos
-    participant Monitor as Servicio Monitoreo
-    participant Alert as Sistema de Alertas
-    
-    Administrador->>Sistema: Acceder a monitoreo
-    Sistema->>Monitor: Consultar métricas del sistema
-    Monitor->>BD: Consultar logs y métricas
-    BD-->>Monitor: Datos de rendimiento
-    Monitor-->>Sistema: Métricas actuales
-    Sistema->>Alert: Verificar umbrales de alerta
-    Alert-->>Sistema: Estado de alertas
-    alt Sistema estable
-        Sistema->>Administrador: Dashboard de monitoreo (verde)
-    else Problemas detectados
-        Sistema->>Administrador: Dashboard con alertas (amarillo/rojo)
-        Sistema->>Alert: Enviar notificaciones
-        Alert-->>Sistema: Alertas enviadas
-    end
+    participant App as Frontend
+
+    Administrador->>App: Consultar monitoreo
+    App-->>Administrador: Flujo de monitoreo/alertas no disponible en frontend
 ```
 
-#### **UC-038: Gestionar Backup y Restauración**
+#### **UC-038: Gestionar Backup y Restauración (no implementado)**
 ```mermaid
 sequenceDiagram
     actor Administrador
-    participant Sistema
-    participant BD as Base de Datos
-    participant Backup as Servicio Backup
-    participant Storage as Almacenamiento
-    
-    Administrador->>Sistema: Iniciar proceso de backup
-    Sistema->>Backup: Crear backup de la base de datos
-    Backup->>BD: Exportar datos
-    BD-->>Backup: Datos exportados
-    Backup->>Storage: Guardar backup
-    Storage-->>Backup: Backup guardado
-    Backup-->>Sistema: Backup completado
-    Sistema->>BD: Registrar operación de backup
-    BD-->>Sistema: Confirmación
-    Sistema->>Administrador: Backup completado exitosamente
+    participant App as Frontend
+
+    Administrador->>App: Iniciar backup/restauración
+    App-->>Administrador: Gestión de backups no implementada en UI
 ```
 
-#### **UC-039: Configurar Integraciones**
+#### **UC-039: Configurar Integraciones (no implementado)**
 ```mermaid
 sequenceDiagram
     actor Administrador
-    participant Sistema
-    participant BD as Base de Datos
-    participant Integration as Servicio de Integraciones
-    
-    Administrador->>Sistema: Acceder a configuración de integraciones
-    Sistema->>BD: Consultar integraciones actuales
-    BD-->>Sistema: Estado de integraciones
-    Sistema->>Administrador: Mostrar integraciones disponibles
-    Administrador->>Sistema: Configurar nueva integración
-    Sistema->>Integration: Validar configuración
-    Integration-->>Sistema: Resultado validación
-    alt Configuración válida
-        Sistema->>BD: Guardar configuración de integración
-        BD-->>Sistema: Confirmación
-        Sistema->>Integration: Activar integración
-        Integration-->>Sistema: Integración activada
-        Sistema->>Administrador: Integración configurada exitosamente
-    else Configuración inválida
-        Sistema->>Administrador: Error en configuración
-    end
+    participant App as Frontend
+
+    Administrador->>App: Configurar integración externa
+    App-->>Administrador: Aún no disponible en código
 ```
 
 ---
@@ -742,47 +578,31 @@ sequenceDiagram
 ### **Total de Diagramas**: 33 diagramas de secuencia
 
 ### **Participantes por Diagrama**
-- **Sistema**: 33 diagramas
-- **Base de Datos**: 33 diagramas
-- **Supabase Auth**: 5 diagramas
-- **Servicio Email**: 8 diagramas
-- **Stripe/PayPal**: 1 diagrama
-- **Generador QR**: 2 diagramas
-- **Servicio Analíticas**: 8 diagramas
-- **Servicio Monitoreo**: 1 diagrama
-- **Servicio Backup**: 1 diagrama
-- **Servicio de Integraciones**: 1 diagrama
+- **Sistema/App**: 33 diagramas
+- **Supabase (BD)**: 28 diagramas
+- **Supabase Auth**: 4 diagramas
+- **QR/Compra/Promo Services**: 6 diagramas
+- **Servicios pendientes/no implementados**: 6 diagramas marcados como tal
 
 ---
 
 ## 🎯 **Patrones de Interacción Identificados**
 
-### **1. Patrón de Autenticación**
-- Validación de credenciales
-- Generación de tokens
-- Registro de auditoría
+### **1. Patrón de Autenticación con verificación obligatoria**
+- Limpieza de sesión previa, signIn con Supabase y guard de email confirmado
 
-### **2. Patrón de Validación**
-- Validación de datos de entrada
-- Verificación de disponibilidad
-- Manejo de errores
+### **2. Patrón de Compras y QR**
+- Validación de stock en `tipos_entrada`, creación en `compras`, generación de QR con hash seguro y guardado en `codigos_qr_entradas`
 
-### **3. Patrón de Procesamiento de Pagos**
-- Validación de disponibilidad
-- Integración con pasarelas de pago
-- Generación de confirmaciones
+### **3. Patrón de Eventos con fans**
+- Inserción de evento seguida de notificación interna a seguidores del organizador
 
-### **4. Patrón de Notificaciones**
-- Envío masivo de notificaciones
-- Integración con servicios externos
-- Seguimiento de entrega
+### **4. Patrón de Analytics desde tablas propias**
+- KPIs calculados en frontend usando `compras`, `codigos_qr_entradas` y `analiticas_eventos` (sin servicios externos)
 
-### **5. Patrón de Analytics**
-- Cálculo de métricas en tiempo real
-- Generación de reportes
-- Actualización de dashboards
+### **5. Patrón de funcionalidad pendiente**
+- Recuperación de contraseña, preferencias de notificación avanzadas, lista de espera, monitoreo e integraciones están marcados como no implementados en el código actual
 
 ---
 
-
-*Estos diagramas de secuencia representan los flujos de interacción detallados del sistema EventHub, mostrando cómo los actores interactúan con el sistema y los servicios externos para completar cada caso de uso, proporcionando una visión integral del comportamiento del sistema.*
+*Diagramas actualizados según la lógica vigente del repositorio. Se mantienen los identificadores UC para trazabilidad con la documentación anterior.*

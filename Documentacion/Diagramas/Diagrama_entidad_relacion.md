@@ -3,8 +3,12 @@
 ### 📋 **Descripción del Sistema**
 Este diagrama representa la arquitectura completa de la base de datos del sistema EventHub, una plataforma integral para la gestión de eventos que incluye funcionalidades de compra de entradas, control de asistencia, analytics, notificaciones y más.
 
+### 🕐 **Última Actualización**
+**Fecha**: 15 de Diciembre de 2025  
+**Cambios**: Actualización de atributos de la tabla USUARIOS - Se elimina referencia a contraseña (gestionada por Supabase Auth) y se agrega atributo `email_verificado` para control de verificación de email obligatoria.
+
 ### 🔍 **Entidades Clave del Negocio**
-- **USUARIOS**: Gestión completa de usuarios (organizadores, asistentes, administradores)
+- **USUARIOS**: Gestión completa de usuarios (organizadores, asistentes, administradores) con verificación de email
 - **EVENTOS**: Catálogo central de eventos con toda su información
 - **TIPOS_ENTRADA**: Catálogo de productos/entradas por evento
 - **COMPRAS**: Transacciones y flujo de ventas
@@ -45,7 +49,7 @@ graph TD
     U_ROL(("ROL"))
     U_AVATAR(("URL_AVATAR"))
     U_PREF(("PREFERENCIAS"))
-    U_PASS(("CONTRASEÑA"))
+    U_VERIFIED(("EMAIL_VERIFICADO"))
     
     %% Atributos de EVENTOS (en óvalos)
     E_ID(("ID"))
@@ -225,7 +229,7 @@ graph TD
     U --- U_ROL
     U --- U_AVATAR
     U --- U_PREF
-    U --- U_PASS
+    U --- U_VERIFIED
     
     E --- E_ID
     E --- E_TIT
@@ -466,7 +470,7 @@ graph TD
     classDef relacion fill:#fff3e0,stroke:#e65100,stroke-width:2px
     
     class U,E,TE,C,A,N,PE,AE,CP,FU,CE,CS,QRE,S,MP entidad
-    class U_ID,U_EMAIL,U_NOM,U_ROL,U_AVATAR,U_PREF,U_PASS,E_ID,E_TIT,E_DESC,E_IMG,E_FECHA,E_HORA,E_UBI,E_CAT,E_MAX,E_ACT,E_ORG,E_NOM_ORG,E_EST,E_ETIQ,TE_ID,TE_EVENTO,TE_NOM,TE_PREC,TE_DESC,TE_MAX,TE_DISP,TE_NOM_EVENTO,C_ID,C_USUARIO,C_EVENTO,C_TIPO,C_CANT,C_PRECIO,C_TOTAL,C_EST,C_QR,C_ORDEN,QRE_ID,QRE_COMPRA,QRE_EVENTO,QRE_USUARIO,QRE_COD,QRE_DATOS,QRE_GEN,QRE_ESC,QRE_POR,QRE_EST,QRE_NUM,S_ID,S_SEGUIDOR,S_ORG,S_FECHA,MP_ID,MP_NOM,MP_TIPO,MP_PROV,MP_DESC,MP_ACT,MP_PERC,MP_FIJA,MP_MIN,MP_MAX,MP_MONEDAS,MP_REQ,MP_TIEMPO,MP_CONF,MP_ORG,MP_CRE,MP_ACTU,A_ID,A_COMPRA,A_EVENTO,A_USUARIO,A_FECHA,A_VALIDADOR,A_METODO,A_OBS,A_EST,A_UBI,A_DISP,N_ID,N_USUARIO,N_TIPO,N_TIT,N_MSG,N_LEIDA,N_URL,N_TEXTO,PE_ID,PE_NOM,PE_ASUNTO,PE_CONT,PE_TIPO,AE_ID,AE_EVENTO,AE_VIS,AE_VENTAS,AE_ING,AE_CONV,AE_PRECIO,AE_TIPO,AE_ASIST,AE_REEM,AE_MONTO,CP_ID,CP_CODIGO,CP_DESC,CP_TIPO,CP_VALOR,CP_INICIO,CP_FIN,CP_MAX,CP_ACT,CP_EVENTO,CP_ORG,CP_ACTIVO,FU_ID,FU_USUARIO,FU_EVENTO,FU_CAT,FU_NOTAS,FU_REC,FU_FECHA,FU_PRIOR,FU_VIS,CE_ID,CE_EVENTO,CE_USUARIO,CE_CAL,CE_COM,CE_POS,CE_NEG,CE_REC,CE_CAT,CE_FECHA,CE_ANON,CE_MOD,CE_VIS,CS_ID,CS_CLAVE,CS_VALOR,CS_TIPO,CS_DESC,CS_CAT,CS_SENS,CS_READ,CS_DEF,CS_ACT atributo
+    class U_ID,U_EMAIL,U_NOM,U_ROL,U_AVATAR,U_PREF,U_VERIFIED,E_ID,E_TIT,E_DESC,E_IMG,E_FECHA,E_HORA,E_UBI,E_CAT,E_MAX,E_ACT,E_ORG,E_NOM_ORG,E_EST,E_ETIQ,TE_ID,TE_EVENTO,TE_NOM,TE_PREC,TE_DESC,TE_MAX,TE_DISP,TE_NOM_EVENTO,C_ID,C_USUARIO,C_EVENTO,C_TIPO,C_CANT,C_PRECIO,C_TOTAL,C_EST,C_QR,C_ORDEN,QRE_ID,QRE_COMPRA,QRE_EVENTO,QRE_USUARIO,QRE_COD,QRE_DATOS,QRE_GEN,QRE_ESC,QRE_POR,QRE_EST,QRE_NUM,S_ID,S_SEGUIDOR,S_ORG,S_FECHA,MP_ID,MP_NOM,MP_TIPO,MP_PROV,MP_DESC,MP_ACT,MP_PERC,MP_FIJA,MP_MIN,MP_MAX,MP_MONEDAS,MP_REQ,MP_TIEMPO,MP_CONF,MP_ORG,MP_CRE,MP_ACTU,A_ID,A_COMPRA,A_EVENTO,A_USUARIO,A_FECHA,A_VALIDADOR,A_METODO,A_OBS,A_EST,A_UBI,A_DISP,N_ID,N_USUARIO,N_TIPO,N_TIT,N_MSG,N_LEIDA,N_URL,N_TEXTO,PE_ID,PE_NOM,PE_ASUNTO,PE_CONT,PE_TIPO,AE_ID,AE_EVENTO,AE_VIS,AE_VENTAS,AE_ING,AE_CONV,AE_PRECIO,AE_TIPO,AE_ASIST,AE_REEM,AE_MONTO,CP_ID,CP_CODIGO,CP_DESC,CP_TIPO,CP_VALOR,CP_INICIO,CP_FIN,CP_MAX,CP_ACT,CP_EVENTO,CP_ORG,CP_ACTIVO,FU_ID,FU_USUARIO,FU_EVENTO,FU_CAT,FU_NOTAS,FU_REC,FU_FECHA,FU_PRIOR,FU_VIS,CE_ID,CE_EVENTO,CE_USUARIO,CE_CAL,CE_COM,CE_POS,CE_NEG,CE_REC,CE_CAT,CE_FECHA,CE_ANON,CE_MOD,CE_VIS,CS_ID,CS_CLAVE,CS_VALOR,CS_TIPO,CS_DESC,CS_CAT,CS_SENS,CS_READ,CS_DEF,CS_ACT atributo
     class R1,R2,R3,R4,R5,R6,R7,R8,R9,R10,R11,R12,R13,R14,R15,R16,R17,R18,R19,R20,R21,R22,R23,R24 relacion
 ```
 
@@ -584,7 +588,7 @@ graph TD
 
 ### 🗄️ **Todas las Tablas del Sistema (15 Entidades)**
 
-1. **USUARIOS** - Gestión de usuarios del sistema
+1. **USUARIOS** - Gestión de usuarios del sistema con verificación de email
 2. **EVENTOS** - Catálogo de eventos
 3. **TIPOS_ENTRADA** - Tipos de entradas por evento
 4. **COMPRAS** - Transacciones y ventas

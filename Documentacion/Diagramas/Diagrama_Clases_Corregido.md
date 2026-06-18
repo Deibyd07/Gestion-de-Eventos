@@ -45,6 +45,7 @@ classDiagram
         -String nombre_organizador
         -EventStatus estado
         -String[] etiquetas
+        -Boolean destacado
         -DateTime fecha_creacion
         -DateTime fecha_actualizacion
         
@@ -52,12 +53,15 @@ classDiagram
         +update(data: EventData) void
         +publish() void
         +cancel() void
+        +pause() void
+        +finalize() void
         +getTicketTypes() TicketType[]
         +addTicketType(ticket: TicketType) void
         +removeTicketType(ticketId: String) void
         +getAnalytics() EventAnalytics
         +checkAvailability() Boolean
         +getAttendees() Usuario[]
+        +getFollowers() Usuario[]
     }
 
     class TicketType {
@@ -90,6 +94,8 @@ classDiagram
         -Integer cantidad
         -Decimal precio_unitario
         -Decimal total_pagado
+        -Decimal descuento
+        -String id_metodo_pago
         -PurchaseStatus estado
         -String codigo_qr
         -String numero_orden
@@ -106,6 +112,7 @@ classDiagram
         +getEvent() Evento
         +getUser() Usuario
         +getTicketType() TicketType
+        +getPaymentMethod() MetodoPago
     }
 
     %% ==========================================
@@ -292,6 +299,48 @@ classDiagram
         +getUpdatedBy() Usuario
     }
 
+    class SeguidorOrganizador {
+        -String id
+        -String id_usuario_seguidor
+        -String id_organizador
+        -DateTime fecha_creacion
+        
+        +follow() void
+        +unfollow() void
+        +getFollower() Usuario
+        +getOrganizer() Usuario
+        +isFollowing() Boolean
+    }
+
+    class MetodoPago {
+        -String id
+        -String nombre
+        -String tipo
+        -String proveedor
+        -String descripcion
+        -Boolean activo
+        -Decimal comision_porcentaje
+        -Decimal comision_fija
+        -Decimal monto_minimo
+        -Decimal monto_maximo
+        -String[] monedas_soportadas
+        -Boolean requiere_verificacion
+        -String tiempo_procesamiento
+        -JSONB configuracion
+        -String id_organizador
+        -DateTime fecha_creacion
+        -DateTime fecha_actualizacion
+        
+        +create() MetodoPago
+        +update(data: PaymentMethodData) void
+        +activate() void
+        +deactivate() void
+        +validateTransaction(amount: Decimal) Boolean
+        +calculateFees(amount: Decimal) Decimal
+        +getOrganizer() Usuario
+        +isActive() Boolean
+    }
+
     %% ==========================================
     %% ENUMS Y TIPOS
     %% ==========================================
@@ -307,29 +356,35 @@ classDiagram
         +PUBLICADO
         +CANCELADO
         +FINALIZADO
+        +PAUSADO
     }
 
     class PurchaseStatus {
         +PENDIENTE
-        +CONFIRMADA
+        +PROCESANDO
+        +COMPLETADA
         +CANCELADA
         +REEMBOLSADA
+        +FALLIDA
     }
 
     class NotificationType {
         +SISTEMA
         +EVENTO
         +COMPRA
-        +RECORDATORIO
+        +ASISTENCIA
         +PROMOCION
+        +RECORDATORIO
     }
 
     class EmailTemplateType {
         +BIENVENIDA
         +CONFIRMACION_COMPRA
         +RECORDATORIO_EVENTO
-        +NOTIFICACION_SISTEMA
+        +CANCELACION_EVENTO
+        +CODIGO_QR
         +PROMOCION
+        +FEEDBACK
     }
 
     %% ==========================================
@@ -345,6 +400,7 @@ classDiagram
     Usuario --> CodigoPromocional
     Usuario --> AsistenciaEvento
     Usuario --> ConfiguracionSistema
+    Usuario --> MetodoPago
     
     Evento --> TicketType
     Evento --> Compra
@@ -356,6 +412,11 @@ classDiagram
     
     TicketType --> Compra
     Compra --> AsistenciaEvento
+    Compra --> MetodoPago
+    
+    %% Relaciones muchos a muchos
+    Usuario "seguidor" --> SeguidorOrganizador
+    Usuario "organizador" --> SeguidorOrganizador
     
     %% Relaciones con enums
     Usuario --> UserRole
@@ -375,7 +436,7 @@ classDiagram
 3. **TicketType** - Tipos de entradas para eventos
 4. **Compra** - Proceso de compra de entradas
 
-#### **Entidades de Soporte (8)**
+#### **Entidades de Soporte (10)**
 1. **Notificacion** - Sistema de notificaciones
 2. **PlantillaEmail** - Plantillas de correo electrónico
 3. **AnaliticasEvento** - Métricas y analytics
@@ -384,6 +445,8 @@ classDiagram
 6. **FavoritoUsuario** - Sistema de favoritos
 7. **CalificacionEvento** - Sistema de calificaciones
 8. **ConfiguracionSistema** - Configuraciones globales
+9. **SeguidorOrganizador** - Relación seguidores-organizadores
+10. **MetodoPago** - Gestión de métodos de pago
 
 ### 🔗 **Relaciones Implementadas**
 
@@ -397,6 +460,7 @@ classDiagram
 - Usuario → Asistencias (como asistente)
 - Usuario → Asistencias (como validador)
 - Usuario → Configuraciones (como actualizador)
+- Usuario → Métodos de Pago (como organizador)
 - Evento → Tipos de Entrada
 - Evento → Compras
 - Evento → Analytics
@@ -406,6 +470,10 @@ classDiagram
 - Evento → Calificaciones
 - TicketType → Compras
 - Compra → Asistencias
+- MetodoPago → Compras
+
+#### **Relaciones N:M (Muchos a Muchos)**
+- Usuario → Usuario (seguidores-organizadores) a través de SeguidorOrganizador
 
 ### 🎯 **Métodos Principales por Clase**
 
@@ -419,18 +487,28 @@ classDiagram
 - `create()` - Crear evento
 - `publish()` - Publicar evento
 - `cancel()` - Cancelar evento
+- `pause()` - Pausar evento
+- `finalize()` - Finalizar evento
 - `getAnalytics()` - Obtener métricas
+- `getFollowers()` - Obtener seguidores
 
 #### **Compra**
 - `confirm()` - Confirmar compra
 - `cancel()` - Cancelar compra
 - `refund()` - Procesar reembolso
 - `generateQR()` - Generar código QR
+- `getPaymentMethod()` - Obtener método de pago
 
 #### **TicketType**
 - `checkAvailability()` - Verificar disponibilidad
 - `reserveTickets()` - Reservar entradas
 - `calculateTotal()` - Calcular total
+
+#### **MetodoPago**
+- `activate()` - Activar método
+- `deactivate()` - Desactivar método
+- `validateTransaction()` - Validar transacción
+- `calculateFees()` - Calcular comisiones
 
 ### 📈 **Patrones de Diseño Implementados**
 
@@ -496,10 +574,10 @@ classDiagram
 
 ## 📋 **Resumen del Diagrama**
 
-- **Total de Clases:** 12 entidades + 5 enums
-- **Relaciones:** 15+ relaciones implementadas
-- **Métodos:** 50+ métodos de negocio
-- **Atributos:** 100+ atributos totales
+- **Total de Clases:** 14 entidades + 5 enums
+- **Relaciones:** 20+ relaciones implementadas (1:N y N:M)
+- **Métodos:** 60+ métodos de negocio
+- **Atributos:** 120+ atributos totales
 - **Patrones:** 4 patrones de diseño aplicados
 
 Este diagrama representa la arquitectura completa del sistema EventHub, mostrando cómo las diferentes entidades interactúan entre sí para proporcionar una plataforma robusta de gestión de eventos.
